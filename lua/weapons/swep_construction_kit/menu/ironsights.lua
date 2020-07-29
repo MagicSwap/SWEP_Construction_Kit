@@ -3,7 +3,7 @@ local drag_modes = {
 	["x / z"] = { "x", "z" },
 	["y"] = { "y" },
 	["pitch / yaw"] = { "pitch", "yaw" },
-	["roll"] = { "roll" }	
+	["roll"] = { "roll" }
 }
 
 local function GetIronSightPrintText( vec, ang )
@@ -25,7 +25,7 @@ local pironsight_enable = SimplePanel( pironsight )
 		if (wep.save_data.IronSightsEnabled) then icbox:SetValue(1)
 		else icbox:SetValue(0) end
 	icbox:Dock(LEFT)
-	
+
 	local ribtn = vgui.Create( "DButton", pironsight_enable )
 		ribtn:SetTall( 20 )
 		ribtn:SetText( "Reset ironsights" )
@@ -43,7 +43,7 @@ local pironsight_drag = SimplePanel( pironsight )
 		modlabel:SetSize( 150, 20 )
 		modlabel:SetText( "Drag mode:" )
 	modlabel:Dock(LEFT)
-	
+
 	local drbox = vgui.Create( "DComboBox", pironsight_drag )
 		drbox:SetTall( 20 )
 		drbox:SetText( wep.cur_drag_mode )
@@ -54,17 +54,17 @@ local pironsight_drag = SimplePanel( pironsight )
 			local modes = drag_modes[value]
 			wep.cur_drag_mode = value
 			for k, v in pairs( wep.ir_drag ) do
-				v[1] = table.HasValue( modes, k ) // set the drag modus
+				v[1] = table.HasValue( modes, k ) -- set the drag modus
 			end
 		end
 	drbox:Dock(FILL)
-	
-pironsight_drag:DockMargin(0,0,0,10)	
+
+pironsight_drag:DockMargin(0,0,0,10)
 pironsight_drag:Dock(TOP)
 
 local ixslider = vgui.Create( "DNumSlider", pironsight )
 	ixslider:SetText( "Translate x" )
-	ixslider:SetMinMax( -20, 20 )
+	ixslider:SetMinMax( -50, 50 )
 	ixslider:SetDecimals( 3 )
 	ixslider:SetConVar( "_sp_ironsight_x" )
 	ixslider:SetValue( wep.save_data.IronSightsPos.x )
@@ -76,7 +76,7 @@ ixslider:Dock(TOP)
 
 local iyslider = vgui.Create( "DNumSlider", pironsight )
 	iyslider:SetText( "Translate y" )
-	iyslider:SetMinMax( -20, 20 )
+	iyslider:SetMinMax( -50, 50 )
 	iyslider:SetDecimals( 3 )
 	iyslider:SetConVar( "_sp_ironsight_y" )
 	iyslider:SetValue( wep.save_data.IronSightsPos.y )
@@ -88,7 +88,7 @@ iyslider:Dock(TOP)
 
 local izslider = vgui.Create( "DNumSlider", pironsight )
 	izslider:SetText( "Translate z" )
-	izslider:SetMinMax( -20, 20 )
+	izslider:SetMinMax( -50, 50 )
 	izslider:SetDecimals( 3 )
 	izslider:SetConVar( "_sp_ironsight_z" )
 	izslider:SetValue( wep.save_data.IronSightsPos.z )
@@ -100,7 +100,7 @@ izslider:Dock(TOP)
 
 local ipslider = vgui.Create( "DNumSlider", pironsight )
 	ipslider:SetText( "Rotate pitch" )
-	ipslider:SetMinMax( -70, 70 )
+	ipslider:SetMinMax( -100, 100 )
 	ipslider:SetDecimals( 3 )
 	ipslider:SetConVar( "_sp_ironsight_pitch" )
 	ipslider:SetValue( wep.save_data.IronSightsAng.x )
@@ -112,7 +112,7 @@ ipslider:Dock(TOP)
 
 local iyaslider = vgui.Create( "DNumSlider", pironsight )
 	iyaslider:SetText( "Rotate yaw" )
-	iyaslider:SetMinMax( -70, 70 )
+	iyaslider:SetMinMax( -100, 100 )
 	iyaslider:SetDecimals( 3 )
 	iyaslider:SetConVar( "_sp_ironsight_yaw" )
 	iyaslider:SetValue( wep.save_data.IronSightsAng.y )
@@ -124,7 +124,7 @@ iyaslider:Dock(TOP)
 
 local irslider = vgui.Create( "DNumSlider", pironsight )
 	irslider:SetText( "Rotate roll" )
-	irslider:SetMinMax( -70, 70 )
+	irslider:SetMinMax( -100, 100 )
 	irslider:SetDecimals( 3 )
 	irslider:SetConVar( "_sp_ironsight_roll" )
 	irslider:SetValue( wep.save_data.IronSightsAng.z )
