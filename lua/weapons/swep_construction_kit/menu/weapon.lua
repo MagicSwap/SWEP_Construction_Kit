@@ -289,7 +289,7 @@ local usehands = vgui.Create( "DCheckBoxLabel", pweapon )
 	usehands.OnChange = function()
 		wep.UseHands = usehands:GetChecked()
 	end
-	usehands:SetValue(0)
+	usehands:SetValue(1)
 usehands:DockMargin(0,0,0,5)
 usehands:Dock(TOP)
 

@@ -57,7 +57,9 @@ SWEP.HoldTypes = { "normal", "melee", "melee2", "fist",
 SWEP.Spawnable			= true
 SWEP.AdminSpawnable		= true
 
-SWEP.ViewModel			= "models/weapons/v_pistol.mdl"
+SWEP.UseHands 			= true
+
+SWEP.ViewModel			= "models/weapons/c_pistol.mdl"
 SWEP.WorldModel			= "models/weapons/w_pistol.mdl"
 SWEP.CurWorldModel 		= "models/weapons/w_pistol.mdl" -- this is where shit gets hacky
 

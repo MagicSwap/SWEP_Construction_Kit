@@ -223,6 +223,7 @@ local mlist = vgui.Create( "DListView", pmodels)
 		wep.v_panelCache[name]:SetVisible(true)
 
 		lastVisible = name
+		wep.selectedElement = lastVisible
 	end
 
 mlist:Dock(TOP)
@@ -238,6 +239,11 @@ local pbuttons = SimplePanel( pmodels )
 		copybtn:SetSize( 160, 25 )
 		copybtn:SetText( "Copy selected" )
 	copybtn:Dock(RIGHT)
+	
+	local importbtn = vgui.Create( "DButton", pbuttons )
+		importbtn:SetTall( 25 )
+		importbtn:SetText( "Import worldmodels" )
+	importbtn:Dock(FILL)
 
 pbuttons:DockMargin(0,5,0,5)
 pbuttons:Dock(TOP)
@@ -298,6 +304,11 @@ local function CreatePositionModifiers( data, panel )
 		mxwang:SetDecimals( 3 )
 		mxwang.Wang.ConVarChanged = function( p, value ) data.pos.x = tonumber(value) end
 		mxwang:SetValue( data.pos.x )
+		mxwang.Think = function( self )
+			if data and data.pos and data.pos.x and data.pos.x ~= self:GetValue() then
+				self:SetValue( data.pos.x )
+			end
+		end
 	mxwang:DockMargin(10,0,0,0)
 
 	local mywang = vgui.Create( "DNumSlider", panel )
@@ -306,6 +317,11 @@ local function CreatePositionModifiers( data, panel )
 		mywang:SetDecimals( 3 )
 		mywang.Wang.ConVarChanged = function( p, value ) data.pos.y = tonumber(value) end
 		mywang:SetValue( data.pos.y )
+		mywang.Think = function( self )
+			if data and data.pos and data.pos.y and data.pos.y ~= self:GetValue() then
+				self:SetValue( data.pos.y )
+			end
+		end
 	mywang:DockMargin(10,0,0,0)
 
 	local mzwang = vgui.Create( "DNumSlider", panel )
@@ -314,6 +330,11 @@ local function CreatePositionModifiers( data, panel )
 		mzwang:SetDecimals( 3 )
 		mzwang.Wang.ConVarChanged = function( p, value ) data.pos.z = tonumber(value) end
 		mzwang:SetValue( data.pos.z )
+		mzwang.Think = function( self )
+			if data and data.pos and data.pos.z and data.pos.z ~= self:GetValue() then
+				self:SetValue( data.pos.z )
+			end
+		end
 	mzwang:DockMargin(10,0,0,0)
 
 	panel.PerformLayout = function()
@@ -346,6 +367,11 @@ local function CreateAngleModifiers( data, panel )
 		mpitchwang:SetDecimals( 3 )
 		mpitchwang.Wang.ConVarChanged = function( p, value ) data.angle.p = tonumber(value) end
 		mpitchwang:SetValue( data.angle.p )
+		mpitchwang.Think = function( self )
+			if data and data.angle and data.angle.p and data.angle.p ~= self:GetValue() then
+				self:SetValue( data.angle.p )
+			end
+		end
 	mpitchwang:DockMargin(10,0,0,0)
 
 	local myawwang = vgui.Create( "DNumSlider", panel )
@@ -354,6 +380,11 @@ local function CreateAngleModifiers( data, panel )
 		myawwang:SetDecimals( 3 )
 		myawwang.Wang.ConVarChanged = function( p, value ) data.angle.y = tonumber(value) end
 		myawwang:SetValue( data.angle.y )
+		myawwang.Think = function( self )
+			if data and data.angle and data.angle.y and data.angle.y ~= self:GetValue() then
+				self:SetValue( data.angle.y )
+			end
+		end
 	myawwang:DockMargin(10,0,0,0)
 
 	local mrollwang = vgui.Create( "DNumSlider", panel )
@@ -362,6 +393,11 @@ local function CreateAngleModifiers( data, panel )
 		mrollwang:SetDecimals( 3 )
 		mrollwang.Wang.ConVarChanged = function( p, value ) data.angle.r = tonumber(value) end
 		mrollwang:SetValue( data.angle.r )
+		mrollwang.Think = function( self )
+			if data and data.angle and data.angle.r and data.angle.r ~= self:GetValue() then
+				self:SetValue( data.angle.r )
+			end
+		end
 	mrollwang:DockMargin(10,0,0,0)
 
 	panel.PerformLayout = function()
@@ -1168,7 +1204,65 @@ copybtn.DoClick = function()
 	end
 end
 
+-- import worldmodels
+importbtn.DoClick = function()
+	local num = 0
+	for k, v in pairs( wep.w_models ) do
+		local name = k
+		local i = 1
+		while(wep.v_models[name] != nil) do
+			name = k..""..i
+			i = i + 1
 
+			-- changing names might mess up the relative transitions of some stuff
+			-- but whatever.
+		end
+
+		local new_preset = table.Copy(v)
+		new_preset.bone = "ValveBiped.Bip01_R_Hand" -- switch to hand bone by default
+
+		--if (new_preset.rel and new_preset.rel != "") then
+			new_preset.pos = Vector(v.pos.x, v.pos.y, v.pos.z)
+			if (v.angle) then
+				new_preset.angle = Angle(v.angle.p, v.angle.y, v.angle.r)
+			end
+		--[[else
+			new_preset.pos = Vector(num*5,0,-10)
+			if (v.angle) then
+				new_preset.angle = Angle(0,0,0)
+			end
+		end]]
+
+		if (v.color) then
+			new_preset.color = Color(v.color.r,v.color.g,v.color.b,v.color.a)
+		end
+		if (type(v.size) == "table") then
+			new_preset.size = table.Copy(v.size)
+		elseif (type(v.size) == "Vector") then
+			new_preset.size = Vector(v.size.x, v.size.y, v.size.z)
+		end
+		if (v.bodygroup) then
+			new_preset.bodygroup = table.Copy(v.bodygroup)
+		end
+
+		wep.v_models[name] = {}
+		if (v.type == "Model") then
+			wep.v_panelCache[name] = CreateModelPanel( name, new_preset )
+		elseif (v.type == "Sprite") then
+			wep.v_panelCache[name] = CreateSpritePanel( name, new_preset )
+		elseif (v.type == "Quad") then
+			wep.v_panelCache[name] = CreateQuadPanel( name, new_preset )
+		end
+		wep.v_panelCache[name]:SetVisible(false)
+
+		table.insert(v_relelements, name)
+		UpdateRelBoxes("v")
+
+		mlist:AddLine(name,v.type)
+
+		num = num + 1
+	end
+end
 
 --[[--------------------------------------------------------------
 
@@ -1245,6 +1339,7 @@ local mwlist = vgui.Create( "DListView", pwmodels)
 		wep.w_panelCache[name]:SetVisible(true)
 
 		lastVisible = name
+		wep.selectedElement = lastVisible
 	end
 
 mwlist:Dock(TOP)

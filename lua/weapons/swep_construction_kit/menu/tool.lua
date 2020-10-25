@@ -48,7 +48,9 @@ local panim = SimplePanel(ptool)
 					end
 					
 					vm:SetPlaybackRate( ptool.AnimationPlaybackRate or 1 )
-
+					
+					vm.PlayAnimation = CurTime() + vm:SequenceDuration()
+					
 					if string.find( seq, "fire" ) or string.find( seq, "shoot" ) or string.find( seq, "slash" ) or string.find( seq, "hit" ) or string.find( seq, "miss" ) or string.find( seq, "attack" ) or string.find( seq, "fists_" ) then
 						LocalPlayer():SetAnimation( PLAYER_ATTACK1 )
 					end

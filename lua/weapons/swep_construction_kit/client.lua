@@ -4,6 +4,7 @@ include('glon.lua')
 surface.CreateFont("12ptFont", {font = "Arial", size = 12, width = 500, antialias = true, additive = false})
 surface.CreateFont("24ptFont", {font = "Arial", size = 24, width = 500, antialias = true, additive = false})
 
+SWEP.selectedElement = ""
 SWEP.useThirdPerson = false
 SWEP.thirdPersonAngle = Angle(0,-90,0)
 SWEP.thirdPersonDis = 100
@@ -41,6 +42,15 @@ local playerBones = {
 	"ValveBiped.Bip01_L_Shoulder",
 	"ValveBiped.Bip01_L_Elbow"
 	}
+	
+local model_drag_modes = {
+	["_x /y |z"] = { "x", "z", "y", "p", "r", "y" },
+	["_y /x |z"] = { "y", "z", "x", "y", "r", "p" },
+}
+
+SWEP.selectedModelDragMode = "_y /x |z"
+SWEP.selectedModelDragPrecision = 0.01
+SWEP.ModelDragAngleSnap = 0
 
 SWEP.v_models = {}
 SWEP.v_panelCache = {}
@@ -112,9 +122,9 @@ function SWEP:ClientInit()
 
 end
 
-function SimplePanel( parent )
+function SimplePanel( parent, scroll )
 
-	local p = vgui.Create("DPanel", parent)
+	local p = vgui.Create( scroll and "DScrollPanel" or "DPanel", parent)
 	p.Paint = function() end
 	return p
 
@@ -269,38 +279,104 @@ function SWEP:Think()
 
 	local mx, my = gui.MousePos()
 	local diffx, diffy = (mx - self.mlast_x), (my - self.mlast_y)
-
-	if (input.IsMouseDown(MOUSE_RIGHT) and !(diffx > 40 or diffy > 40) and self.Frame and self.Frame:IsVisible()) then -- right mouse press without sudden jumps
-
-		if (self.useThirdPerson) then
-
-			if (input.IsKeyDown(KEY_E)) then
-				self.thirdPersonDis = math.Clamp( self.thirdPersonDis + diffy, 10, 500 )
-			else
-				self.thirdPersonAngle = self.thirdPersonAngle + Angle( diffy/2, diffx/2, 0 )
+	
+	// model positioning
+	
+	local element_mode = input.IsKeyDown( KEY_LCONTROL ) or input.IsKeyDown( KEY_LSHIFT )
+	
+	if element_mode and self.Frame and self.Frame:IsVisible() then
+		
+		local tbl = self.useThirdPerson and self.w_models or self.v_models
+		
+		if tbl and tbl[ self.selectedElement ] and tbl[ self.selectedElement ].pos then
+			
+			local cur_mode = model_drag_modes[ self.selectedModelDragMode ]
+			
+			if cur_mode then
+				
+				local cur_el = tbl[ self.selectedElement ]
+				
+				if input.IsMouseDown(MOUSE_RIGHT) then
+					
+					if input.IsMouseDown(MOUSE_LEFT) then
+						if input.IsKeyDown( KEY_LCONTROL ) then
+							cur_el.pos[ cur_mode[ 3 ] ] = cur_el.pos[ cur_mode[ 3 ] ] - diffy * self.selectedModelDragPrecision
+						else
+							if tbl[ self.selectedElement ].angle then
+								if self.ModelDragAngleSnap > 0 then
+									cur_el.angle[ cur_mode[ 6 ] ] = math.NormalizeAngle( cur_el.angle[ cur_mode[ 6 ] ] - math.Round( ( diffy * self.ModelDragAngleSnap * self.selectedModelDragPrecision * 30 ) / self.ModelDragAngleSnap ) * self.ModelDragAngleSnap )
+								else
+									cur_el.angle[ cur_mode[ 6 ] ] = math.NormalizeAngle( cur_el.angle[ cur_mode[ 6 ] ] - diffy * self.selectedModelDragPrecision * 10 )
+								end
+							end
+						end
+					else
+						if input.IsKeyDown( KEY_LCONTROL ) then
+							cur_el.pos[ cur_mode[ 1 ] ] = cur_el.pos[ cur_mode[ 1 ] ] - diffx * self.selectedModelDragPrecision
+							cur_el.pos[ cur_mode[ 2 ] ] = cur_el.pos[ cur_mode[ 2 ] ] + diffy * self.selectedModelDragPrecision
+						else
+							if tbl[ self.selectedElement ].angle then
+								if self.ModelDragAngleSnap > 0 then
+									cur_el.angle[ cur_mode[ 4 ] ] = math.NormalizeAngle( cur_el.angle[ cur_mode[ 4 ] ] - math.Round( ( diffx * self.ModelDragAngleSnap * self.selectedModelDragPrecision * 30 ) / self.ModelDragAngleSnap ) * self.ModelDragAngleSnap )
+									cur_el.angle[ cur_mode[ 5 ] ] = math.NormalizeAngle( cur_el.angle[ cur_mode[ 5 ] ] + math.Round( ( diffy * self.ModelDragAngleSnap * self.selectedModelDragPrecision * 30 ) / self.ModelDragAngleSnap ) * self.ModelDragAngleSnap )
+								else
+									cur_el.angle[ cur_mode[ 4 ] ] = math.NormalizeAngle( cur_el.angle[ cur_mode[ 4 ] ] - diffx * self.selectedModelDragPrecision * 10 )
+									cur_el.angle[ cur_mode[ 5 ] ] = math.NormalizeAngle( cur_el.angle[ cur_mode[ 5 ] ] + diffy * self.selectedModelDragPrecision * 10 )
+								end
+							end
+						end
+					end
+				
+				end
+				
+				if input.WasMousePressed( MOUSE_WHEEL_UP ) then
+					self.selectedModelDragPrecision = math.Clamp( self.selectedModelDragPrecision + 0.001, 0.005, 0.3 )
+				end
+				
+				if input.WasMousePressed( MOUSE_WHEEL_DOWN ) then
+					self.selectedModelDragPrecision = math.Clamp( self.selectedModelDragPrecision - 0.001, 0.001, 0.3 )
+				end
+			
 			end
+			
+			
+		end
+		
+		
+	else
+		// normal ironsights and stuff
+		if (input.IsMouseDown(MOUSE_RIGHT) and !(diffx > 40 or diffy > 40) and self.Frame and self.Frame:IsVisible()) then -- right mouse press without sudden jumps
 
-		else
-			-- ironsight adjustment
-			for k, v in pairs( self.ir_drag ) do
-				if (v[1]) then
-					local temp = GetConVar( "_sp_ironsight_"..k ):GetFloat()
-					if (v[2] == "x") then
-						local add = -(diffx/v[3])
-						if (self.ViewModelFlip) then add = add*-1 end
-						RunConsoleCommand( "_sp_ironsight_"..k, temp + add )
-					elseif (v[2] == "-x") then
-						local add = diffx/v[3]
-						if (self.ViewModelFlip) then add = add*-1 end
-						RunConsoleCommand( "_sp_ironsight_"..k, temp + add )
-					elseif (v[2] == "y") then
-						RunConsoleCommand( "_sp_ironsight_"..k, temp - diffy/v[3] )
+			if (self.useThirdPerson) then
+
+				if (input.IsKeyDown(KEY_E)) then
+					self.thirdPersonDis = math.Clamp( self.thirdPersonDis + diffy, 10, 500 )
+				else
+					self.thirdPersonAngle = self.thirdPersonAngle + Angle( diffy/2, diffx/2, 0 )
+				end
+
+			else
+				-- ironsight adjustment
+				for k, v in pairs( self.ir_drag ) do
+					if (v[1]) then
+						local temp = GetConVar( "_sp_ironsight_"..k ):GetFloat()
+						if (v[2] == "x") then
+							local add = -(diffx/v[3])
+							if (self.ViewModelFlip) then add = add*-1 end
+							RunConsoleCommand( "_sp_ironsight_"..k, temp + add )
+						elseif (v[2] == "-x") then
+							local add = diffx/v[3]
+							if (self.ViewModelFlip) then add = add*-1 end
+							RunConsoleCommand( "_sp_ironsight_"..k, temp + add )
+						elseif (v[2] == "y") then
+							RunConsoleCommand( "_sp_ironsight_"..k, temp - diffy/v[3] )
+						end
 					end
 				end
+
 			end
 
 		end
-
 	end
 
 	self.mlast_x, self.mlast_y = mx, my
@@ -466,6 +542,36 @@ function SWEP:ResetBonePositions(vm)
 
 end
 
+local helper_text_pos = nil
+local matDisc = Material( "widgets/disc.png", "nocull alphatest smooth mips" )
+
+function SWEP:ShowElementHelpers( pos, ang, v )
+	
+	local helper_pos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
+	local helper_ang = ang * 1
+	
+	helper_ang:RotateAroundAxis(helper_ang:Up(), v.angle.y)
+	helper_ang:RotateAroundAxis(helper_ang:Right(), v.angle.p)
+	helper_ang:RotateAroundAxis(helper_ang:Forward(), v.angle.r)
+	
+			
+	helper_text_pos = helper_pos * 1
+	
+	if input.IsKeyDown( KEY_LSHIFT ) then
+	
+		render.SetMaterial( matDisc )
+		render.DrawQuadEasy( helper_pos, helper_ang:Forward(), 10, 10, Color( 255, 55, 55, 50 ), 0 )
+		render.DrawQuadEasy( helper_pos, helper_ang:Right(), 10, 10, Color( 55, 255, 55, 50 ), 0 )
+		render.DrawQuadEasy( helper_pos, helper_ang:Up(), 10, 10, Color( 55, 55, 255, 50 ), 0 )
+		
+	else
+		render.DrawLine( helper_pos, helper_pos + ang:Forward() * 10, Color( 255, 55, 55 ), true )
+		render.DrawLine( helper_pos, helper_pos + ang:Right() * 10, Color( 55, 255, 55 ), true )
+		render.DrawLine( helper_pos, helper_pos + ang:Up() * 10, Color( 55, 55, 255 ), true )
+	end
+	
+end
+
 --[[*******************************
 	All viewmodel drawing magic
 ********************************]]
@@ -483,6 +589,7 @@ function SWEP:ViewModelDrawn()
 		vm.BuildBonePositions = self.BuildViewModelBones
 	end]]
 
+	
 	if (!self.vRenderOrder) then
 
 		-- we build a render order because sprites need to be drawn after models
@@ -497,6 +604,8 @@ function SWEP:ViewModelDrawn()
 		end
 
 	end
+	
+	local show_helpers = ( input.IsKeyDown( KEY_LCONTROL ) or input.IsKeyDown( KEY_LSHIFT ) ) and self.Frame and self.Frame:IsVisible()
 
 	for k, name in ipairs( self.vRenderOrder ) do
 
@@ -511,6 +620,14 @@ function SWEP:ViewModelDrawn()
 		local pos, ang = self:GetBoneOrientation( self.v_models, name, vm )
 
 		if (!pos) then continue end
+		
+		if show_helpers then
+			if name == self.selectedElement then
+				self:ShowElementHelpers( pos, ang, v )
+			end
+		else
+			if helper_text_pos then helper_text_pos = nil end
+		end
 
 		if (v.type == "Model" and IsValid(model)) then
 
@@ -641,7 +758,7 @@ function SWEP:DrawWorldModel()
 	else
 		-- this only happens if the weapon is dropped, which shouldn't happen normally.
 		self:SetColor(Color(255,0,0,0))
-		self:SetRenderMode(1)
+		self:SetRenderMode( RENDERMODE_NONE )
 		wm:SetNoDraw(false) -- else DrawWorldModel stops being called for some reason
 		wm:SetParent(self)
 		--wm:SetPos(opos)
@@ -649,6 +766,7 @@ function SWEP:DrawWorldModel()
 		if (self.ShowWorldModel) then
 			wm:DrawModel()
 		end
+		//self:DrawModel()
 
 		-- the reason that we don't always use this bone is because it lags 1 frame behind the player's right hand bone when held
 		bone_ent = wm
@@ -663,6 +781,8 @@ function SWEP:DrawWorldModel()
 		bone_ent = self
 	end]]
 
+	local show_helpers = ( input.IsKeyDown( KEY_LCONTROL ) or input.IsKeyDown( KEY_LSHIFT ) ) and self.Frame and self.Frame:IsVisible()
+	
 	for k, name in pairs( self.wRenderOrder ) do
 
 		local v = self.w_models[name]
@@ -677,6 +797,14 @@ function SWEP:DrawWorldModel()
 		end
 
 		if (!pos) then continue end
+		
+		if show_helpers then
+			if name == self.selectedElement then
+				self:ShowElementHelpers( pos, ang, v )
+			end
+		else
+			if helper_text_pos then helper_text_pos = nil end
+		end
 
 		local model = v.modelEnt
 		local sprite = v.spriteMaterial
@@ -691,7 +819,7 @@ function SWEP:DrawWorldModel()
 			model:SetAngles(ang)
 			--model:SetModelScale(v.size)
 			local matrix = Matrix()
-			matrix:Scale(v.size)
+			matrix:Scale(v.size)			
 			model:EnableMatrix( "RenderMultiply", matrix )
 
 			if (v.material == "") then
@@ -778,6 +906,14 @@ end
 SWEP.FirstTimeOpen = true
 
 function SWEP:DrawHUD()
+
+	if helper_text_pos then
+		
+		local pos = helper_text_pos:ToScreen()
+		
+		draw.SimpleTextOutlined("Drag Precision: "..self.selectedModelDragPrecision,"12ptFont",pos.x, pos.y, Color(255,255,255,255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER, 1, Color(0,0,0,255))
+		
+	end
 
 	/*DrawDot( ScrW()/2, ScrH()/2 )
 	DrawDot( ScrW()/2 + 10, ScrH()/2 )
@@ -1075,6 +1211,55 @@ local function CreateMenu( preset )
 	f:SetSizable( true )
 	f:SetDeleteOnClose( false )
 
+	local mpanel = vgui.Create( "DPanel", f )
+		mpanel:SetDrawBackground(false)
+		mpanel:SetTooltip("Hold CTRL to enter elements drag mode.\nHold SHIFT to enter element rotation mode.\n\n  - Hold RMB for 2D axis mode.\n  - Hold LMB and RMB for 1D axis mode.\n  - Use SCROLL WHEEL to adjust drag sensitivity.")
+		mpanel:SetTall(20)
+	mpanel:DockMargin(0,0,0,5)
+	mpanel:Dock(TOP)
+	
+	local mlabel = vgui.Create( "DLabel", mpanel )
+		mlabel:SetText( "Elements drag mode:" )
+		mlabel:SetTooltip("Hold CTRL to enter elements drag mode.\nHold SHIFT to enter element rotation mode.\n\n  - Hold RMB for 2D axis mode.\n  - Hold LMB and RMB for 1D axis mode.\n  - Use SCROLL WHEEL to adjust drag sensitivity.")
+		mlabel:SizeToContents()
+		mlabel:SetTall(20)
+	mlabel:DockMargin(5,0,0,0)
+	mlabel:Dock(LEFT)
+	
+	local msnap = vgui.Create( "DNumberWang", mpanel )
+		msnap:SetTooltip("Angle snap value")
+		msnap:SizeToContents()
+		msnap:SetTall(20)
+		msnap:SetMin(0)
+		msnap:SetMax(90)
+		msnap:SetValue( wep.ModelDragAngleSnap )
+		msnap.OnValueChanged = function( p )
+			wep.ModelDragAngleSnap = p:GetValue()
+		end
+	msnap:DockMargin(5,0,0,0)
+	msnap:Dock(RIGHT)
+	
+	local mlabel2 = vgui.Create( "DLabel", mpanel )
+		mlabel2:SetText( "Angle snap" )
+		mlabel2:SizeToContents()
+		mlabel2:SetTall(20)
+	mlabel2:DockMargin(5,0,0,0)
+	mlabel2:Dock(RIGHT)
+	
+	local mdraglist = vgui.Create( "DComboBox", mpanel )
+		mdraglist:SetWide(150)
+		mdraglist:SetTooltip("Hold CTRL to enter elements drag mode.\nHold SHIFT to enter element rotation mode.\n\n  - Hold RMB for 2D axis mode.\n  - Hold LMB and RMB for 1D axis mode.\n  - Use SCROLL WHEEL to adjust drag sensitivity.")
+		mdraglist.OnSelect = function( p, index, value )
+			wep.selectedModelDragMode = value
+		end
+		mdraglist:SetText( wep.selectedModelDragMode )
+	mdraglist:DockMargin(5,0,0,0)
+	mdraglist:Dock(FILL)
+	
+	for k, v in pairs( model_drag_modes ) do
+		mdraglist:AddChoice(k)
+	end
+	
 	local tpanel= vgui.Create( "DPanel", f )
 		tpanel:SetDrawBackground(false)
 		tpanel:SetTall(20)
@@ -1106,11 +1291,13 @@ local function CreateMenu( preset )
 			RunConsoleCommand("swepck_togglethirdperson")
 		end
 
-	tbtn:Dock(FILL)
+	tbtn:Dock(FILL)	
+	
+	
 
 	local tab = vgui.Create( "DPropertySheet", f )
 
-		wep.ptool = vgui.Create("DPanel", tab)
+		wep.ptool = vgui.Create("DScrollPanel", tab)
 		wep.ptool.Paint = function() surface.SetDrawColor(70,70,70,255) surface.DrawRect(0,0,wep.ptool:GetWide(),wep.ptool:GetTall()) end
 		wep.pweapon = vgui.Create("DPanel", tab)
 		wep.pweapon.Paint = function() surface.SetDrawColor(70,70,70,255) surface.DrawRect(0,0,wep.pweapon:GetWide(),wep.pweapon:GetTall()) end
