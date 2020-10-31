@@ -73,7 +73,7 @@ local panim = SimplePanel(ptool)
 
 	local aplayback = vgui.Create( "DNumSlider", panim )
 		aplayback:SetText( "Sequence Playback Rate" )
-		aplayback:SetMinMax( 0, 5 )
+		aplayback:SetMinMax( -1, 5 )
 		aplayback:SetDecimals( 1 )
 		aplayback.Wang.ConVarChanged = function( p, value ) ptool.AnimationPlaybackRate = tonumber(value) end
 		aplayback:SetValue( 1 )

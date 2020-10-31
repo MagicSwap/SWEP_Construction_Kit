@@ -7,6 +7,7 @@ surface.CreateFont("24ptFont", {font = "Arial", size = 24, width = 500, antialia
 SWEP.selectedElement = ""
 SWEP.useThirdPerson = false
 SWEP.thirdPersonAngle = Angle(0,-90,0)
+SWEP.thirdPersonAngleView = Angle( 0, 0, 0 )
 SWEP.thirdPersonDis = 100
 SWEP.mlast_x = ScrW()/2
 SWEP.mlast_y = ScrH()/2
@@ -44,11 +45,12 @@ local playerBones = {
 	}
 	
 local model_drag_modes = {
-	["_x /y |z"] = { "x", "z", "y", "p", "r", "y" },
+	//["_x /y |z"] = { "x", "z", "y", "p", "r", "y" }, // this one is bad
 	["_y /x |z"] = { "y", "z", "x", "y", "r", "p" },
+	["view space"] = { "y", "z", "x", "y", "r", "p", vs = true },
 }
 
-SWEP.selectedModelDragMode = "_y /x |z"
+SWEP.selectedModelDragMode = "view space"
 SWEP.selectedModelDragPrecision = 0.01
 SWEP.ModelDragAngleSnap = 0
 
@@ -283,10 +285,12 @@ function SWEP:Think()
 	// model positioning
 	
 	local element_mode = input.IsKeyDown( KEY_LCONTROL ) or input.IsKeyDown( KEY_LSHIFT )
+	local vm = self:GetOwner():GetViewModel()
 	
 	if element_mode and self.Frame and self.Frame:IsVisible() then
 		
 		local tbl = self.useThirdPerson and self.w_models or self.v_models
+		local ent = self.useThirdPerson and self:GetOwner() or vm
 		
 		if tbl and tbl[ self.selectedElement ] and tbl[ self.selectedElement ].pos then
 			
@@ -300,28 +304,101 @@ function SWEP:Think()
 					
 					if input.IsMouseDown(MOUSE_LEFT) then
 						if input.IsKeyDown( KEY_LCONTROL ) then
-							cur_el.pos[ cur_mode[ 3 ] ] = cur_el.pos[ cur_mode[ 3 ] ] - diffy * self.selectedModelDragPrecision
+							if cur_mode.vs and IsValid( ent ) then
+								local p_pos, p_ang = self:GetBoneOrientation( tbl, self.selectedElement, ent )
+								
+								local thirdperson_ang = self.thirdPersonAngleView * 1
+								//thirdperson_ang.y = thirdperson_ang.y + 90
+								
+								local view_ang = self.useThirdPerson and thirdperson_ang or LocalPlayer():EyeAngles()
+								
+								local offset_pos = p_pos - view_ang:Forward() * diffy * self.selectedModelDragPrecision
+															
+								offset_pos = WorldToLocal( offset_pos, view_ang, p_pos, p_ang )
+								offset_pos.y = offset_pos.y * -1
+								
+								cur_el.pos = cur_el.pos + offset_pos
+							else
+								cur_el.pos[ cur_mode[ 3 ] ] = cur_el.pos[ cur_mode[ 3 ] ] - diffy * self.selectedModelDragPrecision
+							end
 						else
 							if tbl[ self.selectedElement ].angle then
-								if self.ModelDragAngleSnap > 0 then
-									cur_el.angle[ cur_mode[ 6 ] ] = math.NormalizeAngle( cur_el.angle[ cur_mode[ 6 ] ] - math.Round( ( diffy * self.ModelDragAngleSnap * self.selectedModelDragPrecision * 30 ) / self.ModelDragAngleSnap ) * self.ModelDragAngleSnap )
+								
+								local y_value = self.ModelDragAngleSnap > 0 and math.Round( ( diffy * self.ModelDragAngleSnap * self.selectedModelDragPrecision * 30 ) / self.ModelDragAngleSnap ) * self.ModelDragAngleSnap or diffy * self.selectedModelDragPrecision * 10
+								
+								if cur_mode.vs and IsValid( ent ) then
+									local p_pos, p_ang = self:GetBoneOrientation( tbl, self.selectedElement, ent )
+									local el_pos = p_pos + p_ang:Forward() * cur_el.pos.x + p_ang:Right() * cur_el.pos.y + p_ang:Up() * cur_el.pos.z
+										
+									local thirdperson_ang = self.thirdPersonAngleView * 1
+									local view_ang = self.useThirdPerson and thirdperson_ang or LocalPlayer():EyeAngles()
+										
+									local offset_ang = p_ang * 1
+									offset_ang:RotateAroundAxis( view_ang:Forward(), y_value )
+										
+									local _, offset_ang = WorldToLocal( el_pos, offset_ang, p_pos, p_ang )
+									offset_ang.p = offset_ang.p * -1
+										
+									cur_el.angle = cur_el.angle + offset_ang
+										
+									cur_el.angle.p = math.NormalizeAngle( cur_el.angle.p )
+									cur_el.angle.y = math.NormalizeAngle( cur_el.angle.y )
+									cur_el.angle.r = math.NormalizeAngle( cur_el.angle.r )
+										
 								else
-									cur_el.angle[ cur_mode[ 6 ] ] = math.NormalizeAngle( cur_el.angle[ cur_mode[ 6 ] ] - diffy * self.selectedModelDragPrecision * 10 )
+									cur_el.angle[ cur_mode[ 6 ] ] = math.NormalizeAngle( cur_el.angle[ cur_mode[ 6 ] ] - y_value )
 								end
 							end
 						end
 					else
 						if input.IsKeyDown( KEY_LCONTROL ) then
-							cur_el.pos[ cur_mode[ 1 ] ] = cur_el.pos[ cur_mode[ 1 ] ] - diffx * self.selectedModelDragPrecision
-							cur_el.pos[ cur_mode[ 2 ] ] = cur_el.pos[ cur_mode[ 2 ] ] + diffy * self.selectedModelDragPrecision
+							// AAAAAAAAAaaaaaaaaaaaaaaaa
+							if cur_mode.vs and IsValid( ent ) then
+								local p_pos, p_ang = self:GetBoneOrientation( tbl, self.selectedElement, ent )
+								
+								local thirdperson_ang = self.thirdPersonAngleView * 1
+								
+								local view_ang = self.useThirdPerson and thirdperson_ang or LocalPlayer():EyeAngles()
+								
+								local offset_pos = p_pos + view_ang:Right() * diffx * self.selectedModelDragPrecision - view_ang:Up() * diffy * self.selectedModelDragPrecision
+															
+								offset_pos = WorldToLocal( offset_pos, view_ang, p_pos, p_ang )
+								offset_pos.y = offset_pos.y * -1
+								
+								cur_el.pos = cur_el.pos + offset_pos
+							else
+								cur_el.pos[ cur_mode[ 1 ] ] = cur_el.pos[ cur_mode[ 1 ] ] - diffx * self.selectedModelDragPrecision
+								cur_el.pos[ cur_mode[ 2 ] ] = cur_el.pos[ cur_mode[ 2 ] ] + diffy * self.selectedModelDragPrecision
+							end
 						else
 							if tbl[ self.selectedElement ].angle then
-								if self.ModelDragAngleSnap > 0 then
-									cur_el.angle[ cur_mode[ 4 ] ] = math.NormalizeAngle( cur_el.angle[ cur_mode[ 4 ] ] - math.Round( ( diffx * self.ModelDragAngleSnap * self.selectedModelDragPrecision * 30 ) / self.ModelDragAngleSnap ) * self.ModelDragAngleSnap )
-									cur_el.angle[ cur_mode[ 5 ] ] = math.NormalizeAngle( cur_el.angle[ cur_mode[ 5 ] ] + math.Round( ( diffy * self.ModelDragAngleSnap * self.selectedModelDragPrecision * 30 ) / self.ModelDragAngleSnap ) * self.ModelDragAngleSnap )
+								
+								local x_value = self.ModelDragAngleSnap > 0 and math.Round( ( diffx * self.ModelDragAngleSnap * self.selectedModelDragPrecision * 30 ) / self.ModelDragAngleSnap ) * self.ModelDragAngleSnap or diffx * self.selectedModelDragPrecision * 10
+								local y_value = self.ModelDragAngleSnap > 0 and math.Round( ( diffy * self.ModelDragAngleSnap * self.selectedModelDragPrecision * 30 ) / self.ModelDragAngleSnap ) * self.ModelDragAngleSnap or diffy * self.selectedModelDragPrecision * 10
+
+								if cur_mode.vs and IsValid( ent ) then
+									local p_pos, p_ang = self:GetBoneOrientation( tbl, self.selectedElement, ent )
+									local el_pos = p_pos + p_ang:Forward() * cur_el.pos.x + p_ang:Right() * cur_el.pos.y + p_ang:Up() * cur_el.pos.z
+										
+									local thirdperson_ang = self.thirdPersonAngleView * 1
+									local view_ang = self.useThirdPerson and thirdperson_ang or LocalPlayer():EyeAngles()
+										
+									local offset_ang = p_ang * 1
+									offset_ang:RotateAroundAxis( view_ang:Up(), x_value )
+									offset_ang:RotateAroundAxis( view_ang:Right(), y_value )
+										
+									local _, offset_ang = WorldToLocal( el_pos, offset_ang, p_pos, p_ang )
+									offset_ang.p = offset_ang.p * -1
+										
+									cur_el.angle = cur_el.angle + offset_ang
+										
+									cur_el.angle.p = math.NormalizeAngle( cur_el.angle.p )
+									cur_el.angle.y = math.NormalizeAngle( cur_el.angle.y )
+									cur_el.angle.r = math.NormalizeAngle( cur_el.angle.r )
+										
 								else
-									cur_el.angle[ cur_mode[ 4 ] ] = math.NormalizeAngle( cur_el.angle[ cur_mode[ 4 ] ] - diffx * self.selectedModelDragPrecision * 10 )
-									cur_el.angle[ cur_mode[ 5 ] ] = math.NormalizeAngle( cur_el.angle[ cur_mode[ 5 ] ] + diffy * self.selectedModelDragPrecision * 10 )
+									cur_el.angle[ cur_mode[ 4 ] ] = math.NormalizeAngle( cur_el.angle[ cur_mode[ 4 ] ] - x_value )
+									cur_el.angle[ cur_mode[ 5 ] ] = math.NormalizeAngle( cur_el.angle[ cur_mode[ 5 ] ] + y_value )
 								end
 							end
 						end
@@ -559,12 +636,21 @@ function SWEP:ShowElementHelpers( pos, ang, v )
 	
 	if input.IsKeyDown( KEY_LSHIFT ) then
 	
+		if model_drag_modes[ self.selectedModelDragMode ].vs then
+			helper_ang = self.useThirdPerson and self.thirdPersonAngleView or LocalPlayer():EyeAngles()
+		end
+	
 		render.SetMaterial( matDisc )
 		render.DrawQuadEasy( helper_pos, helper_ang:Forward(), 10, 10, Color( 255, 55, 55, 50 ), 0 )
 		render.DrawQuadEasy( helper_pos, helper_ang:Right(), 10, 10, Color( 55, 255, 55, 50 ), 0 )
 		render.DrawQuadEasy( helper_pos, helper_ang:Up(), 10, 10, Color( 55, 55, 255, 50 ), 0 )
 		
 	else
+	
+		if model_drag_modes[ self.selectedModelDragMode ].vs then
+			ang = self.useThirdPerson and self.thirdPersonAngleView or LocalPlayer():EyeAngles()
+		end
+	
 		render.DrawLine( helper_pos, helper_pos + ang:Forward() * 10, Color( 255, 55, 55 ), true )
 		render.DrawLine( helper_pos, helper_pos + ang:Right() * 10, Color( 55, 255, 55 ), true )
 		render.DrawLine( helper_pos, helper_pos + ang:Up() * 10, Color( 55, 55, 255 ), true )
@@ -1210,6 +1296,18 @@ local function CreateMenu( preset )
 	f:ShowCloseButton( true )
 	f:SetSizable( true )
 	f:SetDeleteOnClose( false )
+	// this will stay here until I'll get a better idea (walks away with a crucible)
+	f.Think = function( self )
+		local mx, my = gui.MouseX(), gui.MouseY()
+		local w, h = self:GetWide(), self:GetTall()
+		local x, y = self:GetPos()
+		
+		local inside = mx > x and mx < ( x + w ) and my > y and my < ( y + h ) and !( input.IsKeyDown( KEY_LCONTROL ) or input.IsKeyDown( KEY_LSHIFT ) )
+		
+		//self:SetKeyboardInputEnabled( inside )
+		//self:SetMouseInputEnabled( inside )
+		
+	end
 
 	local mpanel = vgui.Create( "DPanel", f )
 		mpanel:SetDrawBackground(false)
@@ -1227,7 +1325,7 @@ local function CreateMenu( preset )
 	mlabel:Dock(LEFT)
 	
 	local msnap = vgui.Create( "DNumberWang", mpanel )
-		msnap:SetTooltip("Angle snap value")
+		msnap:SetTooltip("Angle snap value\n\nExtremely janky! Use at your own risk!")
 		msnap:SizeToContents()
 		msnap:SetTall(20)
 		msnap:SetMin(0)
@@ -1292,6 +1390,16 @@ local function CreateMenu( preset )
 		end
 
 	tbtn:Dock(FILL)	
+	
+	local lock = vgui.Create( "DCheckBoxLabel", f )
+	lock:SetTall( 20 )
+	lock:SetText( "Lock viewmodel in world space" )
+	lock.OnChange = function(self)
+		wep.LockViewmodel = self:GetChecked()
+	end
+	lock:SetValue(0)
+	lock:DockMargin(0,0,0,5)
+	lock:Dock(TOP)
 	
 	
 
@@ -1409,6 +1517,8 @@ function TPCalcView(pl, pos, angles, fov)
 	view.origin = look_pos + ((pl:GetAngles()+wep.thirdPersonAngle):Forward()*wep.thirdPersonDis)
 	view.angles = (look_pos - view.origin):Angle()
 	view.fov = fov
+	
+	wep.thirdPersonAngleView = view.angles * 1
 
 	return view
 end

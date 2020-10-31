@@ -189,6 +189,22 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	local bIron = self.dt.ironsights
 	local fIronTime = self.fIronTime or 0
+	
+	if self.LockViewmodel then
+		if self.LockVMPos and self.LockVMAng then
+			return self.LockVMPos, self.LockVMAng
+		else
+			self.LockVMPos = pos
+			self.LockVMAng = ang
+		end
+	else
+		if self.LockVMPos and self.LockVMAng then
+			self.LockVMPos = nil
+			self.LockVMAng = nil
+		end
+	end
+	
+	
 
 	if (not bIron and fIronTime < CurTime() - self.IronsightTime) then
 		return pos, ang
