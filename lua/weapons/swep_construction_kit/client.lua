@@ -627,9 +627,11 @@ function SWEP:ShowElementHelpers( pos, ang, v )
 	local helper_pos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
 	local helper_ang = ang * 1
 	
-	helper_ang:RotateAroundAxis(helper_ang:Up(), v.angle.y)
-	helper_ang:RotateAroundAxis(helper_ang:Right(), v.angle.p)
-	helper_ang:RotateAroundAxis(helper_ang:Forward(), v.angle.r)
+	if v.angle then
+		helper_ang:RotateAroundAxis(helper_ang:Up(), v.angle.y)
+		helper_ang:RotateAroundAxis(helper_ang:Right(), v.angle.p)
+		helper_ang:RotateAroundAxis(helper_ang:Forward(), v.angle.r)
+	end
 	
 			
 	helper_text_pos = helper_pos * 1
