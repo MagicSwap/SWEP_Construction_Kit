@@ -249,16 +249,6 @@ pbuttons:DockMargin(0,5,0,5)
 pbuttons:Dock(TOP)
 
 -- Print buttons
-local pctbtn = vgui.Create( "DButton", pmodels)
-	pctbtn:SetTall( 30 )
-	pctbtn:SetText("Copy view model table to clipboard")
-	pctbtn.DoClick = function()
-		SetClipboardText(GetVModelsText())
-		LocalPlayer():ChatPrint("Code copied to clipboard!")
-	end
-pctbtn:DockMargin(0,5,0,0)
-pctbtn:Dock(BOTTOM)
-
 local prtbtn = vgui.Create( "DButton", pmodels)
 	prtbtn:SetTall( 30 )
 	prtbtn:SetText("Print view model table to console")
@@ -270,7 +260,17 @@ local prtbtn = vgui.Create( "DButton", pmodels)
 		MsgN("*********************************************")
 		LocalPlayer():ChatPrint("Code printed to console!")
 	end
-prtbtn:Dock(BOTTOM)
+prtbtn:Dock(TOP)
+
+local pctbtn = vgui.Create( "DButton", pmodels)
+	pctbtn:SetTall( 30 )
+	pctbtn:SetText("Copy view model table to clipboard")
+	pctbtn.DoClick = function()
+		SetClipboardText(GetVModelsText())
+		LocalPlayer():ChatPrint("Code copied to clipboard!")
+	end
+pctbtn:DockMargin(0,5,0,0)
+pctbtn:Dock(TOP)
 
 local pCol = 0
 local function PanelBackgroundReset()
@@ -971,7 +971,7 @@ local function CreateModelPanel( name, preset_data )
 		panellist:SetSpacing(5)
 		panellist:SetPadding(5)
 	panellist:DockMargin(0,0,0,5)
-	panellist:Dock(FILL)
+	panellist:Dock(TOP)
 
 	PanelBackgroundReset()
 
@@ -986,6 +986,9 @@ local function CreateModelPanel( name, preset_data )
 	panellist:AddItem(CreateSLightningModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateMaterialModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateBodygroupSkinModifier( data, SimplePanel(panellist) ))
+	
+	panellist:InvalidateLayout( true )
+	panellist:SizeToChildren( false, true )
 
 	return panellist
 
@@ -1027,7 +1030,7 @@ local function CreateSpritePanel( name, preset_data )
 		panellist:SetSpacing(5)
 		panellist:SetPadding(5)
 	panellist:DockMargin(0,0,0,5)
-	panellist:Dock(FILL)
+	panellist:Dock(TOP)
 
 	PanelBackgroundReset()
 
@@ -1040,6 +1043,9 @@ local function CreateSpritePanel( name, preset_data )
 	panellist:AddItem(CreateColorModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateParamModifiers( data, SimplePanel(panellist) ))
 
+	panellist:InvalidateLayout( true )
+	panellist:SizeToChildren( false, true )
+	
 	return panellist
 
 end
@@ -1075,7 +1081,7 @@ local function CreateQuadPanel( name, preset_data )
 		panellist:SetSpacing(5)
 		panellist:SetPadding(5)
 	panellist:DockMargin(0,0,0,5)
-	panellist:Dock(FILL)
+	panellist:Dock(TOP)
 
 	PanelBackgroundReset()
 
@@ -1086,6 +1092,9 @@ local function CreateQuadPanel( name, preset_data )
 	panellist:AddItem(CreateAngleModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateSizeModifiers( data, SimplePanel(panellist), 1 ))
 
+	panellist:InvalidateLayout( true )
+	panellist:SizeToChildren( false, true )
+	
 	return panellist
 
 end
@@ -1365,16 +1374,6 @@ pwbuttons:DockMargin(0,5,0,5)
 pwbuttons:Dock(TOP)
 
 -- Print buttons
-local pctbtn = vgui.Create( "DButton", pwmodels)
-	pctbtn:SetTall( 30 )
-	pctbtn:SetText("Copy world model table to clipboard")
-	pctbtn.DoClick = function()
-		SetClipboardText(GetWModelsText())
-		LocalPlayer():ChatPrint("Code copied to clipboard!")
-	end
-pctbtn:DockMargin(0,5,0,0)
-pctbtn:Dock(BOTTOM)
-
 local prtbtn = vgui.Create( "DButton", pwmodels)
 	prtbtn:SetTall( 30 )
 	prtbtn:SetText("Print world model table to console")
@@ -1386,7 +1385,19 @@ local prtbtn = vgui.Create( "DButton", pwmodels)
 		MsgN("*********************************************")
 		LocalPlayer():ChatPrint("Code printed to console!")
 	end
-prtbtn:Dock(BOTTOM)
+prtbtn:Dock(TOP)
+
+local pctbtn = vgui.Create( "DButton", pwmodels)
+	pctbtn:SetTall( 30 )
+	pctbtn:SetText("Copy world model table to clipboard")
+	pctbtn.DoClick = function()
+		SetClipboardText(GetWModelsText())
+		LocalPlayer():ChatPrint("Code copied to clipboard!")
+	end
+pctbtn:DockMargin(0,5,0,0)
+pctbtn:Dock(TOP)
+
+
 
 --[[** Model panel for adjusting models ***
 Name:
@@ -1425,7 +1436,7 @@ local function CreateWorldModelPanel( name, preset_data )
 		panellist:SetSpacing(5)
 		panellist:SetPadding(5)
 	panellist:DockMargin(0,0,0,5)
-	panellist:Dock(FILL)
+	panellist:Dock(TOP)
 
 	PanelBackgroundReset()
 
@@ -1440,6 +1451,9 @@ local function CreateWorldModelPanel( name, preset_data )
 	panellist:AddItem(CreateSLightningModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateMaterialModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateBodygroupSkinModifier( data, SimplePanel(panellist) ))
+	
+	panellist:InvalidateLayout( true )
+	panellist:SizeToChildren( false, true )
 
 	return panellist
 
@@ -1480,7 +1494,7 @@ local function CreateWorldSpritePanel( name, preset_data )
 		panellist:SetSpacing(5)
 		panellist:SetPadding(5)
 	panellist:DockMargin(0,0,0,5)
-	panellist:Dock(FILL)
+	panellist:Dock(TOP)
 
 	PanelBackgroundReset()
 
@@ -1492,6 +1506,9 @@ local function CreateWorldSpritePanel( name, preset_data )
 	panellist:AddItem(CreateSizeModifiers( data, SimplePanel(panellist), 2 ))
 	panellist:AddItem(CreateColorModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateParamModifiers( data, SimplePanel(panellist) ))
+	
+	panellist:InvalidateLayout( true )
+	panellist:SizeToChildren( false, true )
 
 	return panellist
 
@@ -1528,7 +1545,7 @@ local function CreateWorldQuadPanel( name, preset_data )
 		panellist:SetSpacing(5)
 		panellist:SetPadding(5)
 	panellist:DockMargin(0,0,0,5)
-	panellist:Dock(FILL)
+	panellist:Dock(TOP)
 
 	PanelBackgroundReset()
 
@@ -1538,6 +1555,9 @@ local function CreateWorldQuadPanel( name, preset_data )
 	panellist:AddItem(CreatePositionModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateAngleModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateSizeModifiers( data, SimplePanel(panellist), 1 ))
+	
+	panellist:InvalidateLayout( true )
+	panellist:SizeToChildren( false, true )
 
 	return panellist
 

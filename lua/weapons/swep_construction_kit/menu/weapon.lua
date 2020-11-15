@@ -296,6 +296,7 @@ usehands:Dock(TOP)
 -- View model FOV slider
 local fovslider = vgui.Create( "DNumSlider", pweapon )
 	fovslider:SetText( "View model FOV" )
+	fovslider:SetTall( 20 )
 	fovslider:SetMin( 20 )
 	fovslider:SetMax( 140 )
 	fovslider:SetDecimals( 0 )
@@ -369,9 +370,10 @@ local bonepanel = vgui.Create( "DPanel", pweapon )
 	bonepanel:SetVisible( true )
 	bonepanel:SetPaintBackground( true )
 	bonepanel.Paint = function() surface.SetDrawColor( 80, 80, 80, 255 ) surface.DrawRect( 0, 0, bonepanel:GetWide(), bonepanel:GetTall() ) end
+//bonepanel:SetTall(32*3*3)
 bonepanel:DockMargin( 0, 5, 0, 5 )
 bonepanel:DockPadding( 5, 5, 5, 5 )
-bonepanel:Dock(FILL)
+bonepanel:Dock(TOP)
 
 local function CreateBoneMod( selbone, preset_data )
 
@@ -556,6 +558,9 @@ local function CreateBoneMod( selbone, preset_data )
 	vangxwang:SetValue( data.angle.p )
 	vangywang:SetValue( data.angle.y )
 	vangzwang:SetValue( data.angle.r )
+	
+	bonepanel:InvalidateLayout( true )
+	bonepanel:SizeToChildren( false, true )
 
 end
 
@@ -611,25 +616,6 @@ end
 
 wep.v_modelbonebox = vsbonebox
 
-local wpdbtn = vgui.Create( "DButton", pweapon )
-	wpdbtn:SetTall( 30 )
-	wpdbtn:SetText( "Drop weapon (hold reload key to pick back up)" )
-	wpdbtn.DoClick = function()
-		RunConsoleCommand("swepck_dropwep")
-	end
-wpdbtn:DockMargin(0,5,0,0)
-wpdbtn:Dock(BOTTOM)
-
-local wpcbtn = vgui.Create( "DButton", pweapon )
-	wpcbtn:SetTall( 30 )
-	wpcbtn:SetText( "Copy weapon code to clipboard" )
-	wpcbtn.DoClick = function()
-		SetClipboardText(GetWeaponPrintText(wep))
-		LocalPlayer():ChatPrint("Code copied to clipboard!")
-	end
-wpcbtn:DockMargin(0,5,0,0)
-wpcbtn:Dock(BOTTOM)
-
 local wpbtn = vgui.Create( "DButton", pweapon )
 	wpbtn:SetTall( 30 )
 	wpbtn:SetText( "Print weapon code to console" )
@@ -642,4 +628,27 @@ local wpbtn = vgui.Create( "DButton", pweapon )
 		LocalPlayer():ChatPrint("Code printed to console!")
 	end
 wpbtn:DockMargin(0,5,0,0)
-wpbtn:Dock(BOTTOM)
+wpbtn:Dock(TOP)
+
+local wpcbtn = vgui.Create( "DButton", pweapon )
+	wpcbtn:SetTall( 30 )
+	wpcbtn:SetText( "Copy weapon code to clipboard" )
+	wpcbtn.DoClick = function()
+		SetClipboardText(GetWeaponPrintText(wep))
+		LocalPlayer():ChatPrint("Code copied to clipboard!")
+	end
+wpcbtn:DockMargin(0,5,0,0)
+wpcbtn:Dock(TOP)
+
+local wpdbtn = vgui.Create( "DButton", pweapon )
+	wpdbtn:SetTall( 30 )
+	wpdbtn:SetText( "Drop weapon (hold reload key to pick back up)" )
+	wpdbtn.DoClick = function()
+		RunConsoleCommand("swepck_dropwep")
+	end
+wpdbtn:DockMargin(0,5,0,0)
+wpdbtn:Dock(TOP)
+
+
+
+

@@ -1299,7 +1299,10 @@ local function CreateMenu( preset )
 	f:SetSizable( true )
 	f:SetDeleteOnClose( false )
 	// this will stay here until I'll get a better idea (walks away with a crucible)
-	f.Think = function( self )
+	/*f.Think = function( self )
+		
+		self.BaseClass.Think( self )
+		
 		local mx, my = gui.MouseX(), gui.MouseY()
 		local w, h = self:GetWide(), self:GetTall()
 		local x, y = self:GetPos()
@@ -1309,7 +1312,7 @@ local function CreateMenu( preset )
 		//self:SetKeyboardInputEnabled( inside )
 		//self:SetMouseInputEnabled( inside )
 		
-	end
+	end*/
 
 	local mpanel = vgui.Create( "DPanel", f )
 		mpanel:SetDrawBackground(false)
@@ -1409,13 +1412,13 @@ local function CreateMenu( preset )
 
 		wep.ptool = vgui.Create("DScrollPanel", tab)
 		wep.ptool.Paint = function() surface.SetDrawColor(70,70,70,255) surface.DrawRect(0,0,wep.ptool:GetWide(),wep.ptool:GetTall()) end
-		wep.pweapon = vgui.Create("DPanel", tab)
+		wep.pweapon = vgui.Create("DScrollPanel", tab)
 		wep.pweapon.Paint = function() surface.SetDrawColor(70,70,70,255) surface.DrawRect(0,0,wep.pweapon:GetWide(),wep.pweapon:GetTall()) end
-		wep.pironsight = vgui.Create("DPanel", tab)
+		wep.pironsight = vgui.Create("DScrollPanel", tab)
 		wep.pironsight.Paint = function() surface.SetDrawColor(70,70,70,255) surface.DrawRect(0,0,wep.pironsight:GetWide(),wep.pironsight:GetTall()) end
-		wep.pmodels = vgui.Create("DPanel", tab)
+		wep.pmodels = vgui.Create("DScrollPanel", tab)
 		wep.pmodels.Paint = function() surface.SetDrawColor(70,70,70,255) surface.DrawRect(0,0,wep.pmodels:GetWide(),wep.pmodels:GetTall()) end
-		wep.pwmodels = vgui.Create("DPanel", tab)
+		wep.pwmodels = vgui.Create("DScrollPanel", tab)
 		wep.pwmodels.Paint = function() surface.SetDrawColor(70,70,70,255) surface.DrawRect(0,0,wep.pwmodels:GetWide(),wep.pwmodels:GetTall()) end
 
 		tab:AddSheet( "Tool", wep.ptool, nil, false, false, "Modify tool settings" )
