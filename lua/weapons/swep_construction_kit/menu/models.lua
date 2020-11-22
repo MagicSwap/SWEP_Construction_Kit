@@ -225,7 +225,6 @@ local mlist = vgui.Create( "DListView", pmodels)
 		lastVisible = name
 		wep.selectedElement = lastVisible
 	end
-
 mlist:Dock(TOP)
 
 local pbuttons = SimplePanel( pmodels )
@@ -239,7 +238,7 @@ local pbuttons = SimplePanel( pmodels )
 		copybtn:SetSize( 160, 25 )
 		copybtn:SetText( "Copy selected" )
 	copybtn:Dock(RIGHT)
-	
+
 	local importbtn = vgui.Create( "DButton", pbuttons )
 		importbtn:SetTall( 25 )
 		importbtn:SetText( "Import worldmodels" )
@@ -439,7 +438,7 @@ local function CreateSizeModifiers( data, panel, dimensions )
 			msx2wang.Wang.ConVarChanged = function( p, value ) data.size.x = tonumber(value) end
 		msx2wang:DockMargin(10,0,0,0)
 		msx2wang:Dock(TOP)
-	
+
 		msywang = vgui.Create( "DNumSlider", panel )
 			msywang:SetText("y")
 			msywang:SetMinMax( -1, 1000 )
@@ -575,7 +574,6 @@ local function CreateColorModifiers( data, panel )
 end
 
 local function CreateModelModifier( data, panel )
-
 	panel:SetTall(20)
 
 	local pmolabel = vgui.Create( "DLabel", panel )
@@ -647,14 +645,46 @@ local function CreateSpriteModifier( data, panel )
 	return panel
 end
 
-local function CreateNameLabel( name, panel )
+local function rename(old, new, panel)
+	local wep = GetSCKSWEP( LocalPlayer() )
+	if wep.v_panelCache[old] and not wep.v_panelCache[new] then
+		wep.v_panelCache[new] = wep.v_panelCache[old]
+		wep.v_panelCache[old] = nil
 
+		panel.m_PrevName = new
+
+		local listing = wep.v_modelListing
+
+		for k, v in pairs(listing:GetLines()) do
+			if v:GetColumnText(1) == old then
+				v:SetColumnText(1, new)
+			end
+		end
+	end
+end
+
+local function CreateNameLabel( name, panel )
 	panel:SetTall(20)
 
 	local pnmlabel = vgui.Create( "DLabel", panel )
-		pnmlabel:SetText( "Name: "..name )
-		pnmlabel:SizeToContents()
+	pnmlabel:SetText("Name: ")
+	pnmlabel:SizeToContents()
 	pnmlabel:Dock(LEFT)
+
+	local nametxt = vgui.Create("DTextEntry", panel)
+	nametxt:SetText(name)
+	nametxt:MoveRightOf(pnmlabel)
+	nametxt:Dock(FILL)
+
+	panel.m_PrevName = name
+
+	nametxt.OnValueChange = function(s, txt)
+		rename(panel.m_PrevName, txt, panel)
+	end
+
+	nametxt.OnLoseFocus = function()
+		rename(panel.m_PrevName, nametxt:GetValue(), panel)
+	end
 
 	--[[local pnmtext = vgui.Create( "DTextEntry", panel )
 		pnmtext:SetMultiline(false)
@@ -986,7 +1016,7 @@ local function CreateModelPanel( name, preset_data )
 	panellist:AddItem(CreateSLightningModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateMaterialModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateBodygroupSkinModifier( data, SimplePanel(panellist) ))
-	
+
 	panellist:InvalidateLayout( true )
 	panellist:SizeToChildren( false, true )
 
@@ -1045,7 +1075,7 @@ local function CreateSpritePanel( name, preset_data )
 
 	panellist:InvalidateLayout( true )
 	panellist:SizeToChildren( false, true )
-	
+
 	return panellist
 
 end
@@ -1094,7 +1124,7 @@ local function CreateQuadPanel( name, preset_data )
 
 	panellist:InvalidateLayout( true )
 	panellist:SizeToChildren( false, true )
-	
+
 	return panellist
 
 end
@@ -1141,7 +1171,6 @@ for k, v in pairs( wep.save_data.v_models ) do
 
 	table.insert(v_relelements, k)
 	mlist:AddLine(k,v.type)
-
 end
 UpdateRelBoxes("v")
 
@@ -1451,7 +1480,7 @@ local function CreateWorldModelPanel( name, preset_data )
 	panellist:AddItem(CreateSLightningModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateMaterialModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateBodygroupSkinModifier( data, SimplePanel(panellist) ))
-	
+
 	panellist:InvalidateLayout( true )
 	panellist:SizeToChildren( false, true )
 
@@ -1506,7 +1535,7 @@ local function CreateWorldSpritePanel( name, preset_data )
 	panellist:AddItem(CreateSizeModifiers( data, SimplePanel(panellist), 2 ))
 	panellist:AddItem(CreateColorModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateParamModifiers( data, SimplePanel(panellist) ))
-	
+
 	panellist:InvalidateLayout( true )
 	panellist:SizeToChildren( false, true )
 
@@ -1555,7 +1584,7 @@ local function CreateWorldQuadPanel( name, preset_data )
 	panellist:AddItem(CreatePositionModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateAngleModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateSizeModifiers( data, SimplePanel(panellist), 1 ))
-	
+
 	panellist:InvalidateLayout( true )
 	panellist:SizeToChildren( false, true )
 
