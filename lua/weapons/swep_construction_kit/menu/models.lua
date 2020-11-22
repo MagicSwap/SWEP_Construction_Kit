@@ -735,7 +735,7 @@ local function renamew(old, new, panel)
 	end
 end
 
-local function CreateNameLabel( name, panel, world)
+local function CreateNameLabel(name, panel, world)
 	panel:SetTall(20)
 
 	local pnmlabel = vgui.Create( "DLabel", panel )
@@ -752,19 +752,12 @@ local function CreateNameLabel( name, panel, world)
 
 	local rename = world and renamew or renamev
 	nametxt.OnValueChange = function(s, txt)
-
 		rename(panel.m_PrevName, txt, panel)
 	end
 
 	nametxt.OnLoseFocus = function()
-		renamev(panel.m_PrevName, nametxt:GetValue(), panel)
+		rename(panel.m_PrevName, nametxt:GetValue(), panel)
 	end
-
-	--[[local pnmtext = vgui.Create( "DTextEntry", panel )
-		pnmtext:SetMultiline(false)
-		pnmtext:SetText( name )
-		pnmtext:SetEditable( false )
-	pnmtext:Dock(FILL)]]
 
 	return panel
 end
@@ -1519,8 +1512,6 @@ importbtn.DoClick = function()
 			temp_v_nodes[v.rel]:InsertNode( temp_v_nodes[k] )
 		end
 	end
-
-
 end
 
 --[[--------------------------------------------------------------
@@ -1715,7 +1706,7 @@ local function CreateWorldModelPanel( name, preset_data )
 
 	PanelBackgroundReset()
 
-	panellist:AddItem(CreateNameLabel( name, SimplePanel(panellist) ))
+	panellist:AddItem(CreateNameLabel( name, SimplePanel(panellist), true ))
 	panellist:AddItem(CreateModelModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateBoneModifier( data, SimplePanel(panellist), LocalPlayer() ))
 	//panellist:AddItem(CreateWRelativeModifier( name, data, SimplePanel(panellist) ))
@@ -1773,7 +1764,7 @@ local function CreateWorldSpritePanel( name, preset_data )
 
 	PanelBackgroundReset()
 
-	panellist:AddItem(CreateNameLabel( name, SimplePanel(panellist) ))
+	panellist:AddItem(CreateNameLabel( name, SimplePanel(panellist), true ))
 	panellist:AddItem(CreateSpriteModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateBoneModifier( data, SimplePanel(panellist), LocalPlayer() ))
 	panellist:AddItem(CreateWRelativeModifier( name, data, SimplePanel(panellist) ))
@@ -1824,7 +1815,7 @@ local function CreateWorldQuadPanel( name, preset_data )
 
 	PanelBackgroundReset()
 
-	panellist:AddItem(CreateNameLabel( name, SimplePanel(panellist) ))
+	panellist:AddItem(CreateNameLabel( name, SimplePanel(panellist), true ))
 	panellist:AddItem(CreateBoneModifier( data, SimplePanel(panellist), LocalPlayer() ))
 	panellist:AddItem(CreateWRelativeModifier( name, data, SimplePanel(panellist) ))
 	panellist:AddItem(CreatePositionModifiers( data, SimplePanel(panellist) ))
