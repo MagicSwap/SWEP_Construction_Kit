@@ -1,3 +1,7 @@
+local icon_model = "icon16/brick.png"
+local icon_sprite = "icon16/asterisk_yellow.png"
+local icon_quad = "icon16/picture_empty.png"
+
 
 local function GetVModelsText()
 
@@ -205,7 +209,7 @@ pnewelement:SetTall(20)
 pnewelement:DockMargin(0,5,0,5)
 pnewelement:Dock(TOP)
 
-local mlist = vgui.Create( "DListView", pmodels)
+/*local mlist = vgui.Create( "DListView", pmodels)
 	wep.v_modelListing = mlist
 
 	mlist:SetTall( 160 )
@@ -226,7 +230,53 @@ local mlist = vgui.Create( "DListView", pmodels)
 		wep.selectedElement = lastVisible
 	end
 
-mlist:Dock(TOP)
+mlist:Dock(TOP)*/
+
+local function SetRelativeForNode( pnl, new_parent, v_or_w )
+	
+	local name = pnl:GetText()
+	local new_rel = ""
+	
+	if !new_parent:IsRootNode() then
+		new_rel = new_parent:GetText()
+	end
+	
+	local data = wep.v_models[name]
+	
+	if v_or_w == "w" then
+		data = wep.w_models[name]
+	end
+	
+	if data and new_rel then
+		data.rel = new_rel
+		//PrintTable(v_or_w == "w" and wep.w_models or wep.v_models)
+	end
+end
+
+local mtree = vgui.Create( "DTree", pmodels)
+	mtree:SetTall( 160 )
+	wep.v_modelListing = mtree
+	mtree:Root():SetDraggableName( "Viewmodel" )	
+
+	mtree:Root().OnModified = function( self )	
+		for k, v in pairs( self:GetChildNodes() ) do
+			SetRelativeForNode( v, self, "v" )
+		end
+	end
+	
+	mtree.OnNodeSelected = function( panel )
+		local name = mtree:GetSelectedItem():GetText()
+
+		if (wep.v_panelCache[lastVisible]) then
+			wep.v_panelCache[lastVisible]:SetVisible(false)
+		end
+		wep.v_panelCache[name]:SetVisible(true)
+
+		lastVisible = name
+		wep.selectedElement = lastVisible
+	end
+
+mtree:Dock(TOP)
 
 local pbuttons = SimplePanel( pmodels )
 
@@ -978,7 +1028,7 @@ local function CreateModelPanel( name, preset_data )
 	panellist:AddItem(CreateNameLabel( name, SimplePanel(panellist) ))
 	panellist:AddItem(CreateModelModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateBoneModifier( data, SimplePanel(panellist), LocalPlayer():GetViewModel() ))
-	panellist:AddItem(CreateVRelativeModifier( name, data, SimplePanel(panellist) ))
+	//panellist:AddItem(CreateVRelativeModifier( name, data, SimplePanel(panellist) ))
 	panellist:AddItem(CreatePositionModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateAngleModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateSizeModifiers( data, SimplePanel(panellist), 3 ))
@@ -1099,6 +1149,19 @@ local function CreateQuadPanel( name, preset_data )
 
 end
 
+-- dark magic, do not touch
+local function FixInsertNode( self, pNode )
+	
+	self:CreateChildNodes()
+	pNode:SetRoot( self:GetRoot() )
+	self:InstallDraggable( pNode )
+	self.ChildNodes:Add( pNode )
+	pNode._ParentNode = self
+	self:InvalidateLayout()
+
+	return pNode
+end
+
 -- adding button DoClick
 mnbtn.DoClick = function()
 	local new = string.Trim( mntext:GetValue() )
@@ -1107,13 +1170,18 @@ mnbtn.DoClick = function()
 		if (wep.v_models[new] != nil) then CreateNote("Name already exists!") return end
 		wep.v_models[new] = {}
 
+		local icon = "icon16/exclamation.png"
+		
 		if (!wep.v_panelCache[new]) then
 			if (boxselected == "Model") then
 				wep.v_panelCache[new] = CreateModelPanel( new )
+				icon = icon_model
 			elseif (boxselected == "Sprite") then
 				wep.v_panelCache[new] = CreateSpritePanel( new )
+				icon = icon_sprite
 			elseif (boxselected == "Quad") then
 				wep.v_panelCache[new] = CreateQuadPanel( new )
+				icon = icon_quad
 			else
 				Error("wtf are u doing")
 			end
@@ -1121,54 +1189,118 @@ mnbtn.DoClick = function()
 
 		wep.v_panelCache[new]:SetVisible(false)
 
-		table.insert(v_relelements, new)
-		UpdateRelBoxes("v")
+		//table.insert(v_relelements, new)
+		//UpdateRelBoxes("v")
 
-		mlist:AddLine(new,boxselected)
+		local node = mtree:AddNode( new, icon )
+		node.Type = boxselected	
+		node.InsertNode = FixInsertNode
+		node._ParentNode = node:GetParentNode()
+		
+		local old_DroppedOn = node.DroppedOn
+		node.DroppedOn = function( self, pnl )	
+			old_DroppedOn( self, pnl )
+			SetRelativeForNode( pnl, self, "v" )
+		end
+		
+		node.OnModified = function( self )	
+			for k, v in pairs( self:GetChildNodes() ) do
+				SetRelativeForNode( v, self, "v" )
+			end
+		end
+		
+		//mlist:AddLine(new,boxselected)
 	end
 end
+
+local temp_v_nodes = {}
 
 for k, v in pairs( wep.save_data.v_models ) do
 	wep.v_models[k] = {}
+	
+	local icon = "icon16/exclamation.png"
+	
 	if (v.type == "Model") then
 		wep.v_panelCache[k] = CreateModelPanel( k, v )
+		icon = icon_model
 	elseif (v.type == "Sprite") then
 		wep.v_panelCache[k] = CreateSpritePanel( k, v )
+		icon = icon_sprite
 	elseif (v.type == "Quad") then
 		wep.v_panelCache[k] = CreateQuadPanel( k, v )
+		icon = icon_quad
 	end
 	wep.v_panelCache[k]:SetVisible(false)
 
-	table.insert(v_relelements, k)
-	mlist:AddLine(k,v.type)
-
+	//table.insert(v_relelements, k)
+	
+	local node = mtree:AddNode( k, icon )
+	node.Type = v.type
+	node.InsertNode = FixInsertNode
+	node._ParentNode = node:GetParentNode()
+	
+	local old_DroppedOn = node.DroppedOn
+	node.DroppedOn = function( self, pnl )	
+		old_DroppedOn( self, pnl )
+		SetRelativeForNode( pnl, self, "v" )
+	end
+	
+	node.OnModified = function( self )	
+		for k, v in pairs( self:GetChildNodes() ) do
+			SetRelativeForNode( v, self, "v" )
+		end
+	end
+	
+	temp_v_nodes[k] = node
+	
+	//mlist:AddLine(k,v.type)
 end
-UpdateRelBoxes("v")
+//UpdateRelBoxes("v")
+
+for k, v in pairs( wep.v_models ) do
+	if v.rel and v.rel ~= "" and temp_v_nodes[v.rel] and temp_v_nodes[k] and wep.v_models[v.rel] then
+		temp_v_nodes[v.rel]:InsertNode( temp_v_nodes[k] )
+	end
+end
+
 
 -- remove a line
 rmbtn.DoClick = function()
-	local line = mlist:GetSelectedLine()
+	//local line = mlist:GetSelectedLine()
+	local line = mtree:GetSelectedItem()
 	if (line) then
-		local name = mlist:GetLine(line):GetValue(1)
+		//local name = mlist:GetLine(line):GetValue(1)
+		local name = line:GetText()
+		
 		wep.v_models[name] = nil
 		-- clear from panel cache
 		if (wep.v_panelCache[name]) then
 			wep.v_panelCache[name]:Remove()
 			wep.v_panelCache[name] = nil
 
-			table.RemoveByValue( v_relelements, name )
-			RemoveRelBox( "v", name )
-			UpdateRelBoxes( "v" )
+			//table.RemoveByValue( v_relelements, name )
+			//RemoveRelBox( "v", name )
+			//UpdateRelBoxes( "v" )
 		end
-		mlist:RemoveLine(line)
+		
+		for k,v in pairs( line:GetChildNodes() ) do
+			mtree:Root():InsertNode( v )
+			SetRelativeForNode( v, mtree:Root(), "v" )
+		end
+		
+		line:Remove()
+		
+		//mlist:RemoveLine(line)
 	end
 end
 
 -- duplicate line
 copybtn.DoClick = function()
-	local line = mlist:GetSelectedLine()
+	//local line = mlist:GetSelectedLine()
+	local line = mtree:GetSelectedItem()
 	if (line) then
-		local name = mlist:GetLine(line):GetValue(1)
+		//local name = mlist:GetLine(line):GetValue(1)
+		local name = line:GetText()
 		local to_copy = wep.v_models[name]
 		local new_preset = table.Copy(to_copy)
 
@@ -1196,25 +1328,56 @@ copybtn.DoClick = function()
 
 		wep.v_models[name] = {}
 
+		local icon = "icon16/exclamation.png"
+		
 		if (new_preset.type == "Model") then
 			wep.v_panelCache[name] = CreateModelPanel( name, new_preset )
+			icon = icon_model
 		elseif (new_preset.type == "Sprite") then
 			wep.v_panelCache[name] = CreateSpritePanel( name, new_preset )
+			icon = icon_sprite
 		elseif (new_preset.type == "Quad") then
 			wep.v_panelCache[name] = CreateQuadPanel( name, new_preset )
+			icon = icon_quad
 		end
 
 		wep.v_panelCache[name]:SetVisible(false)
 
-		table.insert(v_relelements, name)
-		UpdateRelBoxes("v")
+		//table.insert(v_relelements, name)
+		//UpdateRelBoxes("v")
 
-		mlist:AddLine(name,new_preset.type)
+		local node = mtree:AddNode( name, icon )
+		node.Type = new_preset.type
+		node.InsertNode = FixInsertNode
+		node._ParentNode = node:GetParentNode()
+		
+		local old_DroppedOn = node.DroppedOn
+		node.DroppedOn = function( self, pnl )	
+			old_DroppedOn( self, pnl )
+			SetRelativeForNode( pnl, self, "v" )
+		end
+		
+		node.OnModified = function( self )	
+			for k, v in pairs( self:GetChildNodes() ) do
+				SetRelativeForNode( v, self, "v" )
+			end
+		end
+		
+		local parent = IsValid(line._ParentNode) and line._ParentNode or line:GetParentNode()
+		
+		if IsValid( parent ) and !parent:IsRootNode() then
+			parent:InsertNode( node )
+		end
+		
+		//mlist:AddLine(name,new_preset.type)
 	end
 end
 
 -- import worldmodels
 importbtn.DoClick = function()
+	
+	local temp_v_nodes = {}
+	
 	local num = 0
 	for k, v in pairs( wep.w_models ) do
 		local name = k
@@ -1255,22 +1418,55 @@ importbtn.DoClick = function()
 		end
 
 		wep.v_models[name] = {}
+		
+		local icon = "icon16/exclamation.png"
+		
 		if (v.type == "Model") then
 			wep.v_panelCache[name] = CreateModelPanel( name, new_preset )
+			icon = icon_model
 		elseif (v.type == "Sprite") then
 			wep.v_panelCache[name] = CreateSpritePanel( name, new_preset )
+			icon = icon_sprite
 		elseif (v.type == "Quad") then
 			wep.v_panelCache[name] = CreateQuadPanel( name, new_preset )
+			icon = icon_quad
 		end
 		wep.v_panelCache[name]:SetVisible(false)
 
-		table.insert(v_relelements, name)
-		UpdateRelBoxes("v")
+		//table.insert(v_relelements, name)
+		//UpdateRelBoxes("v")
 
-		mlist:AddLine(name,v.type)
+		//mlist:AddLine(name,v.type)
+		
+		local node = mtree:AddNode( name, icon )
+		node.Type = v.type
+		node.InsertNode = FixInsertNode
+		node._ParentNode = node:GetParentNode()
+		
+		local old_DroppedOn = node.DroppedOn
+		node.DroppedOn = function( self, pnl )	
+			old_DroppedOn( self, pnl )
+			SetRelativeForNode( pnl, self, "v" )
+		end
+		
+		node.OnModified = function( self )	
+			for k, v in pairs( self:GetChildNodes() ) do
+				SetRelativeForNode( v, self, "v" )
+			end
+		end
+		
+		temp_v_nodes[k] = node
 
 		num = num + 1
 	end
+	
+	for k, v in pairs( wep.v_models ) do
+		if v.rel and v.rel ~= "" and temp_v_nodes[v.rel] and temp_v_nodes[k] and wep.v_models[v.rel] then
+			temp_v_nodes[v.rel]:InsertNode( temp_v_nodes[k] )
+		end
+	end
+
+	
 end
 
 --[[--------------------------------------------------------------
@@ -1330,7 +1526,7 @@ pnewelement:SetTall(20)
 pnewelement:DockMargin(0,5,0,5)
 pnewelement:Dock(TOP)
 
-local mwlist = vgui.Create( "DListView", pwmodels)
+/*local mwlist = vgui.Create( "DListView", pwmodels)
 	wep.w_modelListing = mwlist
 
 	mwlist:SetTall( 160 )
@@ -1351,7 +1547,32 @@ local mwlist = vgui.Create( "DListView", pwmodels)
 		wep.selectedElement = lastVisible
 	end
 
-mwlist:Dock(TOP)
+mwlist:Dock(TOP)*/
+
+local mwtree = vgui.Create( "DTree", pwmodels)
+	mwtree:SetTall( 160 )
+	wep.w_modelListing = mwtree
+	mwtree:Root():SetDraggableName( "Worldmodel" )	
+
+	mwtree:Root().OnModified = function( self )	
+		for k, v in pairs( self:GetChildNodes() ) do
+			SetRelativeForNode( v, self, "w" )
+		end
+	end
+	
+	mwtree.OnNodeSelected = function( panel )
+		local name = mwtree:GetSelectedItem():GetText()
+
+		if (wep.w_panelCache[lastVisible]) then
+			wep.w_panelCache[lastVisible]:SetVisible(false)
+		end
+		wep.w_panelCache[name]:SetVisible(true)
+
+		lastVisible = name
+		wep.selectedElement = lastVisible
+	end
+
+mwtree:Dock(TOP)
 
 local pwbuttons = SimplePanel( pwmodels )
 
@@ -1443,7 +1664,7 @@ local function CreateWorldModelPanel( name, preset_data )
 	panellist:AddItem(CreateNameLabel( name, SimplePanel(panellist) ))
 	panellist:AddItem(CreateModelModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateBoneModifier( data, SimplePanel(panellist), LocalPlayer() ))
-	panellist:AddItem(CreateWRelativeModifier( name, data, SimplePanel(panellist) ))
+	//panellist:AddItem(CreateWRelativeModifier( name, data, SimplePanel(panellist) ))
 	panellist:AddItem(CreatePositionModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateAngleModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateSizeModifiers( data, SimplePanel(panellist), 3 ))
@@ -1571,13 +1792,18 @@ mnwbtn.DoClick = function()
 		if (wep.w_models[new] != nil) then CreateWNote("Name already exists!") return end
 		wep.w_models[new] = {}
 
+		local icon = "icon16/exclamation.png"
+		
 		if (!wep.w_panelCache[new]) then
 			if (wboxselected == "Model") then
 				wep.w_panelCache[new] = CreateWorldModelPanel( new )
+				icon = icon_model
 			elseif (wboxselected == "Sprite") then
 				wep.w_panelCache[new] = CreateWorldSpritePanel( new )
+				icon = icon_sprite
 			elseif (wboxselected == "Quad") then
 				wep.w_panelCache[new] = CreateWorldQuadPanel( new )
+				icon = icon_quad
 			else
 				Error("wtf are u doing")
 			end
@@ -1585,12 +1811,31 @@ mnwbtn.DoClick = function()
 
 		wep.w_panelCache[new]:SetVisible(false)
 
-		table.insert(w_relelements, new)
-		UpdateRelBoxes("w")
+		local node = mwtree:AddNode( new, icon )
+		node.Type = boxselected	
+		node.InsertNode = FixInsertNode
+		node._ParentNode = node:GetParentNode()
+		
+		local old_DroppedOn = node.DroppedOn
+		node.DroppedOn = function( self, pnl )	
+			old_DroppedOn( self, pnl )
+			SetRelativeForNode( pnl, self, "w" )
+		end
+		
+		node.OnModified = function( self )	
+			for k, v in pairs( self:GetChildNodes() ) do
+				SetRelativeForNode( v, self, "w" )
+			end
+		end
+		
+		//table.insert(w_relelements, new)
+		//UpdateRelBoxes("w")
 
-		mwlist:AddLine(new,wboxselected)
+		//mwlist:AddLine(new,wboxselected)
 	end
 end
+
+local temp_w_nodes = {}
 
 for k, v in pairs( wep.save_data.w_models ) do
 	wep.w_models[k] = {}
@@ -1600,20 +1845,51 @@ for k, v in pairs( wep.save_data.w_models ) do
 		v.bone = "ValveBiped.Bip01_R_Hand"
 	end
 
+	local icon = "icon16/exclamation.png"
+	
 	if (v.type == "Model") then
 		wep.w_panelCache[k] = CreateWorldModelPanel( k, v )
+		icon = icon_model
 	elseif (v.type == "Sprite") then
 		wep.w_panelCache[k] = CreateWorldSpritePanel( k, v )
+		icon = icon_sprite
 	elseif (v.type == "Quad") then
 		wep.w_panelCache[k] = CreateWorldQuadPanel( k, v )
+		icon = icon_quad
 	end
 	wep.w_panelCache[k]:SetVisible(false)
-	table.insert(w_relelements, k)
+	
+	local node = mwtree:AddNode( k, icon )
+	node.Type = v.type
+	node.InsertNode = FixInsertNode
+	node._ParentNode = node:GetParentNode()
+	
+	local old_DroppedOn = node.DroppedOn
+	node.DroppedOn = function( self, pnl )	
+		old_DroppedOn( self, pnl )
+		SetRelativeForNode( pnl, self, "w" )
+	end
+	
+	node.OnModified = function( self )	
+		for k, v in pairs( self:GetChildNodes() ) do
+			SetRelativeForNode( v, self, "w" )
+		end
+	end
+	
+	temp_w_nodes[k] = node
+	
+	//table.insert(w_relelements, k)
 
-	mwlist:AddLine(k,v.type)
+	//mwlist:AddLine(k,v.type)
 
 end
-UpdateRelBoxes("w")
+//UpdateRelBoxes("w")
+
+for k, v in pairs( wep.w_models ) do
+	if v.rel and v.rel ~= "" and temp_w_nodes[v.rel] and temp_w_nodes[k] and wep.w_models[v.rel] then
+		temp_w_nodes[v.rel]:InsertNode( temp_w_nodes[k] )
+	end
+end
 
 -- import viewmodels
 importbtn.DoClick = function()
@@ -1657,48 +1933,91 @@ importbtn.DoClick = function()
 		end
 
 		wep.w_models[name] = {}
+		
+		local icon = "icon16/exclamation.png"
+		
 		if (v.type == "Model") then
 			wep.w_panelCache[name] = CreateWorldModelPanel( name, new_preset )
+			icon = icon_model
 		elseif (v.type == "Sprite") then
 			wep.w_panelCache[name] = CreateWorldSpritePanel( name, new_preset )
+			icon = icon_sprite
 		elseif (v.type == "Quad") then
 			wep.w_panelCache[name] = CreateWorldQuadPanel( name, new_preset )
+			icon = icon_quad
 		end
 		wep.w_panelCache[name]:SetVisible(false)
 
-		table.insert(w_relelements, name)
-		UpdateRelBoxes("w")
+		//table.insert(w_relelements, name)
+		//UpdateRelBoxes("w")
 
-		mwlist:AddLine(name,v.type)
+		//mwlist:AddLine(name,v.type)
+
+		local node = mwtree:AddNode( name, icon )
+		node.Type = v.type
+		node.InsertNode = FixInsertNode
+		node._ParentNode = node:GetParentNode()
+		
+		local old_DroppedOn = node.DroppedOn
+		node.DroppedOn = function( self, pnl )	
+			old_DroppedOn( self, pnl )
+			SetRelativeForNode( pnl, self, "w" )
+		end
+		
+		node.OnModified = function( self )	
+			for k, v in pairs( self:GetChildNodes() ) do
+				SetRelativeForNode( v, self, "w" )
+			end
+		end
+		
+		temp_w_nodes[k] = node
 
 		num = num + 1
+	end
+	
+	for k, v in pairs( wep.w_models ) do
+		if v.rel and v.rel ~= "" and temp_w_nodes[v.rel] and temp_w_nodes[k] and wep.w_models[v.rel] then
+			temp_w_nodes[v.rel]:InsertNode( temp_w_nodes[k] )
+		end
 	end
 end
 
 -- remove a line
 rmbtn.DoClick = function()
-	local line = mwlist:GetSelectedLine()
+	//local line = mwlist:GetSelectedLine()
+	local line = mwtree:GetSelectedItem()
 	if (line) then
-		local name = mwlist:GetLine(line):GetValue(1)
+		//local name = mwlist:GetLine(line):GetValue(1)
+		local name = line:GetText()
 		wep.w_models[name] = nil
 		-- clear from panel cache
 		if (wep.w_panelCache[name]) then
 			wep.w_panelCache[name]:Remove()
 			wep.w_panelCache[name] = nil
 
-			table.RemoveByValue( w_relelements, name )
-			RemoveRelBox( "w", name )
-			UpdateRelBoxes( "w" )
+			//table.RemoveByValue( w_relelements, name )
+			////RemoveRelBox( "w", name )
+			//UpdateRelBoxes( "w" )
 		end
-		mwlist:RemoveLine(line)
+		
+		for k,v in pairs( line:GetChildNodes() ) do
+			mwtree:Root():InsertNode( v )
+			SetRelativeForNode( v, mwtree:Root(), "v" )
+		end
+		
+		line:Remove()
+		
+		//mwlist:RemoveLine(line)
 	end
 end
 
 -- duplicate line
 copybtn.DoClick = function()
-	local line = mwlist:GetSelectedLine()
+	//local line = mwlist:GetSelectedLine()
+	local line = mwtree:GetSelectedItem()
 	if (line) then
-		local name = mwlist:GetLine(line):GetValue(1)
+		//local name = mwlist:GetLine(line):GetValue(1)
+		local name = line:GetText()
 		local to_copy = wep.w_models[name]
 		local new_preset = table.Copy(to_copy)
 
@@ -1726,19 +2045,47 @@ copybtn.DoClick = function()
 
 		wep.w_models[name] = {}
 
+		local icon = "icon16/exclamation.png"
+		
 		if (new_preset.type == "Model") then
 			wep.w_panelCache[name] = CreateWorldModelPanel( name, new_preset )
+			icon = icon_model
 		elseif (new_preset.type == "Sprite") then
 			wep.w_panelCache[name] = CreateWorldSpritePanel( name, new_preset )
+			icon = icon_sprite
 		elseif (new_preset.type == "Quad") then
 			wep.w_panelCache[name] = CreateWorldQuadPanel( name, new_preset )
+			icon = icon_quad
 		end
 
 		wep.w_panelCache[name]:SetVisible(false)
+		
+		local node = mwtree:AddNode( name, icon )
+		node.Type = new_preset.type
+		node.InsertNode = FixInsertNode
+		node._ParentNode = node:GetParentNode()
+		
+		local old_DroppedOn = node.DroppedOn
+		node.DroppedOn = function( self, pnl )	
+			old_DroppedOn( self, pnl )
+			SetRelativeForNode( pnl, self, "w" )
+		end
+		
+		node.OnModified = function( self )	
+			for k, v in pairs( self:GetChildNodes() ) do
+				SetRelativeForNode( v, self, "w" )
+			end
+		end
+		
+		local parent = IsValid(line._ParentNode) and line._ParentNode or line:GetParentNode()
+		
+		if IsValid( parent ) and !parent:IsRootNode() then
+			parent:InsertNode( node )
+		end
 
-		table.insert(w_relelements, name)
-		UpdateRelBoxes("w")
+		//table.insert(w_relelements, name)
+		//UpdateRelBoxes("w")
 
-		mwlist:AddLine(name,new_preset.type)
+		//mwlist:AddLine(name,new_preset.type)
 	end
 end
