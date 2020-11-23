@@ -1249,8 +1249,7 @@ mnbtn.DoClick = function()
 end
 
 local temp_v_nodes = {}
-
-for k, v in pairs( wep.save_data.v_models ) do
+for k, v in SortedPairs( wep.save_data.v_models ) do
 	wep.v_models[k] = {}
 
 	local icon = "icon16/exclamation.png"
@@ -1869,8 +1868,7 @@ mnwbtn.DoClick = function()
 end
 
 local temp_w_nodes = {}
-
-for k, v in pairs( wep.save_data.w_models ) do
+for k, v in SortedPairs( wep.save_data.w_models ) do
 	wep.w_models[k] = {}
 
 	-- backwards compatability
