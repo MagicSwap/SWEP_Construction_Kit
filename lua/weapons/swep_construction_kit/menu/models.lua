@@ -567,8 +567,7 @@ local function CreateSizeModifiers( data, panel, dimensions )
 end
 
 local function CreateColorModifiers( data, panel )
-
-	panel:SetTall(32*4)
+	panel:SetTall(32*5)
 	PanelApplyBackground(panel)
 
 	local collabel = vgui.Create( "DLabel", panel )
@@ -577,49 +576,24 @@ local function CreateColorModifiers( data, panel )
 		collabel:SetWide(45)
 	collabel:Dock(LEFT)
 
-	local colrwang = vgui.Create( "DNumSlider", panel )
-		colrwang:SetText("red")
-		colrwang:SetMinMax( 0, 255 )
-		colrwang:SetDecimals( 0 )
-		colrwang.Wang.ConVarChanged = function( p, value ) data.color.r = tonumber(value) end
-		colrwang:SetValue(data.color.r)
-	colrwang:DockMargin(10,0,0,0)
+	local colpicker = vgui.Create("DColorMixer", panel)
+	colpicker:Dock(FILL)
 
-	local colgwang = vgui.Create( "DNumSlider", panel )
-		colgwang:SetText("green")
-		colgwang:SetMinMax( 0, 255 )
-		colgwang:SetDecimals( 0 )
-		colgwang.Wang.ConVarChanged = function( p, value ) data.color.g = tonumber(value) end
-		colgwang:SetValue(data.color.g)
-	colgwang:DockMargin(10,0,0,0)
-
-	local colbwang = vgui.Create( "DNumSlider", panel )
-		colbwang:SetText("blue")
-		colbwang:SetMinMax( 0, 255 )
-		colbwang:SetDecimals( 0 )
-		colbwang.Wang.ConVarChanged = function( p, value ) data.color.b = tonumber(value) end
-		colbwang:SetValue(data.color.b)
-	colbwang:DockMargin(10,0,0,0)
-
-	local colawang = vgui.Create( "DNumSlider", panel )
-		colawang:SetText("alpha")
-		colawang:SetMinMax( 0, 255 )
-		colawang:SetDecimals( 0 )
-		colawang.Wang.ConVarChanged = function( p, value ) data.color.a = tonumber(value) end
-		colawang:SetValue(data.color.a)
-	colawang:DockMargin(10,0,0,0)
-
-	panel.PerformLayout = function()
-		colawang:SetWide(panel:GetWide()/5)
-		colbwang:SetWide(panel:GetWide()/5)
-		colgwang:SetWide(panel:GetWide()/5)
-		colrwang:SetWide(panel:GetWide()/5)
+	colpicker.ValueChanged = function(self, tcol)
+		data.color.r = tcol.r
+		data.color.g = tcol.g
+		data.color.b = tcol.b
+		data.color.a = tcol.a or 255
 	end
 
-	colrwang:Dock(TOP)
-	colgwang:Dock(TOP)
-	colbwang:Dock(TOP)
-	colawang:Dock(TOP)
+	local loadcol = Color(data.color.r or 255, data.color.g or 255, data.color.b or 255, data.color.a or 255)
+	colpicker:SetColor(loadcol)
+
+
+	panel.PerformLayout = function()
+
+	end
+
 
 	return panel
 end
