@@ -684,8 +684,15 @@ local function renamev(old, new, panel)
 
 		local item = listing:GetSelectedItem()
 		if IsValid(item) and item:GetText() == old then
-			print(item:GetText())
 			item:SetText(new)
+
+			if lastVisible == old then
+				lastVisible = new
+			end
+
+			for k, v in pairs( item:GetChildNodes() ) do
+				SetRelativeForNode( v, item, "v" )
+			end
 		end
 	end
 end
@@ -703,8 +710,15 @@ local function renamew(old, new, panel)
 		local listing = wep.w_modelListing
 		local item = listing:GetSelectedItem()
 		if IsValid(item) and item:GetText() == old then
-			print(item:GetText())
 			item:SetText(new)
+
+			if lastVisible == old then
+				lastVisible = new
+			end
+
+			for k, v in pairs( item:GetChildNodes() ) do
+				SetRelativeForNode( v, item, "w" )
+			end
 		end
 	end
 end
