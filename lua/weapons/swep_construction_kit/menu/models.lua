@@ -328,7 +328,6 @@ local function PanelBackgroundReset()
 end
 
 local function PanelApplyBackground(panel)
-
 	if (pCol == 1) then
 		panel:SetPaintBackground(true)
 		panel.Paint = function() surface.SetDrawColor( 85, 85, 85, 255 ) surface.DrawRect( 0, 0, panel:GetWide(), panel:GetTall() ) end
@@ -337,8 +336,107 @@ local function PanelApplyBackground(panel)
 	pCol = (pCol + 1) % 2
 end
 
-local function CreatePositionModifiers( data, panel )
+--track position, angle, and size changes as mouse is down
+local ctrlzhistory = {}
+local currentzindex = 0
 
+local prevchange
+local prevname
+local wasmousepressed = false
+local wasmousereleased = false
+local mousepressed = false
+
+local nextregister = 0
+
+local function handle_undo()
+	if #ctrlzhistory == 0 then return end
+	if currentzindex == 0 then return end
+
+	local snapshot = ctrlzhistory[currentzindex]
+	if not snapshot then return end
+
+	local name = snapshot.name
+	snapshot.name = nil
+
+	local data = wep.v_models[name]
+	if not data then return end
+
+	for k, v in pairs(snapshot) do
+		data[k] = v
+	end
+
+	currentzindex = currentzindex - 1
+end
+
+local function copy(var)
+	if isvector(var) then
+		return Vector(var)
+	elseif isangle(var) then
+		return Angle(var)
+	end
+end
+
+--we check for mouse press and release since sliders can update continuously
+--this means we only save the snapshots when the user releases a mouse button from moving and element
+--alternatively, we could start a timer and save snapshots after set intervals if this appears to be too jank in practice
+hook.Add("CreateMove", "TrackMouseCTRLZ", function()
+	if not IsFirstTimePredicted() then return end
+	if not IsValid(wep) then return end
+
+	--when testing, the Pressed called more than once, so this is done to filter out the extra calls (IFTP didn't seem to work)
+	if (input.WasMousePressed(MOUSE_LEFT) or input.WasMousePressed(MOUSE_RIGHT)) and not wasmousepressed then
+		wasmousepressed = true
+		wasmousereleased = false
+	elseif (input.WasMouseReleased(MOUSE_LEFT) or input.WasMouseReleased(MOUSE_RIGHT)) and not wasmousereleased then
+		wasmousepressed = false
+		wasmousereleased = true
+	end
+
+	if input.IsKeyDown(KEY_LCONTROL) and input.WasKeyPressed(KEY_Z) and nextregister < CurTime() then
+		nextregister = CurTime() + 0.1
+
+		handle_undo()
+	end
+
+	if mousepressed ~= wasmousepressed then
+		mousepressed = wasmousepressed
+		local data = wep.v_models[lastVisible]
+		if not data then return end
+
+		if wasmousepressed then
+			prevchange = table.FullCopy(data)
+			prevname = lastVisible
+		elseif prevchange then
+			if lastVisible ~= prevname then return end --if we click off of an element, we shouldn't misinterpret that as the angle/pos changing!
+
+			local snapshot = {}
+			for k, v in pairs(prevchange) do
+				if not (k == "pos" or k == "angle" or k == "size") then continue end
+
+				local old = v
+				local new = data[k]
+				if old == new then continue end
+
+				snapshot[k] = copy(old) --since they're objects, we'll need to copy it or they'll change when the user changes them
+			end
+
+			if table.Count(snapshot) == 0 then return end
+			snapshot.name = lastVisible
+
+			--clear our forward history if we make a change (really only matters if we add redo)
+			if #ctrlzhistory > currentzindex then
+				for i = currentzindex+1, #ctrlzhistory do
+					ctrlzhistory[i] = nil
+				end
+			end
+
+			local key = table.insert(ctrlzhistory, snapshot)
+			currentzindex = key
+		end
+	end
+end)
+
+local function CreatePositionModifiers( data, panel )
 	panel:SetTall(32*3)
 	PanelApplyBackground(panel)
 
@@ -401,7 +499,6 @@ local function CreatePositionModifiers( data, panel )
 end
 
 local function CreateAngleModifiers( data, panel )
-
 	panel:SetTall(32*3)
 	PanelApplyBackground(panel)
 
@@ -464,7 +561,6 @@ local function CreateAngleModifiers( data, panel )
 end
 
 local function CreateSizeModifiers( data, panel, dimensions )
-
 	panel:SetTall(32*( dimensions + 1 ))
 	PanelApplyBackground(panel)
 
@@ -589,11 +685,9 @@ local function CreateColorModifiers( data, panel )
 	local loadcol = Color(data.color.r or 255, data.color.g or 255, data.color.b or 255, data.color.a or 255)
 	colpicker:SetColor(loadcol)
 
-
 	panel.PerformLayout = function()
 
 	end
-
 
 	return panel
 end
@@ -829,7 +923,6 @@ local function CreateParamModifiers( data, panel )
 end
 
 local function CreateMaterialModifier( data, panel )
-
 	panel:SetTall(20)
 
 	local matlabel = vgui.Create( "DLabel", panel )
@@ -866,7 +959,6 @@ local function CreateMaterialModifier( data, panel )
 end
 
 local function CreateSLightningModifier( data, panel )
-
 	local lschbox = vgui.Create( "DCheckBoxLabel", panel )
 		lschbox:SetText("Surpress engine lightning")
 		lschbox:SizeToContents()
@@ -884,7 +976,6 @@ local function CreateSLightningModifier( data, panel )
 end
 
 local function CreateBoneModifier( data, panel, ent )
-
 	local pbonelabel = vgui.Create( "DLabel", panel )
 		pbonelabel:SetText( "Bone:" )
 		pbonelabel:SetWide(60)
@@ -936,7 +1027,6 @@ local function CreateVRelativeModifier( name, data, panel )
 end
 
 local function CreateWRelativeModifier( name, data, panel )
-
 	local prellabel = vgui.Create( "DLabel", panel )
 		prellabel:SetText( "Relative:" )
 		prellabel:SetWide(60)
@@ -957,7 +1047,6 @@ local function CreateWRelativeModifier( name, data, panel )
 end
 
 local function CreateBodygroupSkinModifier( data, panel )
-
 	local bdlabel = vgui.Create( "DLabel", panel )
 		bdlabel:SetText( "Bodygroup:" )
 		bdlabel:SizeToContents()
@@ -1029,7 +1118,6 @@ Material
 Color modulation
 ]]
 local function CreateModelPanel( name, preset_data )
-
 	local data = wep.v_models[name]
 	if (!preset_data) then preset_data = {} end
 
