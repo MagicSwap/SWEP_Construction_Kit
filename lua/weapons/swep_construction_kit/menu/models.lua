@@ -160,10 +160,31 @@ local pmodels = wep.pmodels
 local pwmodels = wep.pwmodels
 local lastVisible = ""
 
-local mlabel = vgui.Create( "DLabel", pmodels )
-	mlabel:SetTall( 20 )
-	mlabel:SetText( "New viewmodel element:" )
+local mlabel = vgui.Create( "DPanel", pmodels )
+	mlabel:SetTall( 24 )
+	mlabel.Paint = function() end
 mlabel:Dock(TOP)
+
+local mlock = vgui.Create( "DButton", mlabel )
+	mlock:SetSize( 24, 24 )
+	mlock:SetIsToggle( true )
+	mlock:SetText("")
+	mlock:SetIcon( wep.lockRelativePositions and "icon16/lock.png" or "icon16/lock_open.png" )
+	mlock:SetToggle( wep.lockRelativePositions )
+	mlock:SetTooltip( "Elements will retain their position when their bone or relative are changed" )
+	mlock.Think = function( self )
+		self:SetToggle( wep.lockRelativePositions )
+		self:SetIcon( wep.lockRelativePositions and "icon16/lock.png" or "icon16/lock_open.png" )
+	end
+	mlock.OnToggled = function( self, toggleState )
+		wep.lockRelativePositions = toggleState
+	end
+	
+mlock:Dock( RIGHT )
+
+local mlabeltext = vgui.Create( "DLabel", mlabel )
+	mlabeltext:SetText( "New viewmodel element:" )
+mlabeltext:Dock(FILL)
 
 local function CreateNote( text )
 	local templabel = vgui.Create( "DLabel" )
@@ -232,6 +253,77 @@ pnewelement:Dock(TOP)
 
 mlist:Dock(TOP)*/
 
+local function MaintainRelativePosition( name, new_parent_name, v_or_w, overridebone )
+	
+	if !wep.lockRelativePositions then return end
+	
+	local tbl = v_or_w == "w" and wep.w_models or wep.v_models
+	local ent = v_or_w == "w" and LocalPlayer() or LocalPlayer():GetViewModel()
+	
+	if !IsValid( ent ) then return end
+	
+	if name and tbl[ name ] then
+		
+		local el = tbl[ name ]
+		local to_bone
+		
+		local goal_pos, goal_ang
+		
+		if new_parent_name and tbl[ new_parent_name ] then
+			local new_el = tbl[ new_parent_name ]
+			//to_bone = wep:GetElementRootBonename( tbl, name, ent )
+			goal_pos, goal_ang = wep:GetBoneOrientation( tbl, new_parent_name, ent )
+			goal_pos = goal_pos + goal_ang:Forward() * new_el.pos.x + goal_ang:Right() * new_el.pos.y + goal_ang:Up() * new_el.pos.z
+			if new_el.angle then
+				goal_ang:RotateAroundAxis(goal_ang:Up(), new_el.angle.y)
+				goal_ang:RotateAroundAxis(goal_ang:Right(), new_el.angle.p)
+				goal_ang:RotateAroundAxis(goal_ang:Forward(), new_el.angle.r)
+			end
+		end
+		
+		if new_parent_name == "" then
+			to_bone = el.bone
+		end
+		
+		if overridebone then
+			to_bone = overridebone
+		end
+		
+		
+		if to_bone then
+			local bone = ent:LookupBone( to_bone )
+			if bone then
+				local m = ent:GetBoneMatrix( bone )
+				if m then
+					goal_pos, goal_ang = m:GetTranslation(), m:GetAngles()
+				end
+			end
+		end
+		
+		local el_pos, el_ang = wep:GetBoneOrientation( tbl, name, ent )
+		el_pos = el_pos + el_ang:Forward() * el.pos.x + el_ang:Right() * el.pos.y + el_ang:Up() * el.pos.z
+		if el.angle then
+			el_ang:RotateAroundAxis(el_ang:Up(), el.angle.y)
+			el_ang:RotateAroundAxis(el_ang:Right(), el.angle.p)
+			el_ang:RotateAroundAxis(el_ang:Forward(), el.angle.r)
+		end
+
+			
+		if el_pos and el_ang and goal_pos and goal_ang then
+			local save_pos, save_ang = WorldToLocal( el_pos, el_ang, goal_pos, goal_ang )
+
+			-- shakes fist at Clavus
+			save_pos.y = save_pos.y * -1
+			save_ang.p = save_ang.p * -1
+				
+			el.pos = save_pos * 1
+			el.angle = save_ang * 1			
+		end
+		
+	end
+	
+end
+
 local function SetRelativeForNode( pnl, new_parent, v_or_w )
 
 	local name = pnl:GetText()
@@ -248,6 +340,8 @@ local function SetRelativeForNode( pnl, new_parent, v_or_w )
 	end
 
 	if data and new_rel then
+		-- make sure it is before we set our relative
+		MaintainRelativePosition( name, new_rel, v_or_w )
 		data.rel = new_rel
 		//PrintTable(v_or_w == "w" and wep.w_models or wep.v_models)
 	end
@@ -380,7 +474,7 @@ end
 --this means we only save the snapshots when the user releases a mouse button from moving and element
 --alternatively, we could start a timer and save snapshots after set intervals if this appears to be too jank in practice
 hook.Add("CreateMove", "TrackMouseCTRLZ", function()
-	if not IsFirstTimePredicted() then return end
+	if not IsFirstTimePredicted() and not game.SinglePlayer() then return end
 	if not IsValid(wep) then return end
 	if LocalPlayer():GetActiveWeapon() ~= wep then return end
 
@@ -976,7 +1070,7 @@ local function CreateSLightningModifier( data, panel )
 	return panel
 end
 
-local function CreateBoneModifier( data, panel, ent )
+local function CreateBoneModifier( data, panel, ent, name )
 	local pbonelabel = vgui.Create( "DLabel", panel )
 		pbonelabel:SetText( "Bone:" )
 		pbonelabel:SetWide(60)
@@ -986,6 +1080,11 @@ local function CreateBoneModifier( data, panel, ent )
 	local bonebox = vgui.Create( "DComboBox", panel )
 		bonebox:SetTooltip("Bone to parent the selected element to. Is ignored if the 'Relative' field is not empty")
 		bonebox.OnSelect = function( p, index, value )
+			-- dont mess shit up if there is a relative already
+			if data.rel == "" then
+				MaintainRelativePosition( name, nil, ent:IsPlayer() and "w" or "v", value )
+			end
+			
 			data.bone = value
 		end
 		bonebox:SetText( data.bone )
@@ -1151,7 +1250,7 @@ local function CreateModelPanel( name, preset_data )
 
 	panellist:AddItem(CreateNameLabel( name, SimplePanel(panellist) ))
 	panellist:AddItem(CreateModelModifier( data, SimplePanel(panellist) ))
-	panellist:AddItem(CreateBoneModifier( data, SimplePanel(panellist), LocalPlayer():GetViewModel() ))
+	panellist:AddItem(CreateBoneModifier( data, SimplePanel(panellist), LocalPlayer():GetViewModel(), name ))
 	//panellist:AddItem(CreateVRelativeModifier( name, data, SimplePanel(panellist) ))
 	panellist:AddItem(CreatePositionModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateAngleModifiers( data, SimplePanel(panellist) ))
@@ -1598,10 +1697,31 @@ end
 
 local lastVisible = ""
 
-local mlabel = vgui.Create( "DLabel", pwmodels )
-	mlabel:SetTall( 20 )
-	mlabel:SetText( "New worldmodel element:" )
+local mlabel = vgui.Create( "DPanel", pwmodels )
+	mlabel:SetTall( 24 )
+	mlabel.Paint = function() end
 mlabel:Dock(TOP)
+
+local mlock = vgui.Create( "DButton", mlabel )
+	mlock:SetSize( 24, 24 )
+	mlock:SetIsToggle( true )
+	mlock:SetText("")
+	mlock:SetIcon( wep.lockRelativePositions and "icon16/lock.png" or "icon16/lock_open.png" )
+	mlock:SetToggle( wep.lockRelativePositions )
+	mlock:SetTooltip( "Elements will retain their position when their bone or relative are changed" )
+	mlock.Think = function( self )
+		self:SetToggle( wep.lockRelativePositions )
+		self:SetIcon( wep.lockRelativePositions and "icon16/lock.png" or "icon16/lock_open.png" )
+	end
+	mlock.OnToggled = function( self, toggleState )
+		wep.lockRelativePositions = toggleState
+	end
+	
+mlock:Dock( RIGHT )
+
+local mlabeltext = vgui.Create( "DLabel", mlabel )
+	mlabeltext:SetText( "New worldmodel element:" )
+mlabeltext:Dock(FILL)
 
 local function CreateWNote( text )
 	local templabel = vgui.Create( "DLabel" )
@@ -1784,7 +1904,7 @@ local function CreateWorldModelPanel( name, preset_data )
 
 	panellist:AddItem(CreateNameLabel( name, SimplePanel(panellist), true ))
 	panellist:AddItem(CreateModelModifier( data, SimplePanel(panellist) ))
-	panellist:AddItem(CreateBoneModifier( data, SimplePanel(panellist), LocalPlayer() ))
+	panellist:AddItem(CreateBoneModifier( data, SimplePanel(panellist), LocalPlayer(), name ))
 	//panellist:AddItem(CreateWRelativeModifier( name, data, SimplePanel(panellist) ))
 	panellist:AddItem(CreatePositionModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateAngleModifiers( data, SimplePanel(panellist) ))

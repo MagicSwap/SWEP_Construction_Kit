@@ -6,6 +6,7 @@ surface.CreateFont("24ptFont", {font = "Arial", size = 24, width = 500, antialia
 
 SWEP.selectedElement = ""
 SWEP.useThirdPerson = false
+SWEP.lockRelativePositions = false
 SWEP.thirdPersonAngle = Angle(0,-90,0)
 SWEP.thirdPersonAngleView = Angle( 0, 0, 0 )
 SWEP.thirdPersonDis = 100
@@ -522,6 +523,34 @@ function SWEP:GetBoneOrientation( basetab, name, ent, bone_override, buildup )
 
 	return pos, ang
 end
+
+-- same as above, except it should return the bone name that started it all (but not the root bone)
+function SWEP:GetElementRootBonename( basetab, name, ent, buildup )
+	local bonename
+	local tab = basetab[name]
+
+	if (tab.rel and tab.rel != "") then
+
+		local v = basetab[tab.rel]
+
+		if (!v) then return end
+
+		if (!buildup) then
+			buildup = {}
+		end
+
+		table.insert(buildup, name)
+		if (table.HasValue(buildup, tab.rel)) then return end
+		
+		bonename = self:GetElementRootBonename( basetab, tab.rel, ent, buildup )
+
+	else
+		bonename = tab.bone
+	end
+
+	return bonename or "none"
+end
+
 
 local allbones
 local hasGarryFixedBoneScalingYet = false
