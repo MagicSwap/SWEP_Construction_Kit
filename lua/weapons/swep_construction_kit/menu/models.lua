@@ -574,14 +574,14 @@ local function CreateSizeModifiers( data, panel, dimensions )
 	local msx2wang, msywang, mszwang
 
 	local msxwang = vgui.Create( "DNumSlider", panel )
-		msxwang:SetMinMax( -1, 1000 )//0.01, 1000
+		msxwang:SetMinMax( -1, 50 )//0.01, 1000
 		msxwang:SetDecimals( 3 )
 
 	if (dimensions > 1 ) then
 
 		msx2wang = vgui.Create( "DNumSlider", panel )
 			msx2wang:SetText("x")
-			msx2wang:SetMinMax( -1, 1000 )
+			msx2wang:SetMinMax( -1, 50 )
 			msx2wang:SetDecimals( 3 )
 			msx2wang.Wang.ConVarChanged = function( p, value ) data.size.x = tonumber(value) end
 		msx2wang:DockMargin(10,0,0,0)
@@ -589,7 +589,7 @@ local function CreateSizeModifiers( data, panel, dimensions )
 
 		msywang = vgui.Create( "DNumSlider", panel )
 			msywang:SetText("y")
-			msywang:SetMinMax( -1, 1000 )
+			msywang:SetMinMax( -1, 50 )
 			msywang:SetDecimals( 3 )
 			msywang.Wang.ConVarChanged = function( p, value ) data.size.y = tonumber(value) end
 		msywang:DockMargin(10,0,0,0)
@@ -598,7 +598,7 @@ local function CreateSizeModifiers( data, panel, dimensions )
 		if (dimensions > 2) then
 			mszwang = vgui.Create( "DNumSlider", panel )
 				mszwang:SetText("z")
-				mszwang:SetMinMax( -1, 10 )
+				mszwang:SetMinMax( -1, 50 )
 				mszwang:SetDecimals( 3 )
 				mszwang.Wang.ConVarChanged = function( p, value ) data.size.z = tonumber(value) end
 			mszwang:DockMargin(10,0,0,0)
