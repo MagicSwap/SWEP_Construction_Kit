@@ -382,6 +382,7 @@ end
 hook.Add("CreateMove", "TrackMouseCTRLZ", function()
 	if not IsFirstTimePredicted() then return end
 	if not IsValid(wep) then return end
+	if LocalPlayer():GetActiveWeapon() ~= wep then return end
 
 	--when testing, the Pressed called more than once, so this is done to filter out the extra calls (IFTP didn't seem to work)
 	if (input.WasMousePressed(MOUSE_LEFT) or input.WasMousePressed(MOUSE_RIGHT)) and not wasmousepressed then
