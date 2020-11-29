@@ -1,6 +1,5 @@
 
 local function GetWeaponPrintText( wep )
-
 	str = ""
 	str = str.."SWEP.HoldType = \""..wep.HoldType.."\"\n"
 	str = str.."SWEP.ViewModelFOV = "..wep.ViewModelFOV.."\n"
@@ -12,7 +11,7 @@ local function GetWeaponPrintText( wep )
 	str = str.."SWEP.ViewModelBoneMods = {"
 	local i = 0
 	local num = table.Count( wep.v_bonemods )
-	for k, v in pairs( wep.v_bonemods ) do
+	for k, v in SortedPairs(wep.v_bonemods) do
 		if !(v.scale == Vector(1,1,1) and v.pos == Vector(0,0,0) and v.angle == Angle(0,0,0)) then
 			if (i == 0) then str = str.."\n" end
 			i = i + 1
@@ -27,11 +26,9 @@ local function GetWeaponPrintText( wep )
 	str = string.Replace(str,",\n}","\n}") -- remove the last comma
 
 	return str
-
 end
 
 local function ClearViewModels()
-
 	local wep = GetSCKSWEP( LocalPlayer() )
 
 	wep.v_models = {}
@@ -45,7 +42,6 @@ local function ClearViewModels()
 end
 
 local function ClearWorldModels()
-
 	local wep = GetSCKSWEP( LocalPlayer() )
 	if (!IsValid(wep)) then return end
 
@@ -61,15 +57,12 @@ end
 
 local old_postdraw_viewmodel = GAMEMODE.PostDrawViewModel
 local new_postdraw_viewmodel = function( self, ViewModel, Player, Weapon )
-	
-	
-	
 	if ( !IsValid( Weapon ) ) then return false end
 	if Weapon.PostDrawViewModel then
 		Weapon:PostDrawViewModel( ViewModel, Weapon, Player )
 	end
 	player_manager.RunClass( Player, "PostDrawViewModel", ViewModel, Weapon )
-	
+
 	if ( Weapon.UseHands || !Weapon:IsScripted() ) then
 
 		local hands = Player:GetHands()
@@ -84,18 +77,11 @@ local new_postdraw_viewmodel = function( self, ViewModel, Player, Weapon )
 			end
 
 			hook.Call( "PostDrawPlayerHands", self, hands, ViewModel, Player, Weapon )
-
 		end
-
 	end
-
-	
 end
 
-
-
 local function RefreshViewModelBoneMods()
-
 	local wep = GetSCKSWEP( LocalPlayer() )
 	if (!IsValid(wep)) then return end
 
@@ -112,7 +98,6 @@ local function RefreshViewModelBoneMods()
 			wep.v_modelbonebox:ChooseOptionID(1)
 		end
 	end)
-
 end
 
 local wep = GetSCKSWEP( LocalPlayer() )
@@ -227,14 +212,14 @@ local vhbox = vgui.Create( "DCheckBoxLabel", pweapon )
 		wep.ShowViewModel = vhbox:GetChecked()
 		if (wep.ShowViewModel) then
 			--LocalPlayer():GetViewModel():SetColor(Color(255,255,255,255))
-			
+
 			wep.PreDrawViewModel = nil
 			wep.PostDrawViewModel = nil
-			
+
 			GAMEMODE.PostDrawViewModel = function( self, ViewModel, Player, Weapon )
 				old_postdraw_viewmodel( self, ViewModel, Player, Weapon )
 			end
-			
+
 			--LocalPlayer():GetViewModel():SetMaterial("")
 		else
 			--LocalPlayer():GetViewModel():SetColor(Color(0,0,0,1))
@@ -242,10 +227,10 @@ local vhbox = vgui.Create( "DCheckBoxLabel", pweapon )
 			GAMEMODE.PostDrawViewModel = function( self, ViewModel, Player, Weapon )
 				new_postdraw_viewmodel( self, ViewModel, Player, Weapon )
 			end
-			
+
 			wep.PreDrawViewModel = function( self, ViewModel, Player, Weapon ) render.SetBlend( 0 ) end
 			wep.PostDrawViewModel = function( self, ViewModel, Player, Weapon ) render.SetBlend( 1 ) end
-			
+
 			--LocalPlayer():GetHands():SetColor( color_white )
 			--LocalPlayer():GetHands():SetRenderMode( RENDERMODE_NORMAL )
 			-- This should prevent the model from drawing, without stopping ViewModelDrawn from being called
@@ -558,7 +543,7 @@ local function CreateBoneMod( selbone, preset_data )
 	vangxwang:SetValue( data.angle.p )
 	vangywang:SetValue( data.angle.y )
 	vangzwang:SetValue( data.angle.r )
-	
+
 	bonepanel:InvalidateLayout( true )
 	bonepanel:SizeToChildren( false, true )
 

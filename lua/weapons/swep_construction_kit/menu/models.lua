@@ -4,22 +4,20 @@ local icon_quad = "icon16/picture_empty.png"
 
 
 local function GetVModelsText()
-
 	local wep = GetSCKSWEP( LocalPlayer() )
 	if (!IsValid(wep)) then return "" end
 
 	local str = ("SWEP.VElements = {\n")
 	local i = 0
 	local num = table.Count(wep.v_models)
-	for k, v in pairs( wep.v_models ) do
-
+	for k, v in SortedPairs( wep.v_models ) do
 		if (v.type == "Model") then
 			str = str.."\t[\""..k.."\"] = { type = \"Model\", model = \""..v.model.."\", bone = \""..v.bone.."\", rel = \""..v.rel.."\", pos = "..PrintVec(v.pos)
 			str = str..", angle = "..PrintAngle( v.angle )..", size = "..PrintVec(v.size)..", color = "..PrintColor( v.color )
 			str = str..", surpresslightning = "..tostring(v.surpresslightning)..", material = \""..v.material.."\", skin = "..v.skin
 			str = str..", bodygroup = {"
 			local i = 0
-			for k, v in pairs( v.bodygroup ) do
+			for k, v in SortedPairs( v.bodygroup ) do
 				if (v <= 0) then continue end
 				if ( i != 0 ) then str = str..", " end
 				i = 1
@@ -48,14 +46,13 @@ local function GetVModelsText()
 end
 
 local function GetWModelsText()
-
 	local wep = GetSCKSWEP( LocalPlayer() )
 	if (!IsValid(wep)) then return "" end
 
 	local str = ("SWEP.WElements = {\n")
 	local i = 0
 	local num = table.Count(wep.w_models)
-	for k, v in pairs( wep.w_models ) do
+	for k, v in SortedPairs( wep.w_models ) do
 
 		if (v.type == "Model") then
 			str = str.."\t[\""..k.."\"] = { type = \"Model\", model = \""..v.model.."\", bone = \""..v.bone.."\", rel = \""..v.rel.."\", pos = "..PrintVec(v.pos)
@@ -63,7 +60,7 @@ local function GetWModelsText()
 			str = str..", surpresslightning = "..tostring(v.surpresslightning)..", material = \""..v.material.."\", skin = "..v.skin
 			str = str..", bodygroup = {"
 			local i = 0
-			for k, v in pairs( v.bodygroup ) do
+			for k, v in SortedPairs( v.bodygroup ) do
 				if (v <= 0) then continue end
 				if ( i != 0 ) then str = str..", " end
 				i = 1
@@ -91,7 +88,7 @@ local function GetWModelsText()
 	str = str.."\n\n"
 
 	local i = 0
-	for k, v in pairs( wep.w_models ) do
+	for k, v in SortedPairs( wep.w_models ) do
 		if (v.type == "Model") then
 			i = i + 1
 			str = str.."c:AddModel(\""..v.model.."\", "..PrintVec(v.pos)..", "..PrintAngle(v.angle)..", ".. ((not v.rel or #v.rel == 0) and "\""..v.bone.."\"" or "nil") ..", "..(v.size.x == 1 and v.size.y == 1 and v.size.z == 1 and "nil" or v.size.x == v.size.y and v.size.x == v.size.z and math.Round(v.size.x, 4) or PrintVec(v.size))..", ".. (v.material and #v.material > 0 and "\""..v.material.."\"" or "nil") ..", "..(v.color.r == 255 and v.color.g == 255 and v.color.b == 255 and v.color.a == 255 and "nil" or PrintColor( v.color ))
@@ -106,7 +103,6 @@ local function GetWModelsText()
 end
 
 local function PopulateRelative( sourcetab, box, startchoice, ignore )
-
 	box:Clear()
 	local choose = box:AddChoice("")
 	for k, v in pairs( sourcetab ) do
@@ -117,7 +113,6 @@ local function PopulateRelative( sourcetab, box, startchoice, ignore )
 		end
 	end
 	box:ChooseOptionID( choose )
-
 end
 
 -- Some hacky shit to keep the relative DComboBoxes updated
@@ -179,7 +174,7 @@ local mlock = vgui.Create( "DButton", mlabel )
 	mlock.OnToggled = function( self, toggleState )
 		wep.lockRelativePositions = toggleState
 	end
-	
+
 mlock:Dock( RIGHT )
 
 local mlabeltext = vgui.Create( "DLabel", mlabel )
@@ -254,21 +249,21 @@ pnewelement:Dock(TOP)
 mlist:Dock(TOP)*/
 
 local function MaintainRelativePosition( name, new_parent_name, v_or_w, overridebone )
-	
+
 	if !wep.lockRelativePositions then return end
-	
+
 	local tbl = v_or_w == "w" and wep.w_models or wep.v_models
 	local ent = v_or_w == "w" and LocalPlayer() or LocalPlayer():GetViewModel()
-	
+
 	if !IsValid( ent ) then return end
-	
+
 	if name and tbl[ name ] then
-		
+
 		local el = tbl[ name ]
 		local to_bone
-		
+
 		local goal_pos, goal_ang
-		
+
 		if new_parent_name and tbl[ new_parent_name ] then
 			local new_el = tbl[ new_parent_name ]
 			//to_bone = wep:GetElementRootBonename( tbl, name, ent )
@@ -280,16 +275,16 @@ local function MaintainRelativePosition( name, new_parent_name, v_or_w, override
 				goal_ang:RotateAroundAxis(goal_ang:Forward(), new_el.angle.r)
 			end
 		end
-		
+
 		if new_parent_name == "" then
 			to_bone = el.bone
 		end
-		
+
 		if overridebone then
 			to_bone = overridebone
 		end
-		
-		
+
+
 		if to_bone then
 			local bone = ent:LookupBone( to_bone )
 			if bone then
@@ -299,7 +294,7 @@ local function MaintainRelativePosition( name, new_parent_name, v_or_w, override
 				end
 			end
 		end
-		
+
 		local el_pos, el_ang = wep:GetBoneOrientation( tbl, name, ent )
 		el_pos = el_pos + el_ang:Forward() * el.pos.x + el_ang:Right() * el.pos.y + el_ang:Up() * el.pos.z
 		if el.angle then
@@ -308,20 +303,20 @@ local function MaintainRelativePosition( name, new_parent_name, v_or_w, override
 			el_ang:RotateAroundAxis(el_ang:Forward(), el.angle.r)
 		end
 
-			
+
 		if el_pos and el_ang and goal_pos and goal_ang then
 			local save_pos, save_ang = WorldToLocal( el_pos, el_ang, goal_pos, goal_ang )
 
 			-- shakes fist at Clavus
 			save_pos.y = save_pos.y * -1
 			save_ang.p = save_ang.p * -1
-				
+
 			el.pos = save_pos * 1
-			el.angle = save_ang * 1			
+			el.angle = save_ang * 1
 		end
-		
+
 	end
-	
+
 end
 
 local function SetRelativeForNode( pnl, new_parent, v_or_w )
@@ -1084,7 +1079,7 @@ local function CreateBoneModifier( data, panel, ent, name )
 			if data.rel == "" then
 				MaintainRelativePosition( name, nil, ent:IsPlayer() and "w" or "v", value )
 			end
-			
+
 			data.bone = value
 		end
 		bonebox:SetText( data.bone )
@@ -1716,7 +1711,7 @@ local mlock = vgui.Create( "DButton", mlabel )
 	mlock.OnToggled = function( self, toggleState )
 		wep.lockRelativePositions = toggleState
 	end
-	
+
 mlock:Dock( RIGHT )
 
 local mlabeltext = vgui.Create( "DLabel", mlabel )
