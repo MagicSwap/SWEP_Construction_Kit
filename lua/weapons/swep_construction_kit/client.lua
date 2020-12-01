@@ -477,7 +477,7 @@ function SWEP:GetBoneOrientation( basetab, name, ent, bone_override, buildup )
 	local bone, pos, ang
 	local tab = basetab[name]
 
-	if (tab.rel and tab.rel != "") then
+	if tab.rel and tab.rel != "" and basetab[tab.rel] then
 
 		local v = basetab[tab.rel]
 

@@ -296,6 +296,7 @@ local function MaintainRelativePosition( name, new_parent_name, v_or_w, override
 		end
 
 		local el_pos, el_ang = wep:GetBoneOrientation( tbl, name, ent )
+		
 		el_pos = el_pos + el_ang:Forward() * el.pos.x + el_ang:Right() * el.pos.y + el_ang:Up() * el.pos.z
 		if el.angle then
 			el_ang:RotateAroundAxis(el_ang:Up(), el.angle.y)
@@ -349,6 +350,7 @@ local mtree = vgui.Create( "DTree", pmodels)
 
 	mtree:Root().OnModified = function( self )
 		for k, v in pairs( self:GetChildNodes() ) do
+			v._ParentNode = self
 			SetRelativeForNode( v, self, "v" )
 		end
 	end
@@ -363,6 +365,7 @@ local mtree = vgui.Create( "DTree", pmodels)
 
 		lastVisible = name
 		wep.selectedElement = lastVisible
+
 	end
 
 mtree:Dock(TOP)
@@ -1485,10 +1488,15 @@ end
 rmbtn.DoClick = function()
 	//local line = mlist:GetSelectedLine()
 	local line = mtree:GetSelectedItem()
-	if (line) then
+	if IsValid( line ) then
 		//local name = mlist:GetLine(line):GetValue(1)
 		local name = line:GetText()
 
+		for k,v in pairs( line:GetChildNodes() ) do
+			mtree:Root():InsertNode( v )
+			SetRelativeForNode( v, mtree:Root(), "v" )
+		end
+		
 		wep.v_models[name] = nil
 		-- clear from panel cache
 		if (wep.v_panelCache[name]) then
@@ -1498,11 +1506,6 @@ rmbtn.DoClick = function()
 			//table.RemoveByValue( v_relelements, name )
 			//RemoveRelBox( "v", name )
 			//UpdateRelBoxes( "v" )
-		end
-
-		for k,v in pairs( line:GetChildNodes() ) do
-			mtree:Root():InsertNode( v )
-			SetRelativeForNode( v, mtree:Root(), "v" )
 		end
 
 		line:Remove()
@@ -1515,7 +1518,7 @@ end
 copybtn.DoClick = function()
 	//local line = mlist:GetSelectedLine()
 	local line = mtree:GetSelectedItem()
-	if (line) then
+	if IsValid( line ) then
 		//local name = mlist:GetLine(line):GetValue(1)
 		local name = line:GetText()
 		local to_copy = wep.v_models[name]
@@ -2221,9 +2224,15 @@ end
 rmbtn.DoClick = function()
 	//local line = mwlist:GetSelectedLine()
 	local line = mwtree:GetSelectedItem()
-	if (line) then
+	if IsValid( line ) then
 		//local name = mwlist:GetLine(line):GetValue(1)
 		local name = line:GetText()
+		
+		for k,v in pairs( line:GetChildNodes() ) do
+			mwtree:Root():InsertNode( v )
+			SetRelativeForNode( v, mwtree:Root(), "v" )
+		end
+		
 		wep.w_models[name] = nil
 		-- clear from panel cache
 		if (wep.w_panelCache[name]) then
@@ -2233,11 +2242,6 @@ rmbtn.DoClick = function()
 			//table.RemoveByValue( w_relelements, name )
 			////RemoveRelBox( "w", name )
 			//UpdateRelBoxes( "w" )
-		end
-
-		for k,v in pairs( line:GetChildNodes() ) do
-			mwtree:Root():InsertNode( v )
-			SetRelativeForNode( v, mwtree:Root(), "v" )
 		end
 
 		line:Remove()
@@ -2250,7 +2254,7 @@ end
 copybtn.DoClick = function()
 	//local line = mwlist:GetSelectedLine()
 	local line = mwtree:GetSelectedItem()
-	if (line) then
+	if IsValid( line ) then
 		//local name = mwlist:GetLine(line):GetValue(1)
 		local name = line:GetText()
 		local to_copy = wep.w_models[name]
