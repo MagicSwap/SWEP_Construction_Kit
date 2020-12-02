@@ -296,7 +296,7 @@ local function MaintainRelativePosition( name, new_parent_name, v_or_w, override
 		end
 
 		local el_pos, el_ang = wep:GetBoneOrientation( tbl, name, ent )
-		
+
 		el_pos = el_pos + el_ang:Forward() * el.pos.x + el_ang:Right() * el.pos.y + el_ang:Up() * el.pos.z
 		if el.angle then
 			el_ang:RotateAroundAxis(el_ang:Up(), el.angle.y)
@@ -444,20 +444,60 @@ local function handle_undo()
 	if #ctrlzhistory == 0 then return end
 	if currentzindex == 0 then return end
 
-	local snapshot = ctrlzhistory[currentzindex]
+	local snapshot = ctrlzhistory[currentzindex-1]
 	if not snapshot then return end
 
 	local name = snapshot.name
-	snapshot.name = nil
-
 	local data = wep.v_models[name]
 	if not data then return end
 
 	for k, v in pairs(snapshot) do
+		if k == "name" then continue end
+
 		data[k] = v
 	end
 
 	currentzindex = currentzindex - 1
+
+	return true
+end
+
+local function handle_redo()
+	if #ctrlzhistory == 0 then return end
+	if currentzindex == #ctrlzhistory then return end
+
+	local snapshot = table.FullCopy(ctrlzhistory[currentzindex+1])
+	if not snapshot then return end
+
+	local name = snapshot.name
+	local data = wep.v_models[name]
+	if not data then return end
+
+	for k, v in pairs(snapshot) do
+		if k == "name" then continue end
+
+		data[k] = v
+	end
+
+	currentzindex = currentzindex + 1
+
+	return true
+end
+
+local function undoredolisten()
+	if nextregister < CurTime() and input.IsKeyDown(KEY_LCONTROL) then
+		if input.WasKeyPressed(KEY_Z) then
+			handle_undo()
+
+			nextregister = CurTime() + 0.1
+			return
+		elseif input.WasKeyPressed(KEY_Y) then
+			handle_redo()
+
+			nextregister = CurTime() + 0.1
+			return
+		end
+	end
 end
 
 local function copy(var)
@@ -485,11 +525,7 @@ hook.Add("CreateMove", "TrackMouseCTRLZ", function()
 		wasmousereleased = true
 	end
 
-	if input.IsKeyDown(KEY_LCONTROL) and input.WasKeyPressed(KEY_Z) and nextregister < CurTime() then
-		nextregister = CurTime() + 0.1
-
-		handle_undo()
-	end
+	undoredolisten()
 
 	if mousepressed ~= wasmousepressed then
 		mousepressed = wasmousepressed
@@ -503,6 +539,7 @@ hook.Add("CreateMove", "TrackMouseCTRLZ", function()
 			if lastVisible ~= prevname then return end --if we click off of an element, we shouldn't misinterpret that as the angle/pos changing!
 
 			local snapshot = {}
+			local snapshotold = {}
 			for k, v in pairs(prevchange) do
 				if not (k == "pos" or k == "angle" or k == "size") then continue end
 
@@ -510,11 +547,13 @@ hook.Add("CreateMove", "TrackMouseCTRLZ", function()
 				local new = data[k]
 				if old == new then continue end
 
-				snapshot[k] = copy(old) --since they're objects, we'll need to copy it or they'll change when the user changes them
+				snapshot[k] = copy(new) --since they're objects, we'll need to copy it or they'll change when the user changes them
+				snapshotold[k] = copy(old)
 			end
 
 			if table.Count(snapshot) == 0 then return end
 			snapshot.name = lastVisible
+			snapshotold.name = lastVisible
 
 			--clear our forward history if we make a change (really only matters if we add redo)
 			if #ctrlzhistory > currentzindex then
@@ -524,7 +563,10 @@ hook.Add("CreateMove", "TrackMouseCTRLZ", function()
 			end
 
 			local key = table.insert(ctrlzhistory, snapshot)
-			currentzindex = key
+			if key == 1 then
+				table.insert(ctrlzhistory, 1, snapshotold)
+			end
+			currentzindex = #ctrlzhistory
 		end
 	end
 end)
@@ -1450,9 +1492,9 @@ for k, v in SortedPairs( wep.save_data.v_models ) do
 		wep.v_panelCache[k] = CreateQuadPanel( k, v )
 		icon = icon_quad
 	end
-	
+
 	if !IsValid(wep.v_panelCache[k]) then continue end
-	
+
 	wep.v_panelCache[k]:SetVisible(false)
 
 	//table.insert(v_relelements, k)
@@ -1499,7 +1541,7 @@ rmbtn.DoClick = function()
 			mtree:Root():InsertNode( v )
 			SetRelativeForNode( v, mtree:Root(), "v" )
 		end
-		
+
 		wep.v_models[name] = nil
 		-- clear from panel cache
 		if (wep.v_panelCache[name]) then
@@ -2098,9 +2140,9 @@ for k, v in SortedPairs( wep.save_data.w_models ) do
 		wep.w_panelCache[k] = CreateWorldQuadPanel( k, v )
 		icon = icon_quad
 	end
-	
+
 	if !IsValid(wep.w_panelCache[k]) then continue end
-	
+
 	wep.w_panelCache[k]:SetVisible(false)
 
 	local node = mwtree:AddNode( k, icon )
@@ -2233,12 +2275,12 @@ rmbtn.DoClick = function()
 	if IsValid( line ) then
 		//local name = mwlist:GetLine(line):GetValue(1)
 		local name = line:GetText()
-		
+
 		for k,v in pairs( line:GetChildNodes() ) do
 			mwtree:Root():InsertNode( v )
 			SetRelativeForNode( v, mwtree:Root(), "v" )
 		end
-		
+
 		wep.w_models[name] = nil
 		-- clear from panel cache
 		if (wep.w_panelCache[name]) then

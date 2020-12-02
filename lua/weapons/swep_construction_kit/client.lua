@@ -983,7 +983,10 @@ local function drawcontrols(self)
 	drawtext("[CONTROLS]", color_white, offset)
 	offset = offset + h
 
-	drawtext("Press CTRL+Z to undo previous angle/position/size change", color_white, offset)
+	drawtext("Press CTRL+Z to undo angle/position/size changes", color_white, offset)
+	offset = offset + h
+
+	drawtext("Press CTRL+Y to redo angle/position/size changes", color_white, offset)
 	offset = offset + h
 
 	local curtab = propsheet:GetActiveTab():GetText()
