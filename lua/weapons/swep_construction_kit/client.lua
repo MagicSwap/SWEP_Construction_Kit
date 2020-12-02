@@ -1,5 +1,5 @@
 
-include('glon.lua')
+include("glon.lua")
 
 surface.CreateFont("12ptFont", {font = "Arial", size = 12, width = 500, antialias = true, additive = false})
 surface.CreateFont("24ptFont", {font = "Arial", size = 24, width = 500, antialias = true, additive = false})
@@ -107,7 +107,6 @@ SWEP.cur_drag_mode = "x / z"
 SWEP.basecode = "FAILED TO READ BASE CODE"
 
 function SWEP:ClientInit()
-
 	SCKDebug("Client init start")
 
 	if (IsValid(self:GetOwner())) then
@@ -122,15 +121,12 @@ function SWEP:ClientInit()
 	self.basecode = file.Read(basecodepath, "GAME")
 
 	SCKDebug("Loaded base code")
-
 end
 
 function SimplePanel( parent, scroll )
-
 	local p = vgui.Create( scroll and "DScrollPanel" or "DPanel", parent)
 	p.Paint = function() end
 	return p
-
 end
 /*
 function PrintVec( vec )
@@ -194,7 +190,6 @@ function PopulateBoneList( choicelist, ent )
 end
 
 function SWEP:CreateWeaponWorldModel()
-
 	local model = self.CurWorldModel
 	SCKDebug("Creating weapon world model")
 
@@ -214,15 +209,11 @@ function SWEP:CreateWeaponWorldModel()
 			self.world_model = nil
 			self.cur_wmodel = nil
 		end
-
 	end
-
 end
 
 function SWEP:CreateModels( tab )
-
 	--if true then return end
-
 	-- Create the clientside models here because Garry says we can't do it in the render hook
 	for k, v in pairs( tab ) do
 		if (v.type == "Model" and v.model and v.model != "" and (!IsValid(v.modelEnt) or v.createdModel != v.model) and
@@ -260,14 +251,11 @@ function SWEP:CreateModels( tab )
 
 			v.createdSprite = v.sprite
 			v.spriteMaterial = CreateMaterial(name,"UnlitGeneric",params)
-
 		end
 	end
-
 end
 
 function SWEP:Think()
-
 	self:CreateModels( self.v_models )
 	self:CreateModels( self.w_models )
 
@@ -454,7 +442,6 @@ function SWEP:Think()
 end
 
 function SWEP:RemoveModels()
-
 	SCKDebug("Removing models")
 
 	for k, v in pairs( self.v_models ) do
@@ -476,9 +463,7 @@ end
 function SWEP:GetBoneOrientation( basetab, name, ent, bone_override, buildup )
 	local bone, pos, ang
 	local tab = basetab[name]
-
 	if tab.rel and tab.rel != "" and basetab[tab.rel] then
-
 		local v = basetab[tab.rel]
 
 		if (!v) then return end
@@ -502,11 +487,8 @@ function SWEP:GetBoneOrientation( basetab, name, ent, bone_override, buildup )
 			ang:RotateAroundAxis(ang:Right(), v.angle.p)
 			ang:RotateAroundAxis(ang:Forward(), v.angle.r)
 		end
-
 	else
-
 		bone = ent:LookupBone(bone_override or tab.bone)
-
 		if (!bone) then return end
 
 		pos, ang = Vector(0,0,0), Angle(0,0,0)
@@ -530,9 +512,7 @@ function SWEP:GetElementRootBonename( basetab, name, ent, buildup )
 	local tab = basetab[name]
 
 	if (tab.rel and tab.rel != "") then
-
 		local v = basetab[tab.rel]
-
 		if (!v) then return end
 
 		if (!buildup) then
@@ -541,9 +521,8 @@ function SWEP:GetElementRootBonename( basetab, name, ent, buildup )
 
 		table.insert(buildup, name)
 		if (table.HasValue(buildup, tab.rel)) then return end
-		
-		bonename = self:GetElementRootBonename( basetab, tab.rel, ent, buildup )
 
+		bonename = self:GetElementRootBonename( basetab, tab.rel, ent, buildup )
 	else
 		bonename = tab.bone
 	end
@@ -687,7 +666,6 @@ function SWEP:ViewModelDrawn()
 
 
 	if (!self.vRenderOrder) then
-
 		-- we build a render order because sprites need to be drawn after models
 		self.vRenderOrder = {}
 
@@ -698,13 +676,11 @@ function SWEP:ViewModelDrawn()
 				table.insert(self.vRenderOrder, k)
 			end
 		end
-
 	end
 
 	local show_helpers = ( input.IsKeyDown( KEY_LCONTROL ) or input.IsKeyDown( KEY_LSHIFT ) ) and self.Frame and self.Frame:IsVisible()
 
 	for k, name in ipairs( self.vRenderOrder ) do
-
 		local v = self.v_models[name]
 		if (!v) then self.vRenderOrder = nil break end
 
@@ -872,9 +848,7 @@ function SWEP:DrawWorldModel()
 	end]]
 
 	local show_helpers = ( input.IsKeyDown( KEY_LCONTROL ) or input.IsKeyDown( KEY_LSHIFT ) ) and self.Frame and self.Frame:IsVisible()
-
 	for k, name in pairs( self.wRenderOrder ) do
-
 		local v = self.w_models[name]
 		if (!v) then self.wRenderOrder = nil break end
 
@@ -981,54 +955,77 @@ function SWEP:Holster()
 end
 
 local function DrawDot( x, y )
-
 	surface.SetDrawColor(100, 100, 100, 255)
 	surface.DrawRect(x - 2, y - 2, 4, 4)
 
 	surface.SetDrawColor(255, 255, 255, 255)
 	surface.DrawRect(x - 1, y - 1, 2, 2)
-
 end
 
 SWEP.FirstTimeOpen = true
 
-function SWEP:DrawHUD()
+local scale = ScrH() / 1080
+local function drawtext(txt, color, offset)
+	draw.SimpleTextOutlined(txt, "24ptFont", ScrW() - 100 * scale, offset, color or color_white, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP, 2, color_black)
+end
 
-	if helper_text_pos then
+local function drawcontrols(self)
+	local sckmenu = self.Frame
+	if not IsValid(sckmenu) then return end
+	if not sckmenu:IsVisible() then return end
 
-		local pos = helper_text_pos:ToScreen()
+	local propsheet = sckmenu.PropertySheet
+	if not IsValid(propsheet) then return end
 
-		draw.SimpleTextOutlined("Drag Precision: "..self.selectedModelDragPrecision,"12ptFont",pos.x, pos.y, Color(255,255,255,255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER, 1, Color(0,0,0,255))
+	surface.SetFont("24ptFont")
+	local _, h = surface.GetTextSize("W")
+	local offset = 64 * scale
+	drawtext("[CONTROLS]", color_white, offset)
+	offset = offset + h
 
+	drawtext("Press CTRL+Z to undo previous angle/position/size change", color_white, offset)
+	offset = offset + h
+
+	local curtab = propsheet:GetActiveTab():GetText()
+	if curtab ~= "View Models" and curtab ~= "World Models" then return end
+	if not (self.selectedElement and #self.selectedElement > 0) then return end
+
+	drawtext("Hold LSHIFT for angle mouse move", color_white, offset)
+	offset = offset + h
+
+	if input.IsKeyDown(KEY_LSHIFT) then
+		drawtext("-Hold and drag RMB to rotate along X Y axis", color_white, offset)
+		offset = offset + h
+		drawtext("-Hold and drag LMB+RMB to rotate along Z axis", color_white, offset)
+		offset = offset + h
 	end
 
-	/*DrawDot( ScrW()/2, ScrH()/2 )
-	DrawDot( ScrW()/2 + 10, ScrH()/2 )
-	DrawDot( ScrW()/2 - 10, ScrH()/2 )
-	DrawDot( ScrW()/2, ScrH()/2 + 10 )
-	DrawDot( ScrW()/2, ScrH()/2 - 10 )
+	offset = offset + h
 
-	if (self.Frame and self.Frame:IsVisible()) then
+	drawtext("Hold LCTRL for position mouse move", color_white, offset)
+	offset = offset + h
 
-		self.FirstTimeOpen = false
-		local text = ""
-		if (self.useThirdPerson) then
-			text = "Hold right mouse and drag to rotate. Additionally hold E key to zoom."
-		else
-			text = "Hold right mouse and drag to adjust ironsights (mode: "..self.cur_drag_mode..")"
-		end
-		draw.SimpleTextOutlined(text, "default", ScrW()/2, ScrH()/4, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, Color(20,20,20,255))
+	if input.IsKeyDown(KEY_LCONTROL) then
+		drawtext("-Hold and drag RMB to move along X Y axis", color_white, offset)
+		offset = offset + h
+		drawtext("-Hold and drag LMB+RMB to move along Z axis", color_white, offset)
+		offset = offset + h
+	end
+end
 
-	elseif (self.FirstTimeOpen) then
-		draw.SimpleTextOutlined("Press right mouse to open menu", "default", ScrW()/2, ScrH()/4, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, Color(20,20,20,255))
-	end*/
+function SWEP:DrawHUD()
+	if helper_text_pos then
+		local pos = helper_text_pos:ToScreen()
 
+		draw.SimpleTextOutlined("Drag Precision: "..self.selectedModelDragPrecision,"12ptFont",pos.x, pos.y, color_white, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER, 1, Color(0,0,0,255))
+	end
+
+	drawcontrols(self)
 end
 
 --[[***** Create model browser ****]]
 -- callback = function( selected_model )
 function SWEP:OpenBrowser( current, browse_type, callback )
-
 	local wep = self
 	wep.browser_callback = callback
 	wep.Frame:SetVisible( false )
@@ -1275,7 +1272,6 @@ end
 			Menu
 **************************]]
 local function CreateMenu( preset )
-
 	local wep = GetSCKSWEP( LocalPlayer() )
 	if !IsValid(wep) then return nil end
 
@@ -1417,9 +1413,8 @@ local function CreateMenu( preset )
 	lock:DockMargin(0,0,0,5)
 	lock:Dock(TOP)
 
-
-
 	local tab = vgui.Create( "DPropertySheet", f )
+		f.PropertySheet = tab
 
 		wep.ptool = vgui.Create("DScrollPanel", tab)
 		wep.ptool.Paint = function() surface.SetDrawColor(70,70,70,255) surface.DrawRect(0,0,wep.ptool:GetWide(),wep.ptool:GetTall()) end
@@ -1468,7 +1463,6 @@ local function CreateMenu( preset )
 
 	-- finally, return the frame!
 	return f
-
 end
 
 function SWEP:OpenMenu( preset )

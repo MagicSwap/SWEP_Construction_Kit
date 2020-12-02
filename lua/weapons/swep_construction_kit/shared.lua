@@ -75,9 +75,7 @@ SWEP.IronSightsPos = Vector(0, 0, 0)
 SWEP.IronSightsAng = Vector(0, 0, 0)
 
 local sck_class = ""
-
 function SWEP:Initialize()
-
 	self:SetWeaponHoldType(self.HoldType)
 
 	self:SetIronSights( true )
@@ -94,17 +92,13 @@ function SWEP:Initialize()
 	self.Dropped = false
 
 	sck_class = self:GetClass()
-
 end
 
 function SWEP:Equip()
-
 	self.Dropped = false
-
 end
 
 function SWEP:PrimaryAttack()
-
 	self:SetNextPrimaryFire(CurTime() + 0.2)
 
 	if CLIENT then
@@ -117,7 +111,6 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:SecondaryAttack()
-
 	self:SetNextSecondaryFire(CurTime() + 0.2)
 
 	if CLIENT then
@@ -126,15 +119,12 @@ function SWEP:SecondaryAttack()
 	if game.SinglePlayer() then
 		self:GetOwner():SendLua("LocalPlayer():GetActiveWeapon():OpenMenu()")
 	end
-
 end
 
 
 function SWEP:SetupDataTables()
-
 	self:DTVar( "Bool", 0, "ironsights" )
 	self:DTVar( "Bool", 1, "thirdperson" )
-
 end
 
 function SWEP:ToggleIronSights()
@@ -183,13 +173,12 @@ function SWEP:GetThirdPerson()
 end
 
 function SWEP:GetViewModelPosition(pos, ang)
-
 	--if true then return pos, ang end
 	--SCKDebugRepeat( "SWEP:VMPos", "Getting viewmodel pos" )
 
 	local bIron = self.dt.ironsights
 	local fIronTime = self.fIronTime or 0
-	
+
 	if self.LockViewmodel then
 		if self.LockVMPos and self.LockVMAng then
 			return self.LockVMPos, self.LockVMAng
@@ -203,8 +192,6 @@ function SWEP:GetViewModelPosition(pos, ang)
 			self.LockVMAng = nil
 		end
 	end
-	
-	
 
 	if (not bIron and fIronTime < CurTime() - self.IronsightTime) then
 		return pos, ang
@@ -248,11 +235,9 @@ SWEP.ir_yw = CreateConVar( "_sp_ironsight_yaw", 0.0 )
 SWEP.ir_r = CreateConVar( "_sp_ironsight_roll", 0.0 )
 
 function SWEP:GetIronSightCoordination()
-
 	local vec = Vector( self.ir_x:GetFloat(), self.ir_y:GetFloat(), self.ir_z:GetFloat() )
 	local ang = Vector( self.ir_p:GetFloat(), self.ir_yw:GetFloat(), self.ir_r:GetFloat() )
 	return vec, ang
-
 end
 
 function SWEP:GetHoldTypes()
