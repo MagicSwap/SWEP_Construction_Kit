@@ -16,45 +16,45 @@ local panim = SimplePanel(ptool)
 		agrid:SetCols(cols)
 		agrid:SetColWide( 106 )
 		agrid:SetRowHeight( 24 )
-		
+
 		agrid.UpdateList = function( self )
-		
+
 			local count = 0
-			
+
 			local vm = wep:GetOwner():GetViewModel()
-			
+
 			--for some reason dgrid doesnt want to return all items, so lets use this workaround
 			self.buttons = {}
-			
+
 			for k, seq in pairs( vm:GetSequenceList() ) do
-			
+
 				count = count + 1
-			
+
 				local abtn = vgui.Create( "DButton", self )
 				abtn:SetSize( 100, 18 )
 				abtn:SetText( seq )
 				abtn:SetToolTip( "Sequence id: "..k )
 				abtn.DoClick = function()
-					
+
 					local vm = wep:GetOwner():GetViewModel()
-					
+
 					vm:ResetSequenceInfo()
 					vm:SetCycle(0)
-					
-					
+
+
 					local s = vm:LookupSequence( seq )
 					if s then
 						vm:SendViewModelMatchingSequence( s )
 					end
-					
+
 					vm:SetPlaybackRate( ptool.AnimationPlaybackRate or 1 )
-					
+
 					vm.PlayAnimation = CurTime() + vm:SequenceDuration()
-					
+
 					if string.find( seq, "fire" ) or string.find( seq, "shoot" ) or string.find( seq, "slash" ) or string.find( seq, "hit" ) or string.find( seq, "miss" ) or string.find( seq, "attack" ) or string.find( seq, "fists_" ) then
 						LocalPlayer():SetAnimation( PLAYER_ATTACK1 )
 					end
-					
+
 					if string.find( seq, "reload" ) then
 						LocalPlayer():SetAnimation( PLAYER_RELOAD )
 					end
@@ -64,7 +64,7 @@ local panim = SimplePanel(ptool)
 				table.insert( self.buttons, abtn )
 
 			end
-			
+
 			self:SetTall( math.ceil(count / cols) * 24 )
 		end
 
@@ -80,14 +80,14 @@ local panim = SimplePanel(ptool)
 		aplayback:SetTall( 25 )
 	aplayback:Dock( TOP )
 
-	
+
 panim:SetTall(alabel:GetTall() + agrid:GetTall() + aplayback:GetTall() + 5)
 panim:DockPadding(0,5,0,5)
 panim:Dock( TOP )
 
 agrid.Think = function( self )
 	if wep:GetOwner():GetViewModel() and ptool.LastViewModel ~= wep:GetOwner():GetViewModel():GetModel() and agrid then
-		
+
 		ptool.LastViewModel = wep:GetOwner():GetViewModel():GetModel()
 
 		if self.buttons then
@@ -96,12 +96,12 @@ agrid.Think = function( self )
 			end
 			self.buttons = nil
 		end
-		
+
 		self:UpdateList()
 		panim:SetTall(alabel:GetTall() + agrid:GetTall() + aplayback:GetTall() + 5)
 
 	end
-	
+
 end
 
 local psettings = SimplePanel(ptool)
@@ -126,6 +126,15 @@ local psettings = SimplePanel(ptool)
 		selabel:SetText( "Configuration:" )
 	selabel:Dock(TOP)
 
+	local badsymbols = {"/", "\\", "?", ":", "*", "\"", "|", "<", ">"}
+	local function sanitize_filename(text)
+		for _, symb in ipairs(badsymbols) do
+			text = string.Replace(text, symb, "_")
+		end
+
+		return text
+	end
+
 	local psave = SimplePanel(psettings)
 
 		local satext = vgui.Create( "DTextEntry", psave )
@@ -148,6 +157,8 @@ local psettings = SimplePanel(ptool)
 
 				local text = string.Trim(satext:GetValue())
 				if (text == "") then return end
+
+				text = sanitize_filename(text)
 
 				local save_data = wep.save_data
 
