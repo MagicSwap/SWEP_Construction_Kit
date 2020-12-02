@@ -1450,6 +1450,9 @@ for k, v in SortedPairs( wep.save_data.v_models ) do
 		wep.v_panelCache[k] = CreateQuadPanel( k, v )
 		icon = icon_quad
 	end
+	
+	if !IsValid(wep.v_panelCache[k]) then continue end
+	
 	wep.v_panelCache[k]:SetVisible(false)
 
 	//table.insert(v_relelements, k)
@@ -2095,6 +2098,9 @@ for k, v in SortedPairs( wep.save_data.w_models ) do
 		wep.w_panelCache[k] = CreateWorldQuadPanel( k, v )
 		icon = icon_quad
 	end
+	
+	if !IsValid(wep.w_panelCache[k]) then continue end
+	
 	wep.w_panelCache[k]:SetVisible(false)
 
 	local node = mwtree:AddNode( k, icon )
