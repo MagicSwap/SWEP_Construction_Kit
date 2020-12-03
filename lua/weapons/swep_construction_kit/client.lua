@@ -160,6 +160,8 @@ function PopulateBoneList( choicelist, ent )
 	if (!IsValid(ent)) then return end
 
 	SCKDebug("Populating bone list for entity "..tostring(ent))
+	
+	choicelist:Clear()
 
 	if (ent == LocalPlayer()) then
 		-- if the local player is in third person, his bone lookup is all messed up so

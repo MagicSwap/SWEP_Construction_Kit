@@ -296,7 +296,11 @@ local function MaintainRelativePosition( name, new_parent_name, v_or_w, override
 		end
 
 		local el_pos, el_ang = wep:GetBoneOrientation( tbl, name, ent )
-
+		
+		if not el_pos or not el_ang then 
+			return 
+		end
+		
 		el_pos = el_pos + el_ang:Forward() * el.pos.x + el_ang:Right() * el.pos.y + el_ang:Up() * el.pos.z
 		if el.angle then
 			el_ang:RotateAroundAxis(el_ang:Up(), el.angle.y)
@@ -811,10 +815,10 @@ local function CreateColorModifiers( data, panel )
 	colpicker:Dock(FILL)
 
 	colpicker.ValueChanged = function(self, tcol)
-		data.color.r = tcol.r
-		data.color.g = tcol.g
-		data.color.b = tcol.b
-		data.color.a = tcol.a or 255
+		data.color.r = tcol.r * 1
+		data.color.g = tcol.g * 1
+		data.color.b = tcol.b * 1
+		data.color.a = tcol.a * 1 or 255
 	end
 
 	local loadcol = Color(data.color.r or 255, data.color.g or 255, data.color.b or 255, data.color.a or 255)
@@ -1269,7 +1273,7 @@ local function CreateModelPanel( name, preset_data )
 	data.pos = preset_data.pos or Vector(0,0,0)
 	data.angle = preset_data.angle or Angle(0,0,0)
 	data.size = preset_data.size or Vector(0.5,0.5,0.5)
-	data.color = preset_data.color or Color(255,255,255,255)
+	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
 	data.surpresslightning = preset_data.surpresslightning or false
 	data.material = preset_data.material or ""
 	data.bodygroup = preset_data.bodygroup or {}
@@ -1327,7 +1331,7 @@ local function CreateSpritePanel( name, preset_data )
 	data.rel = preset_data.rel or ""
 	data.pos = preset_data.pos or Vector(0,0,0)
 	data.size = preset_data.size or { x = 1, y = 1 }
-	data.color = preset_data.color or Color(255,255,255,255)
+	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
 	data.nocull = preset_data.nocull or true
 	data.additive = preset_data.additive or true
 	data.vertexalpha = preset_data.vertexalpha or true
@@ -1926,7 +1930,7 @@ local function CreateWorldModelPanel( name, preset_data )
 	data.pos = preset_data.pos or Vector(0,0,0)
 	data.angle = preset_data.angle or Angle(0,0,0)
 	data.size = preset_data.size or Vector(0.5,0.5,0.5)
-	data.color = preset_data.color or Color(255,255,255,255)
+	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
 	data.surpresslightning = preset_data.surpresslightning or false
 	data.material = preset_data.material or ""
 	data.bodygroup = preset_data.bodygroup or {}
@@ -1983,7 +1987,7 @@ local function CreateWorldSpritePanel( name, preset_data )
 	data.rel = preset_data.rel or ""
 	data.pos = preset_data.pos or Vector(0,0,0)
 	data.size = preset_data.size or { x = 1, y = 1 }
-	data.color = preset_data.color or Color(255,255,255,255)
+	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
 	data.nocull = preset_data.nocull or true
 	data.additive = preset_data.additive or true
 	data.vertexalpha = preset_data.vertexalpha or true
