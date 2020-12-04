@@ -2278,7 +2278,7 @@ rmbtn.DoClick = function()
 
 		for k,v in pairs( line:GetChildNodes() ) do
 			mwtree:Root():InsertNode( v )
-			SetRelativeForNode( v, mwtree:Root(), "v" )
+			SetRelativeForNode( v, mwtree:Root(), "w" )
 		end
 
 		wep.w_models[name] = nil
