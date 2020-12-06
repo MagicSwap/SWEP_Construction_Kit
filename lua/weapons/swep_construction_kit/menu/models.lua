@@ -85,18 +85,6 @@ local function GetWModelsText()
 
 	str = str.."\n\n"
 
-	local i = 0
-	for k, v in SortedPairs( wep.w_models ) do
-		if (v.type == "Model") then
-			i = i + 1
-			str = str.."c:AddModel(\""..v.model.."\", "..PrintVec(v.pos)..", "..PrintAngle(v.angle)..", ".. ((not v.rel or #v.rel == 0) and "\""..v.bone.."\"" or "nil") ..", "..(v.size.x == 1 and v.size.y == 1 and v.size.z == 1 and "nil" or v.size.x == v.size.y and v.size.x == v.size.z and math.Round(v.size.x, 4) or PrintVec(v.size))..", ".. (v.material and #v.material > 0 and "\""..v.material.."\"" or "nil") ..", "..(v.color.r == 255 and v.color.g == 255 and v.color.b == 255 and v.color.a == 255 and "nil" or PrintColor( v.color ))
-			if v.rel and #v.rel > 0 then
-				str = str..", 1"
-			end
-			str = str..")\n"
-		end
-	end
-
 	return str
 end
 
