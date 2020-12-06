@@ -974,7 +974,8 @@ local function CreateMaterialModifier( data, panel )
 		mattext:SetTooltip("Path to the material file")
 		mattext.OnTextChanged = function()
 			local newmat = mattext:GetValue()
-			if file.Exists("materials/"..newmat..".vmt", "GAME") then
+			local newmatmat = Material(newmat)
+			if file.Exists("materials/"..newmat..".vmt", "GAME") or newmatmat and not newmatmat:IsError() then
 				data.material = newmat
 			else
 				data.material = ""
