@@ -699,6 +699,7 @@ end
 
 local function CreateColorModifiers( data, panel )
 	panel:SetTall(32*5)
+	panel.data = data
 	PanelApplyBackground(panel)
 
 	local collabel = vgui.Create( "DLabel", panel )
@@ -711,10 +712,10 @@ local function CreateColorModifiers( data, panel )
 	colpicker:Dock(FILL)
 
 	colpicker.ValueChanged = function(self, tcol)
-		data.color.r = tcol.r * 1
-		data.color.g = tcol.g * 1
-		data.color.b = tcol.b * 1
-		data.color.a = tcol.a * 1 or 255
+		panel.data.color.r = tcol.r
+		panel.data.color.g = tcol.g
+		panel.data.color.b = tcol.b
+		panel.data.color.a = tcol.a or 255
 	end
 
 	local loadcol = Color(data.color.r or 255, data.color.g or 255, data.color.b or 255, data.color.a or 255)
@@ -805,6 +806,13 @@ local function renamev(old, new, panel)
 		wep.v_panelCache[old] = nil
 		wep.v_models[new] = table.Copy(wep.v_models[old])
 		wep.v_models[old] = nil
+		
+		-- update da reference for our color panel
+		for k, v in pairs( wep.v_panelCache[new]:GetItems() ) do
+			if IsValid( v ) and v.data then
+				v.data = wep.v_models[new]
+			end
+		end
 
 		panel.m_PrevName = new
 
@@ -833,6 +841,13 @@ local function renamew(old, new, panel)
 		wep.w_models[new] = table.Copy(wep.w_models[old])
 		wep.w_models[old] = nil
 
+		-- update da reference for our color panel
+		for k, v in pairs( wep.w_panelCache[new]:GetItems() ) do
+			if IsValid( v ) and v.data then
+				v.data = wep.w_models[new]
+			end
+		end
+		
 		panel.m_PrevName = new
 
 		local listing = wep.w_modelListing
