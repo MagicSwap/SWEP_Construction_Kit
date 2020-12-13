@@ -1041,7 +1041,7 @@ local function CreateBoneModifier( data, panel, ent, name )
 
 			data.bone = value
 		end
-		bonebox:SetText( data.bone )
+		bonebox:SetValue( data.bone )
 	bonebox:DockMargin(10,0,0,0)
 	bonebox:Dock(FILL)
 
@@ -1053,6 +1053,8 @@ local function CreateBoneModifier( data, panel, ent, name )
 		local option = PopulateBoneList( bonebox, ent )
 		if (option and data.bone == "") then
 			bonebox:ChooseOptionID(1)
+		else
+			bonebox:SetValue( data.bone )
 		end
 	end)
 
@@ -1261,7 +1263,6 @@ local function CreateSpritePanel( name, preset_data )
 	panellist:AddItem(CreateNameLabel( name,SimplePanel(panellist) ))
 	panellist:AddItem(CreateSpriteModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateBoneModifier( data, SimplePanel(panellist), LocalPlayer():GetViewModel() ))
-	panellist:AddItem(CreateVRelativeModifier( name, data, SimplePanel(panellist) ))
 	panellist:AddItem(CreatePositionModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateSizeModifiers( data, SimplePanel(panellist), 2 ))
 	panellist:AddItem(CreateColorModifiers( data, SimplePanel(panellist) ))
@@ -1309,7 +1310,6 @@ local function CreateQuadPanel( name, preset_data )
 
 	panellist:AddItem(CreateNameLabel( name, SimplePanel(panellist) ))
 	panellist:AddItem(CreateBoneModifier( data, SimplePanel(panellist), LocalPlayer():GetViewModel() ))
-	panellist:AddItem(CreateVRelativeModifier( name, data, SimplePanel(panellist) ))
 	panellist:AddItem(CreatePositionModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateAngleModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateSizeModifiers( data, SimplePanel(panellist), 1 ))
