@@ -1525,6 +1525,9 @@ importbtn.DoClick = function()
 
 	local num = 0
 	for k, v in pairs( wep.w_models ) do
+		
+		if not v.type then continue end
+		
 		local name = k
 		local i = 1
 		while(wep.v_models[name] != nil) do
@@ -2005,6 +2008,9 @@ end
 importbtn.DoClick = function()
 	local num = 0
 	for k, v in SortedPairs(wep.v_models) do
+		
+		if not v.type then continue end
+		
 		local name = k
 		local i = 1
 		while wep.w_models[name] ~= nil do
