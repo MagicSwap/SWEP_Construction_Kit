@@ -1057,6 +1057,10 @@ local function CreateBoneModifier( data, panel, ent, name )
 			bonebox:SetValue( data.bone )
 		end
 	end)
+	
+	if !ent:IsPlayer() then
+		panel.bonebox = bonebox
+	end
 
 	return panel
 end

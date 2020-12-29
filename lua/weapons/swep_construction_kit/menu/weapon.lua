@@ -98,6 +98,22 @@ local function RefreshViewModelBoneMods()
 			wep.v_modelbonebox:ChooseOptionID(1)
 		end
 	end)
+	
+	-- reset viewmodel element bone boxes to show up new bones
+	if wep.v_panelCache then
+		for _, element_list in pairs( wep.v_panelCache ) do
+			for k, v in pairs( element_list:GetItems() ) do
+				if IsValid( v ) and IsValid( v.bonebox ) then
+					timer.Simple(1, function()
+						if IsValid( v.bonebox ) then
+							PopulateBoneList( v.bonebox, LocalPlayer():GetViewModel() )
+						end
+					end)
+				end
+			end
+		end
+	end
+	
 end
 
 local wep = GetSCKSWEP( LocalPlayer() )
