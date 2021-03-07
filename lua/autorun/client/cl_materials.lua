@@ -28,6 +28,9 @@ CreateSCKMaterial("sck_concretefloor001a", "concrete/concretefloor001a", "concre
 --METAL
 CreateSCKMaterial("sck_metalfloor001a", "metal/metalfloor001a", "metal")
 CreateSCKMaterial("sck_metalceiling005a", "metal/metalceiling005a", "metal")
+CreateSCKMaterial("sck_metalgibs", "models/gibs/metalgibs/metal_gibs", "metal")
+CreateSCKMaterial("sck_phoenixstorms_dome", "phoenix_storms/dome", "metal")
+CreateSCKMaterial("sck_phoenixstorms_greysteel", "phoenix_storms/grey_steel", "metal")
 
 --PLASTER
 CreateSCKMaterial("sck_plasterceiling003a", "plaster/plasterceiling003a", "plaster")
