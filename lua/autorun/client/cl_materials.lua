@@ -44,5 +44,7 @@ CreateSCKMaterial("sck_stonewall036a", "stone/stonewall036a", "stone")
 CreateSCKMaterial("sck_woodfloor001a", "wood/woodfloor001a", "wood")
 CreateSCKMaterial("sck_woodwall003a", "wood/woodwall003a", "wood")
 CreateSCKMaterial("sck_woodstair002c", "wood/woodstair002c", "wood")
+CreateSCKMaterial("sck_woodshelf001a", "wood/woodshelf001a", "wood")
+CreateSCKMaterial("sck_woodshelf008a", "wood/woodshelf008a", "wood")
 
 --##############################
