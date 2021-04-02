@@ -143,7 +143,7 @@ local psettings = SimplePanel(ptool)
 			if (wep.save_data._savename) then
 				satext:SetText( wep.save_data._savename )
 			else
-				satext:SetText( "save1" )
+				satext:SetText( "savename" )
 			end
 		satext:DockMargin(5,0,0,0)
 		satext:Dock(FILL)
@@ -152,7 +152,6 @@ local psettings = SimplePanel(ptool)
 			sabtn:SetTall( 16 )
 			sabtn:SetText( "Save as:" )
 			sabtn.DoClick = function()
-
 				if !IsValid(wep) then return end
 
 				local text = string.Trim(satext:GetValue())
@@ -187,6 +186,18 @@ local psettings = SimplePanel(ptool)
 
 				local filename = "swep_construction_kit/"..text..".txt"
 
+				if file.Exists(filename, "DATA") then --we need to rename
+					for i = 1, 9999 do
+						local attempt = "swep_construction_kit/"..text..i..".txt"
+
+						if not file.Exists(attempt, "DATA") then
+							filename = attempt
+							text = text..i
+							break
+						end
+					end
+				end
+
 				local succ, val = pcall(glon.encode, save_data)
 				if (!succ || !val) then LocalPlayer():ChatPrint("Failed to encode settings!") return end
 
@@ -204,7 +215,7 @@ local psettings = SimplePanel(ptool)
 		local lftext = vgui.Create( "DTextEntry", pload )
 			lftext:SetTall( 20 )
 			lftext:SetMultiline(false)
-			lftext:SetText( "save1" )
+			lftext:SetText( "loadname" )
 
 		lftext:DockMargin(5,0,0,0)
 		lftext:Dock(FILL)
@@ -215,7 +226,6 @@ local psettings = SimplePanel(ptool)
 			lfbtn.DoClick = function()
 			local text = string.Trim(lftext:GetValue())
 			if (text == "") then return end
-
 				local filename = "swep_construction_kit/"..text..".txt"
 
 				if (!file.Exists(filename, "DATA")) then
