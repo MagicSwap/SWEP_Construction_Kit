@@ -152,7 +152,16 @@ local psettings = SimplePanel(ptool)
 			sabtn:SetTall( 16 )
 			sabtn:SetText( "Save as:" )
 
-			sabtn.DoClick = function() SaveAsSCKFile(nil, wep, satext) end
+			sabtn.DoClick = function()
+				local fn = GetDesiredFilename(satext)
+
+				local filename = "swep_construction_kit/"..fn..".txt"
+				if file.Exists(filename, "DATA") then
+					Derma_Query("File already exists! Overwrite?", "Warning", "Yes", function() SaveAsSCKFile(nil, wep, satext, true)  end, "No", function() SaveAsSCKFile(nil, wep, satext)  end)
+				else
+					SaveAsSCKFile(nil, wep, satext)
+				end
+			end
 
 		sabtn:Dock(LEFT)
 

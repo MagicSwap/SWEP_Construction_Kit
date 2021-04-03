@@ -7,16 +7,24 @@ local function sanitize_filename(text)
 
 	return text
 end
-function SaveAsSCKFile(overridetext, wep, satext)
+
+function GetDesiredFilename(satext)
+	if not satext then return end
+
+	local txt = satext:GetValue()
+
+	txt = string.Trim(txt)
+
+	txt = sanitize_filename(txt)
+	return txt
+end
+
+function SaveAsSCKFile(overridetext, wep, satext, force)
 	wep = wep or GetSCKSWEP(LocalPlayer(), true)
 	if not IsValid(wep) then return end
 
-	local text = overridetext or satext and string.Trim(satext:GetValue()) or ""
+	local text = overridetext or GetDesiredFilename(satext) or ""
 	if (text == "") then return end
-
-	if not overridetext then
-		text = sanitize_filename(text)
-	end
 
 	local save_data = wep.save_data
 
@@ -47,7 +55,7 @@ function SaveAsSCKFile(overridetext, wep, satext)
 
 	local filename = "swep_construction_kit/"..text..".txt"
 
-	if file.Exists(filename, "DATA") then --we need to rename
+	if not force and file.Exists(filename, "DATA") then --we need to rename
 		for i = 1, 9999 do
 			local attempt = "swep_construction_kit/"..text..i..".txt"
 
