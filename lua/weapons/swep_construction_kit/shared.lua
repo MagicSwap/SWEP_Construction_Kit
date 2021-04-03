@@ -28,6 +28,8 @@ if CLIENT then
 
 end
 
+CreateConVar("sck_autosave", 600, FCVAR_ARCHIVE, "Seconds between each SCK autosave. 0 = disable.")
+
 local debugging = false
 
 function SCKDebug( msg )
@@ -74,7 +76,6 @@ SWEP.IronsightTime = 0.2
 SWEP.IronSightsPos = Vector(0, 0, 0)
 SWEP.IronSightsAng = Vector(0, 0, 0)
 
-local sck_class = ""
 function SWEP:Initialize()
 	self:SetWeaponHoldType(self.HoldType)
 
@@ -86,6 +87,9 @@ function SWEP:Initialize()
 		self:ClientInit()
 		if (not file.IsDir("swep_construction_kit", "DATA")) then
 			file.CreateDir("swep_construction_kit")
+		end
+		if (not file.IsDir("swep_construction_kit/autosaves", "DATA")) then
+			file.CreateDir("swep_construction_kit/autosaves")
 		end
 	end
 
@@ -249,12 +253,20 @@ SWEP.LastOwner = nil
 	Helper functions
 **************************]]
 SWEP.IsSCK = true
-function GetSCKSWEP( pl )
+function GetSCKSWEP( pl, includeall )
 	local wep = pl:GetActiveWeapon()
 	if (IsValid(wep) and wep.IsSCK) then
 		return wep
 	end
-	--Error("Not holding SWEP Construction Kit!")
+
+	if includeall then
+		for k, v in ipairs(pl:GetWeapons()) do
+			if v and v.IsSCK then
+				return v
+			end
+		end
+ 	end
+
 	return NULL
 end
 

@@ -1,11 +1,11 @@
 local function CanPickup( pl, wep )
-
 	if (wep:GetClass() == "swep_construction_kit") then
 		return pl:KeyDown(IN_RELOAD) or !wep.Dropped
 	end
 
 end
 hook.Add("PlayerCanPickupWeapon","SCKPickup",CanPickup)
+
 
 function SWEP:Deploy()
 	self.LastOwner = self:GetOwner()
@@ -60,9 +60,9 @@ local function Cmd_PlayAnimation( pl, cmd, args )
 	if (IsValid(wep)) then
 		local anim = tonumber(args[1] or 0)
 		--wep:ResetSequenceInfo()
-		
+
 		local vm = pl:GetViewModel()
-					
+
 		vm:ResetSequenceInfo()
 		vm:SetPlaybackRate(1)
 		vm:SetCycle(0)
@@ -163,7 +163,7 @@ local function Cmd_GiveToEnt( pl, cmd, args )
 	if IsValid(wep) and IsValid( ent ) then
 		wep.Dropped = true
 		pl:DropWeapon(wep)
-		
+
 		wep:ForceDesignMode( ent )
 	end
 

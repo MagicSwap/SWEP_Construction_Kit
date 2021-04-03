@@ -806,7 +806,7 @@ local function renamev(old, new, panel)
 		wep.v_panelCache[old] = nil
 		wep.v_models[new] = table.Copy(wep.v_models[old])
 		wep.v_models[old] = nil
-		
+
 		-- update da reference for our color panel
 		for k, v in pairs( wep.v_panelCache[new]:GetItems() ) do
 			if IsValid( v ) and v.data then
@@ -847,7 +847,7 @@ local function renamew(old, new, panel)
 				v.data = wep.w_models[new]
 			end
 		end
-		
+
 		panel.m_PrevName = new
 
 		local listing = wep.w_modelListing
@@ -1050,6 +1050,7 @@ local function CreateBoneModifier( data, panel, ent, name )
 	if (data.bone != "") then delay = 2 end
 
 	timer.Simple(delay, function()
+		if not IsValid(bonebox) then return end
 		local option = PopulateBoneList( bonebox, ent )
 		if (option and data.bone == "") then
 			bonebox:ChooseOptionID(1)
@@ -1057,7 +1058,7 @@ local function CreateBoneModifier( data, panel, ent, name )
 			bonebox:SetValue( data.bone )
 		end
 	end)
-	
+
 	if !ent:IsPlayer() then
 		panel.bonebox = bonebox
 	end
@@ -1529,9 +1530,9 @@ importbtn.DoClick = function()
 
 	local num = 0
 	for k, v in pairs( wep.w_models ) do
-		
+
 		if not v.type then continue end
-		
+
 		local name = k
 		local i = 1
 		while(wep.v_models[name] != nil) do
@@ -2012,9 +2013,9 @@ end
 importbtn.DoClick = function()
 	local num = 0
 	for k, v in SortedPairs(wep.v_models) do
-		
+
 		if not v.type then continue end
-		
+
 		local name = k
 		local i = 1
 		while wep.w_models[name] ~= nil do

@@ -128,16 +128,6 @@ function SimplePanel( parent, scroll )
 	p.Paint = function() end
 	return p
 end
-/*
-function PrintVec( vec )
-	local px, py, pz = math.floor(vec.x*1000)/1000,math.floor(vec.y*1000)/1000,math.floor(vec.z*1000)/1000
-	return "Vector("..px..", "..py..", "..pz..")"
-end
-
-function PrintAngle( angle )
-	local pp, py, pr = math.floor(angle.p*1000)/1000,math.floor(angle.y*1000)/1000,math.floor(angle.r*1000)/1000
-	return "Angle("..pp..", "..py..", "..pr..")"
-end*/
 
 function PrintVec( vec )
 	local px, py, pz = vec.x, vec.y, vec.z
@@ -160,15 +150,12 @@ function PopulateBoneList( choicelist, ent )
 	if (!IsValid(ent)) then return end
 
 	SCKDebug("Populating bone list for entity "..tostring(ent))
-	
+
 	choicelist:Clear()
 
 	if (ent == LocalPlayer()) then
 		-- if the local player is in third person, his bone lookup is all messed up so
 		-- we just use the predefined playerBones table
-		//for k, v in pairs(playerBones) do
-		//	choicelist:AddChoice(v)
-		//end
 		for i = 0, ent:GetBoneCount() - 1 do
 			local name = ent:GetBoneName(i)
 			if (ent:LookupBone(name)) then
@@ -1484,7 +1471,28 @@ function SWEP:OpenMenu( preset )
 
 end
 
+local cvAutosave = GetConVar("sck_autosave")
+local function doautosave(wep)
+	if cvAutosave:GetInt() <= 0 then return end
+
+	SaveAsSCKFile("autosaves/autosave_"..os.date("%m_%d_%y-%H_%M_%S"), wep)
+end
+
+local delay = math.max(60, cvAutosave:GetInt())
+
+timer.Create("sck_autosave_timer", delay, 0, function()
+	doautosave(GetSCKSWEP(LocalPlayer()))
+end)
+
+cvars.AddChangeCallback("sck_autosave", function(old, new)
+	local newdelay = math.max(60, tonumber(new) or 0)
+
+	timer.Adjust("sck_autosave_timer", newdelay)
+end)
+
 function SWEP:OnRemove()
+	doautosave(self)
+
 	self:CleanMenu()
 end
 
