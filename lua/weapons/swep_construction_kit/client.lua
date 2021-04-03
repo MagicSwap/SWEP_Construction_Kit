@@ -1015,40 +1015,34 @@ function SWEP:DrawHUD()
 	drawcontrols(self)
 end
 
---[[***** Create model browser ****]]
--- callback = function( selected_model )
-function SWEP:OpenBrowser( current, browse_type, callback )
+--Separated since they're very different
+
+function SWEP:OpenMaterialBrowser(current, callback)
 	local wep = self
 	wep.browser_callback = callback
 	wep.Frame:SetVisible( false )
 
-	if (browse_type == "model" and wep.modelbrowser) then
-		wep.modelbrowser:SetVisible(true)
-		wep.modelbrowser:MakePopup()
-		wep.modelbrowser_list.OnRowSelected(nil,nil,current)
-		return
-	elseif (browse_type == "material" and wep.matbrowser) then
-		wep.matbrowser:SetVisible(true)
-		wep.matbrowser:MakePopup()
-		wep.matbrowser_list.OnRowSelected(nil,nil,current)
-		return
-	end
+	local container = vgui.Create("DFrame")
+	container:SetSize( 480, ScrH()*0.8 )
+	container:SetPos( 50, 50 )
+	container:SetDraggable( true )
+	container:ShowCloseButton( false )
+	container:SetSizable( true )
+	--container:SetDeleteOnClose( false )
+	container:InvalidateLayout(true)
 
-	local browser = vgui.Create("DFrame")
-	browser:SetSize( 480, ScrH()*0.8 )
-	browser:SetPos( 50, 50 )
-	browser:SetDraggable( true )
-	browser:ShowCloseButton( false )
-	browser:SetSizable( true )
-	browser:SetDeleteOnClose( false )
+	container:MakePopup()
+	container:SetTitle( "Material browser" )
 
-	if (browse_type == "model") then
-		browser:SetTitle( "Model browser" )
-		wep.modelbrowser = browser
-	elseif (browse_type == "material") then
-		browser:SetTitle( "Material browser" )
-		wep.matbrowser = browser
-	end
+	local prop = vgui.Create("DPropertySheet", container)
+	prop:Dock(FILL)
+	prop:InvalidateLayout(true)
+
+	local browser = vgui.Create("Panel")
+	browser:SetSize( container:GetSize())
+	browser:InvalidateLayout(true)
+
+	wep.matbrowser = container
 
 	local tree = vgui.Create( "DTree", browser )
 	--tree:SetPos( 5, 30 )
@@ -1061,35 +1055,224 @@ function SWEP:OpenBrowser( current, browse_type, callback )
 	local filecache = {}
 	local checked = {}
 
-	local modlist = vgui.Create("DListView", browser)
-		modlist:SetMultiSelect(false)
-		modlist:SetDrawBackground(true)
-		if (browse_type == "model") then
-			modlist:AddColumn("Model")
-		elseif (browse_type == "material") then
-			modlist:AddColumn("Material")
+	local matcontainer = vgui.Create("DScrollPanel", browser)
+	matcontainer:Dock(FILL)
+	matcontainer:InvalidateLayout(true)
+
+	local matlist = vgui.Create("DGrid", matcontainer)
+	matlist:SetSize(matcontainer:GetSize())
+	matlist:SetCols(4)
+	matlist:InvalidateLayout(true)
+	matlist:SetColWide(480 / 4)
+	matlist:SetRowHeight(480 / 4)
+
+	local selected = current
+
+	local selectbutton = function( self )
+		local path = self.MaterialPath
+
+		if (path:sub( 1, 10 ) == "materials/") then
+			path = path:sub( 11 ) -- removes the "materials/" part
 		end
+		path = path:gsub( "%.vmt", "" )
+
+		selected = path
+	end
+
+	local function addimg(matname, pnl)
+		local btn = vgui.Create("DImageButton")
+		btn:SetImage(matname)
+		btn:SetSize(480 / 4, 480 / 4)
+		btn.MaterialPath = matname
+		btn.DoClick = selectbutton
+		btn.DoRightClick = function(s) SetClipboardText(s.MaterialPath) end
+		btn:SetTooltip(matname)
+
+		local p = pnl or matlist
+		p:AddItem(btn)
+	end
+
+	local bpanel = vgui.Create("DPanel", container)
+	bpanel:SetTall(200)
+	bpanel:SetPaintBackground(false)
+	bpanel:DockMargin(5,5,5,5)
+	bpanel:Dock(BOTTOM)
+
+	local modview = vgui.Create("DImage", bpanel)
+	modview:SetSize(200, 200)
+	modview:Dock(LEFT)
+
+	local rpanel = vgui.Create("DPanel", bpanel)
+	rpanel:SetPaintBackground(false)
+	rpanel:DockPadding(5,0,0,0)
+	rpanel:Dock(FILL)
+
+	local mdlabel = vgui.Create("DLabel", rpanel)
+	mdlabel:SetText( current )
+	mdlabel:SizeToContents()
+	mdlabel:Dock(TOP)
+
+	-- set the default
+
+
+	local cancelbtn = vgui.Create("DButton", rpanel)
+		cancelbtn:SetTall(20)
+		cancelbtn:SetText("cancel")
+		cancelbtn.DoClick = function()
+			if (wep.Frame) then
+				wep.Frame:SetVisible(true)
+			end
+			container:Close()
+		end
+	cancelbtn:Dock(BOTTOM)
+
+	local choosebtn = vgui.Create("DButton", rpanel)
+		choosebtn:SetTall(20)
+			choosebtn:SetText("DO WANT THIS MATERIAL")
+
+		choosebtn.DoClick = function()
+			if (wep.browser_callback) then
+				wep.browser_callback(selected)
+			end
+			if (wep.Frame) then
+				wep.Frame:SetVisible(true)
+			end
+			container:Close()
+		end
+	choosebtn:DockMargin(0,0,0,5)
+	choosebtn:Dock(BOTTOM)
+
+	local LoadDirectories
+	local AddNode = function( base, dir, tree_override )
+
+		local newpath = base.."/"..dir
+		local basenode = nodelist[base]
+
+		if (tree_override) then
+			newpath = dir
+			basenode = tree_override
+		end
+
+		if (!basenode) then
+			print("No base node for \""..tostring(base).."\", \""..tostring(dir).."\", "..tostring(tree_override))
+		end
+
+		nodelist[newpath] = basenode:AddNode( dir )
+		nodelist[newpath].DoClick = function()
+			LoadDirectories( newpath )
+			for k, v in ipairs(matlist:GetItems()) do
+				matlist:RemoveItem(v)
+			end
+
+			if (filecache[newpath]) then
+				for k, f in pairs(filecache[newpath]) do
+					addimg(f:sub(11))
+				end
+			else
+				filecache[newpath] = {}
+				local files = file.Find(newpath.."/*.vmt", "GAME")
+
+				table.sort(files)
+				for k, f in pairs(files) do
+					local newfilepath = newpath.."/"..f
+					addimg(newfilepath:sub(11))
+
+					table.insert(filecache[newpath], newfilepath)
+				end
+			end
+		end
+
+	end
+
+	AddNode( "", "materials", tree )
+
+	LoadDirectories = function( v )
+
+		if (table.HasValue(checked,v)) then return end
+		local files
+		files, newdirs = file.Find(v.."/*", "GAME")
+		table.insert(checked, v)
+
+		table.sort(newdirs)
+
+		for _, dir in pairs(newdirs) do
+			AddNode( v, dir )
+		end
+	end
+	LoadDirectories( "materials" )
+
+	prop:AddSheet("Materials", browser)
+
+	local sckmats = vgui.Create("DScrollPanel", prop)
+	sckmats:Dock(FILL)
+	sckmats:InvalidateLayout(true)
+
+	local sckmatlist = vgui.Create("DGrid", sckmats)
+	sckmatlist:SetSize(matcontainer:GetSize())
+	sckmatlist:SetCols(4)
+	sckmatlist:InvalidateLayout(true)
+	sckmatlist:SetColWide(480 / 4)
+	sckmatlist:SetRowHeight(480 / 4)
+
+	for k, v in ipairs(SCKMaterials) do
+		addimg("!"..v, sckmatlist)
+	end
+
+	prop:AddSheet("SCK Materials", sckmats)
+end
+
+function SWEP:OpenModelBrowser(current, callback)
+	local wep = self
+	wep.browser_callback = callback
+	wep.Frame:SetVisible( false )
+
+	if wep.modelbrowser then
+		wep.modelbrowser:SetVisible(true)
+		wep.modelbrowser:MakePopup()
+		wep.modelbrowser_list.OnRowSelected(nil,nil,current)
+		return
+
+	end
+
+	local browser = vgui.Create("DFrame")
+	browser:SetSize( 480, ScrH()*0.8 )
+	browser:SetPos( 50, 50 )
+	browser:SetDraggable( true )
+	browser:ShowCloseButton( false )
+	browser:SetSizable( true )
+	browser:SetDeleteOnClose( false )
+	browser:SetTitle( "Model browser" )
+	wep.modelbrowser = browser
+
+	local tree = vgui.Create( "DTree", browser )
+	tree:SetTall(300)
+	tree:DockPadding(5,5,5,5)
+	tree:Dock(TOP)
+
+	local nodelist = {}
+	local filecache = {}
+	local checked = {}
+
+	local modlist = vgui.Create("DListView", browser)
+	modlist:SetMultiSelect(false)
+	modlist:SetDrawBackground(true)
+	modlist:AddColumn("Model")
 	modlist:DockPadding(5,5,5,0)
 	modlist:Dock(FILL)
 
 	local bpanel = vgui.Create("DPanel", browser)
-		bpanel:SetTall(200)
-		bpanel:SetDrawBackground(false)
+	bpanel:SetTall(200)
+	bpanel:SetDrawBackground(false)
 	bpanel:DockMargin(5,5,5,5)
 	bpanel:Dock(BOTTOM)
 
 	local modzoom = 30
 	local modview
 
-	if (browse_type == "model") then
-		modview = vgui.Create("DModelPanel", bpanel)
-		modview:SetModel("")
-		modview:SetCamPos( Vector(modzoom,modzoom,modzoom/2) )
-		modview:SetLookAt( Vector( 0, 0, 0 ) )
-	elseif (browse_type == "material") then
-		modview = vgui.Create("DImage", bpanel)
-		--modview:SetImage("")
-	end
+	modview = vgui.Create("DModelPanel", bpanel)
+	modview:SetModel("")
+	modview:SetCamPos( Vector(modzoom,modzoom,modzoom/2) )
+	modview:SetLookAt( Vector( 0, 0, 0 ) )
 
 	modview:SetSize(200, 200)
 	modview:Dock(LEFT)
@@ -1104,22 +1287,18 @@ function SWEP:OpenBrowser( current, browse_type, callback )
 		mdlabel:SizeToContents()
 	mdlabel:Dock(TOP)
 
-	if (browse_type == "model") then
-
-		local zoomslider = vgui.Create( "DNumSlider", rpanel)
-			zoomslider:SetText( "Zoom" )
-			zoomslider:SetMin( 8 )
-			zoomslider:SetMax( 256 )
-			zoomslider:SetDecimals( 0 )
-			zoomslider:SetValue( modzoom )
-			zoomslider.Wang.ConVarChanged = function( panel, value )
-				local modzoom = tonumber(value)
-				modview:SetCamPos( Vector(modzoom,modzoom,modzoom/2) )
-				modview:SetLookAt( Vector( 0, 0, 0 ) )
-			end
-		zoomslider:Dock(FILL)
-
-	end
+	local zoomslider = vgui.Create( "DNumSlider", rpanel)
+		zoomslider:SetText( "Zoom" )
+		zoomslider:SetMin( 8 )
+		zoomslider:SetMax( 256 )
+		zoomslider:SetDecimals( 0 )
+		zoomslider:SetValue( modzoom )
+		zoomslider.Wang.ConVarChanged = function( panel, value )
+			local modzoom = tonumber(value)
+			modview:SetCamPos( Vector(modzoom,modzoom,modzoom/2) )
+			modview:SetLookAt( Vector( 0, 0, 0 ) )
+		end
+	zoomslider:Dock(FILL)
 
 	local selected = ""
 
@@ -1127,17 +1306,7 @@ function SWEP:OpenBrowser( current, browse_type, callback )
 		if (type(override) != "string") then override = nil end -- for some reason the list itself throws a panel at it in the callback
 		local path = override or modlist:GetLine(line):GetValue(1)
 
-		if (browse_type == "model") then
-			modview:SetModel(path)
-		elseif (browse_type == "material") then
-			if (path:sub( 1, 10 ) == "materials/") then
-				path = path:sub( 11 ) -- removes the "materials/" part
-			end
-			path = path:gsub( "%.vmt", "" )
-			if (file.Exists( "materials/"..path..".vmt", "GAME" )) then
-				modview:SetImage(path)
-			end
-		end
+		modview:SetModel(path)
 
 		mdlabel:SetText(path)
 		selected = path
@@ -1145,11 +1314,7 @@ function SWEP:OpenBrowser( current, browse_type, callback )
 
 	-- set the default
 	modlist.OnRowSelected(nil,nil,current)
-	if (browse_type == "model") then
-		wep.modelbrowser_list = modlist
-	elseif (browse_type == "material") then
-		wep.matbrowser_list = modlist
-	end
+	wep.modelbrowser_list = modlist
 
 	local cancelbtn = vgui.Create("DButton", rpanel)
 		cancelbtn:SetTall(20)
@@ -1164,11 +1329,7 @@ function SWEP:OpenBrowser( current, browse_type, callback )
 
 	local choosebtn = vgui.Create("DButton", rpanel)
 		choosebtn:SetTall(20)
-		if (browse_type == "model") then
-			choosebtn:SetText("DO WANT THIS MODEL")
-		elseif (browse_type == "material") then
-			choosebtn:SetText("DO WANT THIS MATERIAL")
-		end
+		choosebtn:SetText("DO WANT THIS MODEL")
 
 		choosebtn.DoClick = function()
 			if (wep.browser_callback) then
@@ -1182,11 +1343,8 @@ function SWEP:OpenBrowser( current, browse_type, callback )
 	choosebtn:DockMargin(0,0,0,5)
 	choosebtn:Dock(BOTTOM)
 
-
-
 	local LoadDirectories
 	local AddNode = function( base, dir, tree_override )
-
 		local newpath = base.."/"..dir
 		local basenode = nodelist[base]
 
@@ -1211,12 +1369,7 @@ function SWEP:OpenBrowser( current, browse_type, callback )
 				end
 			else
 				filecache[newpath] = {}
-				local files, folders
-				if (newpath:sub(1,9) == "materials") then
-					files, folders = file.Find(newpath.."/*.vmt", "GAME")
-				else
-					files, folders = file.Find(newpath.."/*.mdl", "GAME")
-				end
+				local files, folders = file.Find(newpath.."/*.mdl", "GAME")
 				table.sort(files)
 				for k, f in pairs(files) do
 					local newfilepath = newpath.."/"..f
@@ -1227,12 +1380,7 @@ function SWEP:OpenBrowser( current, browse_type, callback )
 		end
 
 	end
-
-	if (browse_type == "model") then
-		AddNode( "", "models", tree )
-	elseif (browse_type == "material") then
-		AddNode( "", "materials", tree )
-	end
+	AddNode( "", "models", tree )
 
 	LoadDirectories = function( v )
 
@@ -1248,16 +1396,10 @@ function SWEP:OpenBrowser( current, browse_type, callback )
 		end
 
 	end
-
-	if (browse_type == "model") then
-		LoadDirectories( "models" )
-	elseif (browse_type == "material") then
-		LoadDirectories( "materials" )
-	end
+	LoadDirectories( "models" )
 
 	browser:SetVisible( true )
 	browser:MakePopup()
-
 end
 
 --[[**************************
@@ -1549,8 +1691,6 @@ end
 oldCVHooks = {}
 hooksCleared = false
 local function CVHookReset()
-
-	--print("Hook reset")
 	hook.Remove( "CalcView", "TPCalcView" )
 	for k, v in pairs( oldCVHooks ) do
 		hook.Add("CalcView", k, v)

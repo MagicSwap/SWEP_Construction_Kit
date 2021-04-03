@@ -98,7 +98,7 @@ local function RefreshViewModelBoneMods()
 			wep.v_modelbonebox:ChooseOptionID(1)
 		end
 	end)
-	
+
 	-- reset viewmodel element bone boxes to show up new bones
 	if wep.v_panelCache then
 		for _, element_list in pairs( wep.v_panelCache ) do
@@ -113,7 +113,7 @@ local function RefreshViewModelBoneMods()
 			end
 		end
 	end
-	
+
 end
 
 local wep = GetSCKSWEP( LocalPlayer() )
@@ -151,7 +151,7 @@ local pweapon_vmodel = SimplePanel( pweapon )
 		vtbtn:SetSize( 25, 20 )
 		vtbtn:SetText("...")
 		vtbtn.DoClick = function()
-			wep:OpenBrowser( wep.ViewModel, "model", function( val ) vtext:SetText(val) vtext:OnTextChanged() end )
+			wep:OpenModelBrowser( wep.ViewModel, function( val ) vtext:SetText(val) vtext:OnTextChanged() end )
 		end
 	vtbtn:Dock(RIGHT)
 
@@ -186,7 +186,7 @@ local pweapon_wmodel = SimplePanel( pweapon )
 		wtbtn:SetSize( 25, 20 )
 		wtbtn:SetText("...")
 		wtbtn.DoClick = function()
-			wep:OpenBrowser( wep.CurWorldModel, "model", function( val ) wtext:SetText(val) wtext:OnTextChanged() end )
+			wep:OpenModelBrowser( wep.CurWorldModel, function( val ) wtext:SetText(val) wtext:OnTextChanged() end )
 		end
 	wtbtn:Dock(RIGHT)
 

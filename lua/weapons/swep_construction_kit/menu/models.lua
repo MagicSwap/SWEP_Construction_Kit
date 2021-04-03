@@ -758,7 +758,7 @@ local function CreateModelModifier( data, panel )
 	pmmtext:Dock(FILL)
 
 	wtbtn.DoClick = function()
-		wep:OpenBrowser( data.model, "model", function( val ) pmmtext:SetText(val) pmmtext:OnTextChanged() end )
+		wep:OpenModelBrowser( data.model, function( val ) pmmtext:SetText(val) pmmtext:OnTextChanged() end )
 	end
 
 	return panel
@@ -793,7 +793,7 @@ local function CreateSpriteModifier( data, panel )
 	pmmtext:Dock(FILL)
 
 	wtbtn.DoClick = function()
-		wep:OpenBrowser( data.sprite, "material", function( val ) pmmtext:SetText(val) pmmtext:OnTextChanged() end )
+		wep:OpenMaterialBrowser(data.sprite, function( val ) pmmtext:SetText(val) pmmtext:OnTextChanged() end )
 	end
 
 	return panel
@@ -1001,7 +1001,7 @@ local function CreateMaterialModifier( data, panel )
 	mattext:Dock(FILL)
 
 	wtbtn.DoClick = function()
-		wep:OpenBrowser( data.material, "material", function( val ) mattext:SetText(val) mattext:OnTextChanged() end )
+		wep:OpenMaterialBrowser( data.material, function( val ) mattext:SetText(val) mattext:OnTextChanged() end )
 	end
 
 	return panel
