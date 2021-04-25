@@ -131,11 +131,21 @@ end
 
 function PrintVec( vec )
 	local px, py, pz = vec.x, vec.y, vec.z
+
+	px = math.Round(px, 5)
+	py = math.Round(py, 5)
+	pz = math.Round(pz, 5)
+
 	return "Vector("..px..", "..py..", "..pz..")"
 end
 
 function PrintAngle( angle )
 	local pp, py, pr = angle.p, angle.y, angle.r
+
+	pp = math.Round(pp, 5)
+	py = math.Round(py, 5)
+	pr = math.Round(pr, 5)
+
 	return "Angle("..pp..", "..py..", "..pr..")"
 end
 
