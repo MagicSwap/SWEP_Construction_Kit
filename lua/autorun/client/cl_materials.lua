@@ -26,6 +26,7 @@ CreateSCKMaterial("sck_brickwall001a", "brick/brickwall001a", "brick")
 --CONCRETE
 CreateSCKMaterial("sck_concreteceiling001a", "concrete/concreteceiling001a", "concrete")
 CreateSCKMaterial("sck_concretefloor001a", "concrete/concretefloor001a", "concrete")
+CreateSCKMaterial("sck_milwall002", "concrete/milwall002", "concrete")
 
 --GLASS
 
@@ -51,5 +52,9 @@ CreateSCKMaterial("sck_woodwall003a", "wood/woodwall003a", "wood")
 CreateSCKMaterial("sck_woodstair002c", "wood/woodstair002c", "wood")
 CreateSCKMaterial("sck_woodshelf001a", "wood/woodshelf001a", "wood")
 CreateSCKMaterial("sck_woodshelf008a", "wood/woodshelf008a", "wood")
+
+--SNOW
+CreateSCKMaterial("sck_snowfloor002a", "nature/snowfloor002a", "snow")
+CreateSCKMaterial("sck_snow", "ground/snow01", "snow")
 
 --##############################
