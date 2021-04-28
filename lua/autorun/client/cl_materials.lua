@@ -39,6 +39,7 @@ CreateSCKMaterial("sck_phoenixstorms_greysteel", "phoenix_storms/grey_steel", "m
 --PLASTER
 CreateSCKMaterial("sck_plasterceiling003a", "plaster/plasterceiling003a", "plaster")
 CreateSCKMaterial("sck_plasterwall003a", "plaster/plasterwall003a", "plaster")
+CreateSCKMaterial("sck_plasterwall008a", "plaster/plasterwall008a", "plaster")
 
 --STONE
 CreateSCKMaterial("sck_stonefloor011a", "stone/stonefloor011a", "stone")
