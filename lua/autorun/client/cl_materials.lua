@@ -1,7 +1,7 @@
 --Made this local since this file is now mirrored in the public SCK addon, where GM isn't guarunteed to exist in the load order
 SCKMaterials = {}
 
-local function CreateSCKMaterial(name, basetex, mat, trans)
+function CreateSCKMaterial(name, basetex, mat, trans)
 	name = tostring(name)
 	basetex = tostring(basetex)
 	mat = isstring(mat) and mat or "metal"
