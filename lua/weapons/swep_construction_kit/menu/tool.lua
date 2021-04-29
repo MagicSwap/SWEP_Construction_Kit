@@ -6,6 +6,44 @@ local ptool = wep.ptool
 local panim = SimplePanel(ptool)
 	-- ***** Animations *****
 
+	local vcount = vgui.Create("DLabel", panim)
+	vcount:SetText("VElement count:")
+	vcount:SizeToContents()
+	vcount:Dock(TOP)
+
+	local wcount = vgui.Create("DLabel", panim)
+	wcount:SetText("WElement count:")
+	wcount:SizeToContents()
+	wcount:Dock(TOP)
+
+	vcount.Think = function(s)
+		local t = wep.v_models
+
+		if not t then return end
+
+		local num = table.Count(t)
+
+		if num == s.Count then return end
+		s.Count = num
+
+		s:SetText("VElement Count: "..num)
+		s:SizeToContents()
+	end
+
+	wcount.Think = function(s)
+		local t = wep.w_models
+
+		if not t then return end
+
+		local num = table.Count(t)
+
+		if num == s.Count then return end
+		s.Count = num
+
+		s:SetText("WElement Count: "..num)
+		s:SizeToContents()
+	end
+
 	local alabel = vgui.Create( "DLabel", panim )
 		alabel:SetTall( 18 )
 		alabel:SetText( "Play sequence:" )

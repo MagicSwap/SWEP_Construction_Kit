@@ -1625,6 +1625,7 @@ end
 
 local cvAutosave = GetConVar("sck_autosave")
 local function doautosave(wep)
+	if not IsValid(LocalPlayer()) then return end
 	if cvAutosave:GetInt() <= 0 then return end
 
 	SaveAsSCKFile("autosaves/autosave_"..os.date("%m_%d_%y-%H_%M_%S"), wep)
