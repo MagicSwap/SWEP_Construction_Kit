@@ -28,6 +28,7 @@ local panim = SimplePanel(ptool)
 
 		s:SetText("VElement Count: "..num)
 		s:SizeToContents()
+		panim:SizeToChildren(false, true)
 	end
 
 	wcount.Think = function(s)
@@ -42,6 +43,7 @@ local panim = SimplePanel(ptool)
 
 		s:SetText("WElement Count: "..num)
 		s:SizeToContents()
+		panim:SizeToChildren(false, true)
 	end
 
 	local alabel = vgui.Create( "DLabel", panim )
@@ -118,10 +120,10 @@ local panim = SimplePanel(ptool)
 		aplayback:SetTall( 25 )
 	aplayback:Dock( TOP )
 
-
-panim:SetTall(alabel:GetTall() + agrid:GetTall() + aplayback:GetTall() + 5)
+panim:SizeToChildren(false, true)
 panim:DockPadding(0,5,0,5)
 panim:Dock( TOP )
+panim.PerformLayout = function(s) s:SizeToChildren(false, true) end
 
 agrid.Think = function( self )
 	if wep:GetOwner():GetViewModel() and ptool.LastViewModel ~= wep:GetOwner():GetViewModel():GetModel() and agrid then
@@ -136,10 +138,8 @@ agrid.Think = function( self )
 		end
 
 		self:UpdateList()
-		panim:SetTall(alabel:GetTall() + agrid:GetTall() + aplayback:GetTall() + 5)
-
+		panim:SizeToChildren(false, true)
 	end
-
 end
 
 local psettings = SimplePanel(ptool)
