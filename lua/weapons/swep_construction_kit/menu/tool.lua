@@ -51,36 +51,28 @@ local panim = SimplePanel(ptool)
 		alabel:SetText( "Play sequence:" )
 	alabel:Dock( TOP )
 
-	local cols = 4
-	local agrid = vgui.Create( "DGrid", panim )
-		agrid:SetCols(cols)
-		agrid:SetColWide( 106 )
-		agrid:SetRowHeight( 24 )
+	local agrid = vgui.Create( "DListView", panim )
+		agrid:AddColumn("Sequence")
+		agrid:AddColumn("Seq ID")
+		agrid:AddColumn("ACT Enum")
+		agrid:SetTall(240)
+
+		function agrid:OnRowSelected(idx, pnl)
+			pnl:PlaySequence()
+		end
 
 		agrid.UpdateList = function( self )
 
-			local count = 0
-
 			local vm = wep:GetOwner():GetViewModel()
 
-			--for some reason dgrid doesnt want to return all items, so lets use this workaround
-			self.buttons = {}
+			for k, seq in SortedPairs( vm:GetSequenceList() ) do
 
-			for k, seq in pairs( vm:GetSequenceList() ) do
-
-				count = count + 1
-
-				local abtn = vgui.Create( "DButton", self )
-				abtn:SetSize( 100, 18 )
-				abtn:SetText( seq )
-				abtn:SetToolTip( "Sequence id: "..k )
-				abtn.DoClick = function()
-
+				local abtn = self:AddLine(seq, k, vm:GetSequenceActivityName(k))
+				abtn.PlaySequence = function()
 					local vm = wep:GetOwner():GetViewModel()
 
 					vm:ResetSequenceInfo()
 					vm:SetCycle(0)
-
 
 					local s = vm:LookupSequence( seq )
 					if s then
@@ -98,16 +90,11 @@ local panim = SimplePanel(ptool)
 					if string.find( seq, "reload" ) then
 						LocalPlayer():SetAnimation( PLAYER_RELOAD )
 					end
-
 				end
-				self:AddItem(abtn)
-				table.insert( self.buttons, abtn )
-
 			end
 
-			self:SetTall( math.ceil(count / cols) * 24 )
+			self:SetTall(240)
 		end
-
 	agrid:DockMargin(0,5,0,0)
 	agrid:Dock(TOP)
 
@@ -130,12 +117,7 @@ agrid.Think = function( self )
 
 		ptool.LastViewModel = wep:GetOwner():GetViewModel():GetModel()
 
-		if self.buttons then
-			for k, v in pairs( self.buttons ) do
-				self:RemoveItem( v )
-			end
-			self.buttons = nil
-		end
+		self:Clear()
 
 		self:UpdateList()
 		panim:SizeToChildren(false, true)
