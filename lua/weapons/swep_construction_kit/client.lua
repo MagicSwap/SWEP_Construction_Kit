@@ -1212,7 +1212,7 @@ function SWEP:OpenMaterialBrowser(current, callback)
 		nodelist[newpath] = basenode:AddNode( dir )
 		nodelist[newpath].DoClick = function()
 			LoadDirectories( newpath )
-			for k, v in ipairs(matlist:GetItems()) do
+			for k, v in pairs(matlist:GetChildren()) do
 				matlist:RemoveItem(v)
 			end
 
