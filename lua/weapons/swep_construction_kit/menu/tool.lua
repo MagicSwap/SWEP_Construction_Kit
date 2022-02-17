@@ -348,6 +348,35 @@ local function GetWModelsText()
 	return str
 end
 
+local function CompileIncompatibleMaterials()
+	local list = {}
+	local donealready = {}
+
+	for k, v in SortedPairs( wep.w_models ) do
+		if not donealready[v.material] and SCKMaterials[v.material] then
+			table.insert(list, v.material)
+			donealready[v.material] = true
+		end
+	end
+
+	for k, v in SortedPairs( wep.v_models ) do
+		if not donealready[v.material] and SCKMaterials[v.material] then
+			table.insert(list, v.material)
+			donealready[v.material] = true
+		end
+	end
+
+	local startstr = "SWEP.SCKMaterials = {"
+
+	for k, v in ipairs(list) do
+		startstr = startstr.."\""..v.."\""..", "
+	end
+	startstr = string.Trim(startstr)
+	startstr = startstr.."}"
+
+	return startstr
+end
+
 local pcbtn = vgui.Create( "DButton", ptool )
 	pcbtn:SetTall( 30 )
 	pcbtn:SetText( "Copy SCK to clipboard" )
@@ -355,6 +384,9 @@ local pcbtn = vgui.Create( "DButton", ptool )
 		local t = ""
 
 		t = t ..GetWeaponPrintText(wep)
+		t = t .. "\n\n"
+
+		t = t .. CompileIncompatibleMaterials()
 		t = t .. "\n\n"
 
 		local vec, ang = wep:GetIronSightCoordination()

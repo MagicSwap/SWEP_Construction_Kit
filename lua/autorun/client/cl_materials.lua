@@ -1,60 +1,107 @@
 --Made this local since this file is now mirrored in the public SCK addon, where GM isn't guarunteed to exist in the load order
 SCKMaterials = {}
+SCKMaterialFavs = {}
+SCKMaterialCompat = {
+	["!sck_snow"] = "ground/snow01",
+}
 
-function CreateSCKMaterial(name, basetex, mat, trans)
-	name = tostring(name)
-	basetex = tostring(basetex)
-	mat = isstring(mat) and mat or "metal"
+function ConvertSCKMaterial(basetex)
+	local mat = Material(basetex)
 
-	CreateMaterial(name, "VertexLitGeneric", {
+	local shader = mat:GetShader()
+
+	shader = string.lower(shader)
+	if shader == "vertexlitgeneric" or shader == "unlitgeneric" then return basetex end
+
+	local matfilename = string.GetFileFromFilename(basetex)
+	local newname = "sck_"..matfilename --can create issues, but good for backwards compat
+	local sp = mat:GetString("$surfaceprop") or "metal"
+	local trans = mat:GetInt("$translucent") or 0
+	local at = mat:GetInt("$alphatest") or 0
+
+	local newmat = CreateMaterial(newname, "VertexLitGeneric",  {
 		["$basetexture"] = basetex,
-		["$surfaceprop"] = mat,
-		["$translucent"] = trans
+		["$surfaceprop"] = sp,
+		["$translucent"] = trans,
+		["$alphatest"] = at,
 	})
 
-	table.insert(SCKMaterials, name)
+	SCKMaterials[basetex] = "!"..newname
+
+	return SCKMaterials[basetex]
 end
+
+function AddMaterialFavorite(basetex, default)
+	if default then --so we need to keep track of the defaults on new system, so old SCK that use !sck_ can be loaded
+		local name = string.GetFileFromFilename(basetex)
+		SCKMaterialCompat["!sck_"..name] = basetex
+	end
+
+	if default and SCKMaterialFavs[basetex] ~= nil then return end --Hack, maybe people don't like the defaults, don't readd every time
+	SCKMaterialFavs[basetex] = default and 1 or 2
+
+	if not default then
+		SaveMaterialData()
+	end
+end
+
+function RemoveMaterialFavorite(basetex)
+	local cur = SCKMaterialFavs[basetex]
+
+	if cur == 1 then --not the cleanest way, helps logic above work
+		SCKMaterialFavs[basetex] = false
+	else
+		SCKMaterialFavs[basetex] = nil
+	end
+
+	SaveMaterialData()
+end
+
+function SaveMaterialData()
+	file.Write("sck_materialfavs.dat", util.TableToJSON(SCKMaterialFavs, true))
+end
+
+function LoadMaterialData()
+	if file.Exists("sck_materialfavs.dat", "DATA") then
+		local info = file.Read("sck_materialfavs.dat", "DATA")
+
+		SCKMaterialFavs = util.JSONToTable(info)
+	end
+end
+
+LoadMaterialData()
 
 --[[#############################
 	#		SCK MATERIALS		#
 	#############################]]
 
---BRICK
-CreateSCKMaterial("sck_brickfloor001a", "brick/brickfloor001a", "brick")
-CreateSCKMaterial("sck_brickwall001a", "brick/brickwall001a", "brick")
+AddMaterialFavorite("brick/brickfloor001a", true)
+AddMaterialFavorite("brick/brickwall001a", true)
 
---CONCRETE
-CreateSCKMaterial("sck_concreteceiling001a", "concrete/concreteceiling001a", "concrete")
-CreateSCKMaterial("sck_concretefloor001a", "concrete/concretefloor001a", "concrete")
-CreateSCKMaterial("sck_milwall002", "concrete/milwall002", "concrete")
+AddMaterialFavorite("concrete/concreteceiling001a", true)
+AddMaterialFavorite("concrete/concretefloor001a", true)
+AddMaterialFavorite("concrete/milwall002", true)
 
---GLASS
+AddMaterialFavorite("metal/metalfloor001a", true)
+AddMaterialFavorite("metal/metalceiling005a", true)
+AddMaterialFavorite("models/gibs/metalgibs/metal_gibs", true)
+AddMaterialFavorite("phoenix_storms/dome", true)
+AddMaterialFavorite("phoenix_storms/grey_steel", true)
 
---METAL
-CreateSCKMaterial("sck_metalfloor001a", "metal/metalfloor001a", "metal")
-CreateSCKMaterial("sck_metalceiling005a", "metal/metalceiling005a", "metal")
-CreateSCKMaterial("sck_metalgibs", "models/gibs/metalgibs/metal_gibs", "metal")
-CreateSCKMaterial("sck_phoenixstorms_dome", "phoenix_storms/dome", "metal")
-CreateSCKMaterial("sck_phoenixstorms_greysteel", "phoenix_storms/grey_steel", "metal")
+AddMaterialFavorite("plaster/plasterceiling003a", true)
+AddMaterialFavorite("plaster/plasterwall003a", true)
+AddMaterialFavorite("plaster/plasterwall008a", true)
 
---PLASTER
-CreateSCKMaterial("sck_plasterceiling003a", "plaster/plasterceiling003a", "plaster")
-CreateSCKMaterial("sck_plasterwall003a", "plaster/plasterwall003a", "plaster")
-CreateSCKMaterial("sck_plasterwall008a", "plaster/plasterwall008a", "plaster")
+AddMaterialFavorite("stone/stonefloor011a", true)
+AddMaterialFavorite("stone/stonewall036a", true)
 
---STONE
-CreateSCKMaterial("sck_stonefloor011a", "stone/stonefloor011a", "stone")
-CreateSCKMaterial("sck_stonewall036a", "stone/stonewall036a", "stone")
+AddMaterialFavorite("wood/woodfloor001a", true)
+AddMaterialFavorite("wood/woodwall003a", true)
+AddMaterialFavorite("wood/woodstair002c", true)
+AddMaterialFavorite("wood/woodshelf001a", true)
+AddMaterialFavorite("wood/woodshelf008a", true)
 
---WOOD
-CreateSCKMaterial("sck_woodfloor001a", "wood/woodfloor001a", "wood")
-CreateSCKMaterial("sck_woodwall003a", "wood/woodwall003a", "wood")
-CreateSCKMaterial("sck_woodstair002c", "wood/woodstair002c", "wood")
-CreateSCKMaterial("sck_woodshelf001a", "wood/woodshelf001a", "wood")
-CreateSCKMaterial("sck_woodshelf008a", "wood/woodshelf008a", "wood")
-
---SNOW
-CreateSCKMaterial("sck_snowfloor002a", "nature/snowfloor002a", "snow")
-CreateSCKMaterial("sck_snow", "ground/snow01", "snow")
+AddMaterialFavorite("nature/snowfloor002a", true)
+AddMaterialFavorite("ground/snow01", true)
 
 --##############################

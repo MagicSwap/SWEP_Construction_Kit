@@ -718,8 +718,9 @@ function SWEP:ViewModelDrawn()
 
 			if (v.material == "") then
 				model:SetMaterial("")
-			elseif (model:GetMaterial() != v.material) then
-				model:SetMaterial( v.material )
+			elseif model:GetMaterial() ~= v.material or model:GetMaterial() ~= SCKMaterials[v.material] then
+				local mat = ConvertSCKMaterial(v.material) -- check it first
+				model:SetMaterial( mat )
 			end
 
 			if (v.skin != model:GetSkin()) then
@@ -881,8 +882,9 @@ function SWEP:DrawWorldModel()
 
 			if (v.material == "") then
 				model:SetMaterial("")
-			elseif (model:GetMaterial() != v.material) then
-				model:SetMaterial( v.material )
+			elseif model:GetMaterial() ~= (SCKMaterials[v.material] or v.material) then
+				local mat = ConvertSCKMaterial(v.material) -- check it first
+				model:SetMaterial( mat )
 			end
 
 			if (v.skin != model:GetSkin()) then
@@ -1071,7 +1073,7 @@ function SWEP:OpenMaterialBrowser(current, callback)
 	matlist:SetRowHeight(480 / 4)
 
 	local selected = current
-
+	local curfav = SCKMaterialFavs[selected]
 	local selectbutton = function( self )
 		local path = self.MaterialPath
 
@@ -1081,6 +1083,13 @@ function SWEP:OpenMaterialBrowser(current, callback)
 		path = path:gsub( "%.vmt", "" )
 
 		selected = path
+
+		curfav = SCKMaterialFavs[selected]
+
+		if IsValid(container.favbtn) then
+			local btn = container.favbtn
+			btn:SetText(curfav and "UNFAVORITE MATERIAL" or "FAVORITE MATERIAL")
+		end
 	end
 
 	local function addimg(matname, pnl)
@@ -1091,9 +1100,26 @@ function SWEP:OpenMaterialBrowser(current, callback)
 		btn.DoClick = selectbutton
 		btn.DoRightClick = function(s) SetClipboardText(s.MaterialPath) end
 		btn:SetTooltip(matname)
+		local mat = btn.m_Image:GetMaterial()
+		local shader = string.lower(mat:GetShader())
+		if shader == "lightmappedgeneric" or shader == "worldtwotextureblend" or string.StartWith(shader, "worldvertextransition") then
+			--we have to fix this
+			local basetex = mat:GetString("$basetexture")
+			local newmat = CreateMaterial("patch_"..basetex, "UnlitGeneric", {
+				["$basetexture"] = basetex,
+			})
+
+			btn:SetMaterial(newmat)
+		end
+
+		btn.matname = matname
+
+
 
 		local p = pnl or matlist
 		p:AddItem(btn)
+
+		return btn
 	end
 
 	local bpanel = vgui.Create("DPanel", container)
@@ -1145,6 +1171,28 @@ function SWEP:OpenMaterialBrowser(current, callback)
 		end
 	choosebtn:DockMargin(0,0,0,5)
 	choosebtn:Dock(BOTTOM)
+
+	container.favbtn = vgui.Create("DButton", rpanel)
+	local favbtn = container.favbtn
+	favbtn:SetTall(20)
+	favbtn:SetText(curfav and "UNFAVORITE MATERIAL" or "FAVORITE MATERIAL")
+
+	favbtn.DoClick = function()
+		if curfav then
+			RemoveMaterialFavorite(selected)
+			curfav = false
+		else
+			AddMaterialFavorite(selected)
+			curfav = true
+		end
+
+		container.favmatlist:Rebuild()
+
+		favbtn:SetText(curfav and "UNFAVORITE MATERIAL" or "FAVORITE MATERIAL")
+	end
+	favbtn:DockMargin(0,0,0,5)
+	favbtn:Dock(BOTTOM)
+
 
 	local LoadDirectories
 	local AddNode = function( base, dir, tree_override )
@@ -1207,22 +1255,36 @@ function SWEP:OpenMaterialBrowser(current, callback)
 
 	prop:AddSheet("Materials", browser)
 
-	local sckmats = vgui.Create("DScrollPanel", prop)
-	sckmats:Dock(FILL)
-	sckmats:InvalidateLayout(true)
+	local favmats = vgui.Create("DScrollPanel", prop)
+	favmats:Dock(FILL)
+	favmats:InvalidateLayout(true)
 
-	local sckmatlist = vgui.Create("DGrid", sckmats)
-	sckmatlist:SetSize(matcontainer:GetSize())
-	sckmatlist:SetCols(4)
-	sckmatlist:InvalidateLayout(true)
-	sckmatlist:SetColWide(480 / 4)
-	sckmatlist:SetRowHeight(480 / 4)
+	local favmatlist = vgui.Create("DGrid", favmats)
+	favmatlist:SetSize(matcontainer:GetSize())
+	favmatlist:SetCols(4)
+	favmatlist:InvalidateLayout(true)
+	favmatlist:SetColWide(480 / 4)
+	favmatlist:SetRowHeight(480 / 4)
+	favmatlist:SortByMember("matname")
+	container.favmatlist = favmatlist
 
-	for k, v in ipairs(SCKMaterials) do
-		addimg("!"..v, sckmatlist)
+	favmatlist.Rebuild = function(self)
+		for k, v in pairs(self:GetChildren()) do
+			self:RemoveItem(v)
+		end
+
+		for k, v in SortedPairs(SCKMaterialFavs) do
+			if v then
+				addimg(k, favmatlist)
+			end
+		end
+		self:InvalidateLayout(true)
 	end
 
-	prop:AddSheet("SCK Materials", sckmats)
+
+	favmatlist:Rebuild()
+
+	prop:AddSheet("Favorite Materials", favmats)
 end
 
 function SWEP:OpenModelBrowser(current, callback)
@@ -1419,6 +1481,19 @@ local function CreateMenu( preset )
 		-- use the preset
 		for k, v in pairs( preset ) do
 			wep.save_data[k] = v
+		end
+
+		--clean up materials now!!
+		for k, v in pairs(wep.save_data.v_models) do
+			if SCKMaterialCompat[v.material] then
+				v.material = SCKMaterialCompat[v.material]
+			end
+		end
+
+		for k, v in pairs(wep.save_data.w_models) do
+			if SCKMaterialCompat[v.material] then
+				v.material = SCKMaterialCompat[v.material]
+			end
 		end
 	end
 
