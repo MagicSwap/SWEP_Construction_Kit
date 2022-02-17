@@ -104,7 +104,6 @@ SWEP.ir_drag = {
 
 SWEP.Frame = nil
 SWEP.cur_drag_mode = "x / z"
-SWEP.basecode = "FAILED TO READ BASE CODE"
 
 function SWEP:ClientInit()
 	SCKDebug("Client init start")
@@ -116,11 +115,6 @@ function SWEP:ClientInit()
 			self:ResetBonePositions(vm)
 		end
 	end
-
-	local basecodepath = "lua/weapons/swep_construction_kit/base_code.lua"
-	self.basecode = file.Read(basecodepath, "GAME")
-
-	SCKDebug("Loaded base code")
 end
 
 function SimplePanel( parent, scroll )

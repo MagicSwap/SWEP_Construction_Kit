@@ -227,14 +227,3 @@ local psettings = SimplePanel(ptool)
 psettings:SetTall(selabel:GetTall() + lftext:GetTall() + satext:GetTall() + 30)
 psettings:DockPadding(0,5,0,5)
 psettings:Dock(TOP)
-
--- base code
-local basecbtn = vgui.Create( "DButton", ptool )
-	basecbtn:SetTall( 30 )
-	basecbtn:SetText( "Copy SWEP base code to clipboard" )
-	basecbtn.DoClick = function()
-		SetClipboardText(wep.basecode)
-		LocalPlayer():ChatPrint("Base code copied to clipboard!")
-	end
-basecbtn:DockMargin(0,5,0,0)
-basecbtn:Dock(TOP)
