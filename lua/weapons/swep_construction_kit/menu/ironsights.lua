@@ -6,10 +6,6 @@ local drag_modes = {
 	["roll"] = { "roll" }
 }
 
-local function GetIronSightPrintText( vec, ang )
-	return "SWEP.IronSightsPos = "..PrintVec( vec ).."\nSWEP.IronSightsAng = "..PrintVec( ang )
-end
-
 local wep = GetSCKSWEP( LocalPlayer() )
 local pironsight = wep.pironsight
 local pironsight_enable = SimplePanel( pironsight )
@@ -133,27 +129,3 @@ local irslider = vgui.Create( "DNumSlider", pironsight )
 	end
 irslider:DockMargin(0,0,0,10)
 irslider:Dock(TOP)
-
-local pcbtn = vgui.Create( "DButton", pironsight )
-	pcbtn:SetTall( 30 )
-	pcbtn:SetText( "Copy ironsights code to clipboard" )
-	pcbtn.DoClick = function()
-		local vec, ang = wep:GetIronSightCoordination()
-		SetClipboardText(GetIronSightPrintText( vec, ang ))
-		LocalPlayer():ChatPrint("Code copied to clipboard!")
-	end
-pcbtn:DockMargin(0,5,0,0)
-pcbtn:Dock(BOTTOM)
-
-local prbtn = vgui.Create( "DButton", pironsight )
-	prbtn:SetTall( 30 )
-	prbtn:SetText( "Print ironsights code to console" )
-	prbtn.DoClick = function()
-		local vec, ang = wep:GetIronSightCoordination()
-		MsgN("*********************************************")
-		MsgN(GetIronSightPrintText( vec, ang ))
-		MsgN("*********************************************")
-		LocalPlayer():ChatPrint("Code printed to console!")
-	end
-prbtn:DockMargin(0,5,0,0)
-prbtn:Dock(BOTTOM)

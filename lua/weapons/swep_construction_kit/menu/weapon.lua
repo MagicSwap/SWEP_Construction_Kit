@@ -1,33 +1,3 @@
-
-local function GetWeaponPrintText( wep )
-	str = ""
-	str = str.."SWEP.HoldType = \""..wep.HoldType.."\"\n"
-	str = str.."SWEP.ViewModelFOV = "..wep.ViewModelFOV.."\n"
-	str = str.."SWEP.ViewModelFlip = "..tostring(wep.ViewModelFlip).."\n"
-	str = str.."SWEP.ViewModel = \""..wep.ViewModel.."\"\n"
-	str = str.."SWEP.WorldModel = \""..wep.CurWorldModel.."\"\n"
-	str = str.."SWEP.ShowViewModel = "..tostring(wep.ShowViewModel).."\n"
-	str = str.."SWEP.ShowWorldModel = "..tostring(wep.ShowWorldModel).."\n"
-	str = str.."SWEP.ViewModelBoneMods = {"
-	local i = 0
-	local num = table.Count( wep.v_bonemods )
-	for k, v in SortedPairs(wep.v_bonemods) do
-		if !(v.scale == Vector(1,1,1) and v.pos == Vector(0,0,0) and v.angle == Angle(0,0,0)) then
-			if (i == 0) then str = str.."\n" end
-			i = i + 1
-			str = str.."\t[\""..k.."\"] = { scale = "..PrintVec( v.scale )..", pos = "..PrintVec( v.pos )..", angle = "..PrintAngle( v.angle ).." }"
-
-			if (i < num) then str = str.."," end
-			str = str.."\n"
-		end
-	end
-	str = str.."}"
-
-	str = string.Replace(str,",\n}","\n}") -- remove the last comma
-
-	return str
-end
-
 local function ClearViewModels()
 	local wep = GetSCKSWEP( LocalPlayer() )
 
@@ -616,30 +586,6 @@ resselbtn.DoClick = function()
 end
 
 wep.v_modelbonebox = vsbonebox
-
-local wpbtn = vgui.Create( "DButton", pweapon )
-	wpbtn:SetTall( 30 )
-	wpbtn:SetText( "Print weapon code to console" )
-	wpbtn.DoClick = function()
-		MsgN("*********************************************")
-		for k, v in pairs(string.Explode("\n",GetWeaponPrintText(wep))) do
-			MsgN(v)
-		end
-		MsgN("*********************************************")
-		LocalPlayer():ChatPrint("Code printed to console!")
-	end
-wpbtn:DockMargin(0,5,0,0)
-wpbtn:Dock(TOP)
-
-local wpcbtn = vgui.Create( "DButton", pweapon )
-	wpcbtn:SetTall( 30 )
-	wpcbtn:SetText( "Copy weapon code to clipboard" )
-	wpcbtn.DoClick = function()
-		SetClipboardText(GetWeaponPrintText(wep))
-		LocalPlayer():ChatPrint("Code copied to clipboard!")
-	end
-wpcbtn:DockMargin(0,5,0,0)
-wpcbtn:Dock(TOP)
 
 local wpdbtn = vgui.Create( "DButton", pweapon )
 	wpdbtn:SetTall( 30 )

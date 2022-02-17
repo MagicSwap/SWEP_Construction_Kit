@@ -2,92 +2,6 @@ local icon_model = "icon16/brick.png"
 local icon_sprite = "icon16/asterisk_yellow.png"
 local icon_quad = "icon16/picture_empty.png"
 
-local function GetVModelsText()
-	local wep = GetSCKSWEP(LocalPlayer())
-	if not IsValid(wep) then return "" end
-
-	local str = "SWEP.VElements = {\n"
-	local i = 0
-	local num = table.Count(wep.v_models)
-	for k, v in SortedPairs( wep.v_models ) do
-		if (v.type == "Model") then
-			str = str.."\t[\""..k.."\"] = { type = \"Model\", model = \""..v.model.."\", bone = \""..v.bone.."\", rel = \""..v.rel.."\", pos = "..PrintVec(v.pos)
-			str = str..", angle = "..PrintAngle( v.angle )..", size = "..PrintVec(v.size)..", color = "..PrintColor( v.color )
-			str = str..", surpresslightning = "..tostring(v.surpresslightning)..", material = \""..v.material.."\", skin = "..v.skin
-			str = str..", bodygroup = {"
-			local i = 0
-			for k, v in SortedPairs( v.bodygroup ) do
-				if (v <= 0) then continue end
-				if ( i != 0 ) then str = str..", " end
-				i = 1
-				str = str.."["..k.."] = "..v
-			end
-			str = str.."} }"
-		elseif (v.type == "Sprite") then
-			str = str.."\t[\""..k.."\"] = { type = \"Sprite\", sprite = \""..v.sprite.."\", bone = \""..v.bone.."\", rel = \""..v.rel.."\", pos = "..PrintVec(v.pos)
-			str = str..", size = { x = "..v.size.x..", y = "..v.size.y.." }, color = "..PrintColor( v.color )..", nocull = "..tostring(v.nocull)
-			str = str..", additive = "..tostring(v.additive)..", vertexalpha = "..tostring(v.vertexalpha)..", vertexcolor = "..tostring(v.vertexcolor)
-			str = str..", ignorez = "..tostring(v.ignorez).."}"
-		elseif (v.type == "Quad") then
-			str = str.."\t[\""..k.."\"] = { type = \"Quad\", bone = \""..v.bone.."\", rel = \""..v.rel.."\", pos = "..PrintVec(v.pos)..", angle = "..PrintAngle( v.angle )
-			str = str..", size = "..v.size..", draw_func = nil}"
-		end
-
-		if (v.type) then
-			i = i + 1
-			if (i < num) then str = str.."," end
-			str = str.."\n"
-		end
-	end
-	str = str.."}"
-
-	return str
-end
-
-local function GetWModelsText()
-	local wep = GetSCKSWEP( LocalPlayer() )
-	if not IsValid(wep) then return "" end
-
-	local str = "SWEP.WElements = {\n"
-	local i = 0
-	local num = table.Count(wep.w_models)
-	for k, v in SortedPairs( wep.w_models ) do
-		if (v.type == "Model") then
-			str = str.."\t[\""..k.."\"] = { type = \"Model\", model = \""..v.model.."\", bone = \""..v.bone.."\", rel = \""..v.rel.."\", pos = "..PrintVec(v.pos)
-			str = str..", angle = "..PrintAngle( v.angle )..", size = "..PrintVec(v.size)..", color = "..PrintColor( v.color )
-			str = str..", surpresslightning = "..tostring(v.surpresslightning)..", material = \""..v.material.."\", skin = "..v.skin
-			str = str..", bodygroup = {"
-			local i = 0
-			for k, v in SortedPairs( v.bodygroup ) do
-				if (v <= 0) then continue end
-				if ( i != 0 ) then str = str..", " end
-				i = 1
-				str = str.."["..k.."] = "..v
-			end
-			str = str.."} }"
-		elseif (v.type == "Sprite") then
-			str = str.."\t[\""..k.."\"] = { type = \"Sprite\", sprite = \""..v.sprite.."\", bone = \""..v.bone.."\", rel = \""..v.rel.."\", pos = "..PrintVec(v.pos)
-			str = str..", size = { x = "..v.size.x..", y = "..v.size.y.." }, color = "..PrintColor( v.color )..", nocull = "..tostring(v.nocull)
-			str = str..", additive = "..tostring(v.additive)..", vertexalpha = "..tostring(v.vertexalpha)..", vertexcolor = "..tostring(v.vertexcolor)
-			str = str..", ignorez = "..tostring(v.ignorez).."}"
-		elseif (v.type == "Quad") then
-			str = str.."\t[\""..k.."\"] = { type = \"Quad\", bone = \""..v.bone.."\", rel = \""..v.rel.."\", pos = "..PrintVec(v.pos)..", angle = "..PrintAngle( v.angle )
-			str = str..", size = "..v.size..", draw_func = nil}"
-		end
-
-		if (v.type) then
-			i = i + 1
-			if (i < num) then str = str.."," end
-			str = str.."\n"
-		end
-	end
-	str = str.."}"
-
-	str = str.."\n\n"
-
-	return str
-end
-
 -- Some hacky shit to keep the relative DComboBoxes updated
 local boxes_to_update = {}
 local function RegisterRelBox( elementname, box, w_or_v, preset_choice )
@@ -306,30 +220,6 @@ local pbuttons = SimplePanel( pmodels )
 
 pbuttons:DockMargin(0,5,0,5)
 pbuttons:Dock(TOP)
-
--- Print buttons
-local prtbtn = vgui.Create( "DButton", pmodels)
-	prtbtn:SetTall( 30 )
-	prtbtn:SetText("Print view model table to console")
-	prtbtn.DoClick = function()
-		MsgN("*********************************************")
-		for k, v in pairs(string.Explode("\n",GetVModelsText())) do
-			MsgN(v)
-		end
-		MsgN("*********************************************")
-		LocalPlayer():ChatPrint("Code printed to console!")
-	end
-prtbtn:Dock(TOP)
-
-local pctbtn = vgui.Create( "DButton", pmodels)
-	pctbtn:SetTall( 30 )
-	pctbtn:SetText("Copy view model table to clipboard")
-	pctbtn.DoClick = function()
-		SetClipboardText(GetVModelsText())
-		LocalPlayer():ChatPrint("Code copied to clipboard!")
-	end
-pctbtn:DockMargin(0,5,0,0)
-pctbtn:Dock(TOP)
 
 local pCol = 0
 local function PanelBackgroundReset()
@@ -1729,30 +1619,6 @@ local pwbuttons = SimplePanel( pwmodels )
 
 pwbuttons:DockMargin(0,5,0,5)
 pwbuttons:Dock(TOP)
-
--- Print buttons
-local prtbtn = vgui.Create( "DButton", pwmodels)
-	prtbtn:SetTall( 30 )
-	prtbtn:SetText("Print world model table to console")
-	prtbtn.DoClick = function()
-		MsgN("*********************************************")
-		for k, v in ipairs(string.Explode("\n",GetWModelsText())) do
-			MsgN(v)
-		end
-		MsgN("*********************************************")
-		LocalPlayer():ChatPrint("Code printed to console!")
-	end
-prtbtn:Dock(TOP)
-
-local pctbtn = vgui.Create( "DButton", pwmodels)
-	pctbtn:SetTall( 30 )
-	pctbtn:SetText("Copy world model table to clipboard")
-	pctbtn.DoClick = function()
-		SetClipboardText(GetWModelsText())
-		LocalPlayer():ChatPrint("Code copied to clipboard!")
-	end
-pctbtn:DockMargin(0,5,0,0)
-pctbtn:Dock(TOP)
 
 --[[** Model panel for adjusting models ***
 Name:
