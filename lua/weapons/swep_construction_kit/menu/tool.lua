@@ -1,5 +1,4 @@
 
-local tutorialURL = "http://www.facepunch.com/threads/1032378-SWEP-Construction-Kit-developer-tool-for-modifying-viewmodels-ironsights/"
 local wep = GetSCKSWEP( LocalPlayer() )
 local ptool = wep.ptool
 
@@ -228,17 +227,6 @@ local psettings = SimplePanel(ptool)
 psettings:SetTall(selabel:GetTall() + lftext:GetTall() + satext:GetTall() + 30)
 psettings:DockPadding(0,5,0,5)
 psettings:Dock(TOP)
-
--- link to FP thread
-local threadbtn = vgui.Create( "DButton", ptool )
-	threadbtn:SetTall( 30 )
-	threadbtn:SetText( "Open Tutorial (Facepunch thread)" )
-	threadbtn.DoClick = function()
-		gui.OpenURL(tutorialURL) -- Removed in Gmod 13
-		--SetClipboardText(tutorialURL)
-	end
-threadbtn:DockMargin(0,15,0,5)
-threadbtn:Dock(TOP)
 
 -- base code
 local basecbtn = vgui.Create( "DButton", ptool )
