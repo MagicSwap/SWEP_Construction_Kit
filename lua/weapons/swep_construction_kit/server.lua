@@ -59,14 +59,15 @@ local function Cmd_PlayAnimation( pl, cmd, args )
 	local wep = GetSCKSWEP( pl )
 	if (IsValid(wep)) then
 		local anim = tonumber(args[1] or 0)
+		local playback = tonumber(args[2] or 1)
 		--wep:ResetSequenceInfo()
 
 		local vm = pl:GetViewModel()
 
 		vm:ResetSequenceInfo()
-		vm:SetPlaybackRate(1)
 		vm:SetCycle(0)
-		vm:SendViewModelMatchingSequence( vm:SelectWeightedSequence( anim ) )
+		vm:SendViewModelMatchingSequence( anim )
+		vm:SetPlaybackRate(playback)
 	end
 
 end

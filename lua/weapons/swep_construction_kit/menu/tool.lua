@@ -75,7 +75,11 @@ local panim = SimplePanel(ptool)
 
 					local s = vm:LookupSequence( seq )
 					if s then
-						vm:SendViewModelMatchingSequence( s )
+						if game.SinglePlayer() then
+							vm:SendViewModelMatchingSequence( s )
+						else
+							RunConsoleCommand( "swepck_playanimation", s, ptool.AnimationPlaybackRate or 1 )
+						end
 					end
 
 					vm:SetPlaybackRate( ptool.AnimationPlaybackRate or 1 )
