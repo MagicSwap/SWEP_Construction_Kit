@@ -1114,8 +1114,6 @@ function SWEP:OpenMaterialBrowser(current, callback)
 
 		btn.matname = matname
 
-
-
 		local p = pnl or matlist
 		p:AddItem(btn)
 
@@ -1191,7 +1189,7 @@ function SWEP:OpenMaterialBrowser(current, callback)
 		favbtn:SetText(curfav and "UNFAVORITE MATERIAL" or "FAVORITE MATERIAL")
 	end
 	favbtn:DockMargin(0,0,0,5)
-	favbtn:Dock(BOTTOM)
+	favbtn:Dock(TOP)
 
 
 	local LoadDirectories
