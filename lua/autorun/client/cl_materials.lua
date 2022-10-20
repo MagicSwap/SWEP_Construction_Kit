@@ -5,13 +5,31 @@ SCKMaterialCompat = {
 	["!sck_snow"] = "ground/snow01",
 }
 
+local conv_mat = {
+	["lightmappedgeneric"] = true,
+	["lightmappedgeneric_hdr_dx9"] = true,
+	["lightmappedgeneric_dx9"] = true,
+	["lightmappedgeneric_dx8"] = true,
+	["lightmappedgeneric_dx6"] = true,
+
+	["worldtwotextureblend"] = true,
+	["worldtwotextureblend_dx8"] = true,
+	["worldtwotextureblend_dx6"] = true,
+
+	["worldvertextransition"] = true,
+	["worldvertextransition_dx9"] = true,
+	["worldvertextransition_dx8"] = true,
+	["worldvertextransition_dx6"] = true,
+}
+
 function ConvertSCKMaterial(basetex)
 	local mat = Material(basetex)
 
 	local shader = mat:GetShader()
 
 	shader = string.lower(shader)
-	if shader == "vertexlitgeneric" or shader == "unlitgeneric" then return basetex end
+
+	if not conv_mat[shader] then return basetex end
 
 	local matfilename = string.GetFileFromFilename(basetex)
 	local newname = "sck_"..matfilename --can create issues, but good for backwards compat
@@ -19,11 +37,16 @@ function ConvertSCKMaterial(basetex)
 	local trans = mat:GetInt("$translucent") or 0
 	local at = mat:GetInt("$alphatest") or 0
 
-	local newmat = CreateMaterial(newname, "VertexLitGeneric",  {
+	local vta = mat:GetInt("$vertexalpha") or 0
+	local vtc = mat:GetInt("$vertexcolor") or 0
+
+	CreateMaterial(newname, "VertexLitGeneric",  {
 		["$basetexture"] = basetex,
 		["$surfaceprop"] = sp,
 		["$translucent"] = trans,
 		["$alphatest"] = at,
+		["$vertexalpha"] = vta,
+		["$vertexcolor"] = vtc,
 	})
 
 	SCKMaterials[basetex] = "!"..newname
