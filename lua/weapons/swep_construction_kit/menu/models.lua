@@ -154,7 +154,7 @@ local function MaintainRelativePosition( name, new_parent_name, v_or_w, override
 	end
 end
 
-local function SetRelativeForNode( pnl, new_parent, v_or_w )
+local function SetRelativeForNode( pnl, new_parent, v_or_w, rename )
 	local name = pnl:GetText()
 	local new_rel = ""
 
@@ -170,7 +170,10 @@ local function SetRelativeForNode( pnl, new_parent, v_or_w )
 
 	if data and new_rel then
 		-- make sure it is before we set our relative
-		MaintainRelativePosition( name, new_rel, v_or_w )
+		-- oh and skip recalculations if we are just renaming our model
+		if not rename then
+			MaintainRelativePosition( name, new_rel, v_or_w )
+		end
 		data.rel = new_rel
 	end
 end
@@ -717,7 +720,7 @@ local function renamev(old, new, panel)
 			end
 
 			for k, v in pairs( item:GetChildNodes() ) do
-				SetRelativeForNode( v, item, "v" )
+				SetRelativeForNode( v, item, "v", true )
 			end
 		end
 	end
@@ -750,7 +753,7 @@ local function renamew(old, new, panel)
 			end
 
 			for k, v in pairs( item:GetChildNodes() ) do
-				SetRelativeForNode( v, item, "w" )
+				SetRelativeForNode( v, item, "w", true )
 			end
 		end
 	end
