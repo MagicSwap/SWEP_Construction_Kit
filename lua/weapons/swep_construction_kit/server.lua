@@ -73,6 +73,20 @@ local function Cmd_PlayAnimation( pl, cmd, args )
 end
 concommand.Add("swepck_playanimation", Cmd_PlayAnimation)
 
+local function Cmd_HidePlayer( pl, cmd, args )
+
+	local wep = GetSCKSWEP( pl )
+	if (IsValid(wep)) then
+		local hide = tobool(args[1] or 0)
+		
+		pl:SetRenderMode( RENDERMODE_TRANSALPHA )
+		pl:SetColor( hide and Color( 0, 0, 0, 0 ) or color_white )
+		
+	end
+
+end
+concommand.Add("swepck_hideplayer", Cmd_HidePlayer)
+
 local function Cmd_ToggleSights( pl, cmd, args )
 
 	local wep = GetSCKSWEP( pl )
@@ -145,6 +159,21 @@ local function Cmd_WorldModel( pl, cmd, args )
 
 end
 concommand.Add("swepck_worldmodel", Cmd_WorldModel)
+
+local function Cmd_PlayerModel( pl, cmd, args )
+
+	local wep = GetSCKSWEP( pl )
+	if (!IsValid(wep)) then return end
+	local newmod = args[1] or pl:GetModel()
+	newmod = newmod..".mdl"
+	if !file.Exists(newmod, "GAME") then return end
+
+	util.PrecacheModel(newmod)
+	
+	pl:SetModel( newmod )
+
+end
+concommand.Add("swepck_playermodel", Cmd_PlayerModel)
 
 local function Cmd_DropWep( pl, cmd, args )
 

@@ -1584,6 +1584,8 @@ local function CreateMenu( preset )
 		tpsbonelist:SetText( wep.tpsfocusbone )
 	tpsbonelist:DockMargin(5,0,0,0)
 	tpsbonelist:Dock(RIGHT)
+	
+	wep.bonelist = tpsbonelist
 
 	local tlabel = vgui.Create( "DLabel", tpanel )
 		tlabel:SetText( "Focus:" )
@@ -1637,18 +1639,22 @@ local function CreateMenu( preset )
 		wep.pmodels.Paint = function() surface.SetDrawColor(70,70,70,255) surface.DrawRect(0,0,wep.pmodels:GetWide(),wep.pmodels:GetTall()) end
 		wep.pwmodels = vgui.Create("DScrollPanel", tab)
 		wep.pwmodels.Paint = function() surface.SetDrawColor(70,70,70,255) surface.DrawRect(0,0,wep.pwmodels:GetWide(),wep.pwmodels:GetTall()) end
+		wep.pplayer = vgui.Create("DScrollPanel", tab)
+		wep.pplayer.Paint = function() surface.SetDrawColor(70,70,70,255) surface.DrawRect(0,0,wep.pplayer:GetWide(),wep.pplayer:GetTall()) end
 
 		tab:AddSheet( "Tool", wep.ptool, nil, false, false, "Modify tool settings" )
 		tab:AddSheet( "Weapon", wep.pweapon, nil, false, false, "Modify weapon settings" )
 		tab:AddSheet( "Ironsights", wep.pironsight, nil, false, false, "Modify ironsights" )
 		tab:AddSheet( "View Models", wep.pmodels, nil, false, false, "Modify view models" )
 		tab:AddSheet( "World Models", wep.pwmodels, nil, false, false, "Modify world models" )
+		tab:AddSheet( "Player", wep.pplayer, nil, false, false, "For debug purposes ONLY. These settings are NOT saved in the file" )
 
 		wep.ptool:DockPadding(5, 5, 5, 5)
 		wep.pweapon:DockPadding(5, 5, 5, 5)
 		wep.pironsight:DockPadding(5, 5, 5, 5)
 		wep.pmodels:DockPadding(5, 5, 5, 5)
 		wep.pwmodels:DockPadding(5, 5, 5, 5)
+		wep.pplayer:DockPadding(5, 5, 5, 5)
 
 	tab:Dock(FILL)
 
@@ -1671,6 +1677,11 @@ local function CreateMenu( preset )
 		View models and World models page
 	***************************************]]
 	include("weapons/"..wep:GetClass().."/menu/models.lua")
+	
+	--[[***************************************
+		Player helper page
+	***************************************]]
+	include("weapons/"..wep:GetClass().."/menu/player.lua")
 
 	-- finally, return the frame!
 	return f
@@ -1725,6 +1736,9 @@ end
 
 function SWEP:CleanMenu()
 	self:RemoveModels()
+	
+	hook.Remove( "CalcMainActivity", "SCKOverrideActivity" )
+	
 	if (!self.Frame) then return end
 
 	self.v_modelListing = nil

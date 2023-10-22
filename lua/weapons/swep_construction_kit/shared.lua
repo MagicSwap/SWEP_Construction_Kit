@@ -7,6 +7,7 @@ if SERVER then
 	AddCSLuaFile("menu/weapon.lua")
 	AddCSLuaFile("menu/ironsights.lua")
 	AddCSLuaFile("menu/models.lua")
+	AddCSLuaFile("menu/player.lua")
 	AddCSLuaFile("base_code.lua")
 end
 
