@@ -175,6 +175,17 @@ local function Cmd_PlayerModel( pl, cmd, args )
 end
 concommand.Add("swepck_playermodel", Cmd_PlayerModel)
 
+local function Cmd_PlayerModelScale( pl, cmd, args )
+
+	local wep = GetSCKSWEP( pl )
+	if (!IsValid(wep)) then return end
+	local sc = tonumber(args[1] or 1)
+	
+	pl:SetModelScale( sc, 0.0001 )
+
+end
+concommand.Add("swepck_playermodelscale", Cmd_PlayerModelScale)
+
 local function Cmd_DropWep( pl, cmd, args )
 
 	local wep = GetSCKSWEP( pl )

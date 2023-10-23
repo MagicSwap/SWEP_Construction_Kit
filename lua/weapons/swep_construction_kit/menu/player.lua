@@ -117,3 +117,14 @@ panim:DockPadding(0,5,0,5)
 panim:Dock( TOP )
 panim.PerformLayout = function(s) s:SizeToChildren(false, true) end
 
+local scslider = vgui.Create( "DNumSlider", pplayer )
+	scslider:SetText( "Player model scale:" )
+	scslider:SetMinMax( 0.1, 10 )
+	scslider:SetDecimals( 1 )
+	scslider:SetValue( 1 )
+	scslider.Wang.ConVarChanged = function( p, value )
+		RunConsoleCommand("swepck_playermodelscale", value)
+	end
+	scslider.Wang:ConVarChanged(1)
+scslider:DockMargin(0,0,0,10)
+scslider:Dock(TOP)

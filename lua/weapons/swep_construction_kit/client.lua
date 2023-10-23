@@ -715,6 +715,18 @@ function SWEP:ViewModelDrawn()
 			if v.inversed and v.size.x > 0 then
 				v.inversed = nil
 			end
+			
+			if v.bonemerge then
+				if !model:IsEffectActive( EF_BONEMERGE ) then
+					model:SetParent( vm )
+					model:AddEffects( EF_BONEMERGE )
+				end
+			else
+				if model:IsEffectActive( EF_BONEMERGE ) then
+					model:SetParent( self )
+					model:RemoveEffects( EF_BONEMERGE )
+				end
+			end
 
 			if (v.material == "") then
 				model:SetMaterial("")
@@ -880,6 +892,18 @@ function SWEP:DrawWorldModel()
 			matrix:Scale(v.size)
 			model:EnableMatrix( "RenderMultiply", matrix )
 
+			if v.bonemerge then
+				if !model:IsEffectActive( EF_BONEMERGE ) then
+					model:SetParent( self:GetOwner() )
+					model:AddEffects( EF_BONEMERGE )
+				end
+			else
+				if model:IsEffectActive( EF_BONEMERGE ) then
+					model:SetParent( self )
+					model:RemoveEffects( EF_BONEMERGE )
+				end
+			end
+			
 			if (v.material == "") then
 				model:SetMaterial("")
 			elseif model:GetMaterial() ~= (SCKMaterials[v.material] or v.material) then
@@ -1738,6 +1762,8 @@ function SWEP:CleanMenu()
 	self:RemoveModels()
 	
 	hook.Remove( "CalcMainActivity", "SCKOverrideActivity" )
+	
+	RunConsoleCommand("swepck_playermodelscale", "1")
 	
 	if (!self.Frame) then return end
 

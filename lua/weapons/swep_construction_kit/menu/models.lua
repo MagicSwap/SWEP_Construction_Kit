@@ -917,6 +917,23 @@ local function CreateSLightningModifier( data, panel )
 	return panel
 end
 
+local function CreateBonemergeModifier( data, panel )
+	local lschbox = vgui.Create( "DCheckBoxLabel", panel )
+		lschbox:SetText("Enable bonemerge")
+		lschbox:SizeToContents()
+		lschbox.OnChange = function()
+			data.bonemerge = lschbox:GetChecked()
+		end
+		if (data.bonemerge) then
+			lschbox:SetValue( 1 )
+		else
+			lschbox:SetValue( 0 )
+		end
+	lschbox:Dock(LEFT)
+
+	return panel
+end
+
 local function CreateBoneModifier( data, panel, ent, name )
 	local pbonelabel = vgui.Create( "DLabel", panel )
 		pbonelabel:SetText( "Bone:" )
@@ -1084,6 +1101,7 @@ local function CreateModelPanel( name, preset_data )
 	data.size = preset_data.size or Vector(0.5,0.5,0.5)
 	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
 	data.surpresslightning = preset_data.surpresslightning or false
+	data.bonemerge = preset_data.bonemerge or false
 	data.material = preset_data.material or ""
 	data.bodygroup = preset_data.bodygroup or {}
 	data.skin = preset_data.skin or 0
@@ -1104,6 +1122,7 @@ local function CreateModelPanel( name, preset_data )
 	panellist:AddItem(CreateNameLabel( name, SimplePanel(panellist) ))
 	panellist:AddItem(CreateModelModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateBoneModifier( data, SimplePanel(panellist), LocalPlayer():GetViewModel(), name ))
+	panellist:AddItem(CreateBonemergeModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreatePositionModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateAngleModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateSizeModifiers( data, SimplePanel(panellist), 3 ))
@@ -1646,6 +1665,7 @@ local function CreateWorldModelPanel( name, preset_data )
 	data.size = preset_data.size or Vector(0.5,0.5,0.5)
 	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
 	data.surpresslightning = preset_data.surpresslightning or false
+	data.bonemerge = preset_data.bonemerge or false
 	data.material = preset_data.material or ""
 	data.bodygroup = preset_data.bodygroup or {}
 	data.skin = preset_data.skin or 0
@@ -1666,6 +1686,7 @@ local function CreateWorldModelPanel( name, preset_data )
 	panellist:AddItem(CreateNameLabel( name, SimplePanel(panellist), true ))
 	panellist:AddItem(CreateModelModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateBoneModifier( data, SimplePanel(panellist), LocalPlayer(), name ))
+	panellist:AddItem(CreateBonemergeModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreatePositionModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateAngleModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateSizeModifiers( data, SimplePanel(panellist), 3 ))
