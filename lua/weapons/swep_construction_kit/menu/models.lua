@@ -623,6 +623,7 @@ end
 
 local function CreateModelModifier( data, panel )
 	panel:SetTall(20)
+	panel.data = data
 
 	local pmolabel = vgui.Create( "DLabel", panel )
 		pmolabel:SetText( "Model:" )
@@ -643,6 +644,7 @@ local function CreateModelModifier( data, panel )
 			if file.Exists(newmod, "GAME") then
 				util.PrecacheModel(newmod)
 				data.model = newmod
+				panel.data.model = newmod
 			end
 		end
 		pmmtext:SetText( data.model )
@@ -659,6 +661,7 @@ end
 
 local function CreateSpriteModifier( data, panel )
 	panel:SetTall(20)
+	panel.data = data
 
 	local pmolabel = vgui.Create( "DLabel", panel )
 		pmolabel:SetText( "Sprite:" )
@@ -678,6 +681,7 @@ local function CreateSpriteModifier( data, panel )
 			local newsprite = pmmtext:GetValue()
 			if file.Exists("materials/"..newsprite..".vmt", "GAME") then
 				data.sprite = newsprite
+				panel.data.sprite = newsprite
 			end
 		end
 		pmmtext:SetText( data.sprite )
@@ -1249,6 +1253,24 @@ local function FixInsertNode( self, pNode )
 	return pNode
 end
 
+-- yet again, this is a very stupid fix
+local function FixDoChildrenOrder( self )
+
+	if ( !IsValid( self.ChildNodes ) ) then return end
+
+	local children = self.ChildNodes:GetChildren()
+	local last = #children
+	
+	if last == 0 then return end
+
+	for i = 1, (last - 1) do
+		children[i]:SetLastChild( false )
+	end
+	children[last]:SetLastChild( true )
+	
+
+end
+
 -- adding button DoClick
 mnbtn.DoClick = function()
 	local new = string.Trim( mntext:GetValue() )
@@ -1280,6 +1302,7 @@ mnbtn.DoClick = function()
 	local node = mtree:AddNode( new, icon )
 	node.Type = boxselected
 	node.InsertNode = FixInsertNode
+	node.DoChildrenOrder = FixDoChildrenOrder
 	node._ParentNode = node:GetParentNode()
 
 	local old_DroppedOn = node.DroppedOn
@@ -1320,6 +1343,7 @@ for k, v in SortedPairs(wep.save_data.v_models) do
 	node.Type = v.type
 	node.InsertNode = FixInsertNode
 	node._ParentNode = node:GetParentNode()
+	node.DoChildrenOrder = FixDoChildrenOrder
 
 	local old_DroppedOn = node.DroppedOn
 	node.DroppedOn = function( self, pnl )
@@ -1416,6 +1440,7 @@ copybtn.DoClick = function()
 	local node = mtree:AddNode( name, icon )
 	node.Type = new_preset.type
 	node.InsertNode = FixInsertNode
+	node.DoChildrenOrder = FixDoChildrenOrder
 	node._ParentNode = node:GetParentNode()
 
 	local old_DroppedOn = node.DroppedOn
@@ -1494,6 +1519,7 @@ importbtn.DoClick = function()
 		local node = mtree:AddNode( name, icon )
 		node.Type = v.type
 		node.InsertNode = FixInsertNode
+		node.DoChildrenOrder = FixDoChildrenOrder
 		node._ParentNode = node:GetParentNode()
 
 		local old_DroppedOn = node.DroppedOn
@@ -1830,6 +1856,7 @@ mnwbtn.DoClick = function()
 	local node = mwtree:AddNode( new, icon )
 	node.Type = boxselected
 	node.InsertNode = FixInsertNode
+	node.DoChildrenOrder = FixDoChildrenOrder
 	node._ParentNode = node:GetParentNode()
 
 	local old_DroppedOn = node.DroppedOn
@@ -1874,6 +1901,7 @@ for k, v in SortedPairs( wep.save_data.w_models ) do
 	local node = mwtree:AddNode( k, icon )
 	node.Type = v.type
 	node.InsertNode = FixInsertNode
+	node.DoChildrenOrder = FixDoChildrenOrder
 	node._ParentNode = node:GetParentNode()
 
 	local old_DroppedOn = node.DroppedOn
@@ -1954,6 +1982,7 @@ importbtn.DoClick = function()
 		local node = mwtree:AddNode( name, icon )
 		node.Type = v.type
 		node.InsertNode = FixInsertNode
+		node.DoChildrenOrder = FixDoChildrenOrder
 		node._ParentNode = node:GetParentNode()
 
 		local old_DroppedOn = node.DroppedOn
@@ -2052,6 +2081,7 @@ copybtn.DoClick = function()
 	local node = mwtree:AddNode( name, icon )
 	node.Type = new_preset.type
 	node.InsertNode = FixInsertNode
+	node.DoChildrenOrder = FixDoChildrenOrder
 	node._ParentNode = node:GetParentNode()
 
 	local old_DroppedOn = node.DroppedOn

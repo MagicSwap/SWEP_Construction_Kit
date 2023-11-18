@@ -706,6 +706,10 @@ function SWEP:ViewModelDrawn()
 			local matrix = Matrix()
 			matrix:Scale(v.size)
 			model:EnableMatrix( "RenderMultiply", matrix )
+			
+			if model.ModelMatrixScale ~= v.size then
+				model.ModelMatrixScale = v.size
+			end
 
 			if v.size.x < 0 and not v.inversed then
 				v.inversed = true
@@ -891,6 +895,10 @@ function SWEP:DrawWorldModel()
 			local matrix = Matrix()
 			matrix:Scale(v.size)
 			model:EnableMatrix( "RenderMultiply", matrix )
+			
+			if model.ModelMatrixScale ~= v.size then
+				model.ModelMatrixScale = v.size
+			end
 
 			if v.bonemerge then
 				if !model:IsEffectActive( EF_BONEMERGE ) then
