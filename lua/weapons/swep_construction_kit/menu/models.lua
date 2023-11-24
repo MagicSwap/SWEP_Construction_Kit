@@ -192,6 +192,7 @@ local mtree = vgui.Create( "DTree", pmodels)
 
 	mtree.OnNodeSelected = function( panel )
 		local name = mtree:GetSelectedItem():GetText()
+		if wep.v_panelCache[name] == nil then return end
 
 		if (wep.v_panelCache[lastVisible]) then
 			wep.v_panelCache[lastVisible]:SetVisible(false)
@@ -726,6 +727,8 @@ local function renamev(old, new, panel)
 			for k, v in pairs( item:GetChildNodes() ) do
 				SetRelativeForNode( v, item, "v", true )
 			end
+			
+			listing:SetSelectedItem( item )
 		end
 	end
 end
@@ -759,6 +762,8 @@ local function renamew(old, new, panel)
 			for k, v in pairs( item:GetChildNodes() ) do
 				SetRelativeForNode( v, item, "w", true )
 			end
+			
+			listing:SetSelectedItem( item )
 		end
 	end
 end
@@ -939,6 +944,8 @@ local function CreateBonemergeModifier( data, panel )
 end
 
 local function CreateBoneModifier( data, panel, ent, name )
+	panel.data = data
+	
 	local pbonelabel = vgui.Create( "DLabel", panel )
 		pbonelabel:SetText( "Bone:" )
 		pbonelabel:SetWide(60)
@@ -973,9 +980,7 @@ local function CreateBoneModifier( data, panel, ent, name )
 		end
 	end)
 
-	if !ent:IsPlayer() then
-		panel.bonebox = bonebox
-	end
+	panel.bonebox = bonebox
 
 	return panel
 end
@@ -1636,7 +1641,8 @@ local mwtree = vgui.Create( "DTree", pwmodels)
 
 	mwtree.OnNodeSelected = function( panel )
 		local name = mwtree:GetSelectedItem():GetText()
-
+		if wep.w_panelCache[name] == nil then return end
+		
 		if (wep.w_panelCache[lastVisible]) then
 			wep.w_panelCache[lastVisible]:SetVisible(false)
 		end

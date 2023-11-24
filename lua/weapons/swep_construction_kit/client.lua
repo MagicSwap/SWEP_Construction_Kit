@@ -1613,7 +1613,6 @@ local function CreateMenu( preset )
 		tpsbonelist.OnSelect = function( p, index, value )
 			wep.tpsfocusbone = value
 		end
-		tpsbonelist:SetText( wep.tpsfocusbone )
 	tpsbonelist:DockMargin(5,0,0,0)
 	tpsbonelist:Dock(RIGHT)
 	
@@ -1627,6 +1626,17 @@ local function CreateMenu( preset )
 	tlabel:Dock(RIGHT)
 
 	PopulateBoneList( tpsbonelist, LocalPlayer() )
+	timer.Simple( 0.1, function()
+		if tpsbonelist and wep.tpsfocusbone then
+			for i=1, #tpsbonelist.Choices do
+				if wep.tpsfocusbone == tpsbonelist.Choices[i] then
+					tpsbonelist:ChooseOptionID(i)
+					break
+				end
+			end
+			//tpsbonelist:SetText( wep.tpsfocusbone )
+		end
+	end)
 
 	local yinvcheck = vgui.Create("DCheckBoxLabel", tpanel)
 	yinvcheck:SetText("Invert Y")

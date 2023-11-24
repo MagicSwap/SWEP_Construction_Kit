@@ -98,14 +98,64 @@ local agrid = vgui.Create( "DListView", panim )
 	agrid.Think = function( self )
 	if wep:GetOwner() and pplayer.LastPlayerModel ~= wep:GetOwner():GetModel() and agrid then
 
+		local skip = pplayer.LastPlayerModel == nil
+	
 		pplayer.LastPlayerModel = wep:GetOwner():GetModel()
 
 		self:Clear()
 
 		self:UpdateList()
 		
-		if wep.bonelist then
-			PopulateBoneList( wep.bonelist, wep:GetOwner() )
+		if wep.bonelist and not skip then
+			timer.Simple(0.1, function()
+				if IsValid( wep:GetOwner() ) and wep.bonelist then
+				
+					local option = PopulateBoneList( wep.bonelist, wep:GetOwner() )
+					
+					for i=1, #wep.bonelist.Choices do
+						if wep.tpsfocusbone == wep.bonelist.Choices[i] then
+							wep.bonelist:ChooseOptionID(i)
+							option = nil
+							break
+						end
+					end
+					
+					if option then
+						wep.bonelist:ChooseOptionID(1)
+					end
+					
+				end
+			end)
+		end
+		
+		if wep.w_panelCache then
+			for _, element_list in pairs( wep.w_panelCache ) do
+				for k, v in pairs( element_list:GetItems() ) do
+					if IsValid( v ) and IsValid( v.bonebox ) then
+						timer.Simple(0.1, function()
+							if IsValid( v.bonebox ) then
+								local option = PopulateBoneList( v.bonebox, wep:GetOwner() )
+								if v.data and v.data.bone then
+									
+									local force_override_bone = true
+									
+									for i=1, #v.bonebox.Choices do
+										if v.data.bone == v.bonebox.Choices[i] then
+											v.bonebox:ChooseOptionID(i)
+											force_override_bone = false
+											break
+										end
+									end
+									
+									if force_override_bone and option then
+										v.bonebox:ChooseOptionID(1)
+									end
+								end
+							end
+						end)
+					end
+				end
+			end
 		end
 		
 		panim:SizeToChildren(false, true)
