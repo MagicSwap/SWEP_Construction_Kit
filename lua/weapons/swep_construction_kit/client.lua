@@ -817,10 +817,11 @@ function SWEP:DrawWorldModel()
 
 	local bone_ent
 
-	if (IsValid(self:GetOwner())) then
-		self:SetColor(Color(255,255,255,255))
-		self:SetRenderMode(0)
-		wm:SetNoDraw(true)
+	if IsValid( self:GetOwner() ) then
+		self:SetRenderMode(  RENDERMODE_NORMAL  )
+		wm:SetNoDraw( true )
+		wm:DrawShadow( true )
+		self:DrawShadow( true )
 		if (self:GetOwner():IsPlayer() and self:GetOwner():GetActiveWeapon() != self.Weapon) then return end
 		wm:SetParent(self:GetOwner())
 		if !self:GetOwner():IsPlayer() then
@@ -833,16 +834,15 @@ function SWEP:DrawWorldModel()
 		bone_ent = self:GetOwner()
 	else
 		-- this only happens if the weapon is dropped, which shouldn't happen normally.
-		self:SetColor(Color(255,0,0,0))
 		self:SetRenderMode( RENDERMODE_NONE )
-		wm:SetNoDraw(false) -- else DrawWorldModel stops being called for some reason
-		wm:SetParent(self)
-		--wm:SetPos(opos)
-		--wm:SetAngles(oang)
-		if (self.ShowWorldModel) then
+		wm:SetNoDraw( true )
+		wm:SetParent( self )
+		wm:DrawShadow( false )
+		self:DrawShadow( false )
+
+		render.SetBlend(self.ShowWorldModel and 1 or 0)
 			wm:DrawModel()
-		end
-		//self:DrawModel()
+		render.SetBlend(1)
 
 		-- the reason that we don't always use this bone is because it lags 1 frame behind the player's right hand bone when held
 		bone_ent = wm
