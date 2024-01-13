@@ -1865,5 +1865,36 @@ hook.Add("ShouldDrawLocalPlayer", "ThirdPerson", function(pl)
 	end
 end)
 
+local undo_color = false
+local undo_material = false
+
+hook.Add("PrePlayerDraw", "SCKPrePlayerDraw", function( pl )
+	local wep = pl:GetActiveWeapon()
+	
+	if wep.PlayerColor then
+		render.SetColorModulation( wep.PlayerColor.r / 255, wep.PlayerColor.g / 255, wep.PlayerColor.b / 255 )
+		render.SetBlend( wep.PlayerColor.a / 255 )
+		undo_color = true
+	end
+	
+	if wep.PlayerMaterial and wep.PlayerMaterialName then
+		render.ModelMaterialOverride( wep.PlayerMaterial )
+		undo_material = true
+	end
+end)
+
+hook.Add("PostPlayerDraw", "SCKPostPlayerDraw", function( pl )
+	if undo_color then
+		render.SetColorModulation( 1, 1, 1 )
+		render.SetBlend( 1 )
+		undo_color = false
+	end
+	
+	if undo_material then
+		render.ModelMaterialOverride( )
+		undo_material = false
+	end
+end)
+
 CreateClientConVar("swepck_thirdperson_invx", 0, true, false, "Inverts X axis movement in third person.", 0, 1)
 CreateClientConVar("swepck_thirdperson_invy", 0, true, false, "Inverts Y axis movement in third person.", 0, 1)

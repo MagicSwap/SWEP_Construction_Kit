@@ -178,3 +178,74 @@ local scslider = vgui.Create( "DNumSlider", pplayer )
 	scslider.Wang:ConVarChanged(1)
 scslider:DockMargin(0,0,0,10)
 scslider:Dock(TOP)
+
+local pcolor = SimplePanel(pplayer)
+pcolor:SetTall(32*5)
+
+local collabel = vgui.Create( "DLabel", pcolor )
+		collabel:SetText( "Player color:" )
+		collabel:SizeToContents()
+		collabel:SetWide(85)
+	collabel:Dock(LEFT)
+
+	local colpicker = vgui.Create("DColorMixer", pcolor )
+	colpicker:Dock(FILL)
+
+	colpicker.ValueChanged = function(self, tcol)
+		if wep.PlayerColor == nil then wep.PlayerColor = Color( 255, 255, 255, 255 ) end
+		
+		wep.PlayerColor.r = tcol.r
+		wep.PlayerColor.g = tcol.g
+		wep.PlayerColor.b = tcol.b
+		wep.PlayerColor.a = tcol.a or 255
+
+	end
+
+	local loadcol = wep.PlayerColor or Color( 255, 255, 255, 255 )
+	colpicker:SetColor(loadcol)
+
+	pcolor.PerformLayout = function()
+
+	end
+
+pcolor:DockMargin(0,0,0,5)
+pcolor:Dock(TOP)
+
+local pmat = SimplePanel(pplayer)
+pmat:SetTall(20)
+
+	local matlabel = vgui.Create( "DLabel", pmat )
+		matlabel:SetText( "Player material:" )
+		matlabel:SetWide(75)
+		matlabel:SizeToContentsY()
+	matlabel:Dock(LEFT)
+
+	local wtbtn = vgui.Create( "DButton", pmat )
+		wtbtn:SetSize( 25, 20 )
+		wtbtn:SetText("...")
+	wtbtn:Dock(RIGHT)
+
+	local mattext = vgui.Create("DTextEntry", pmat )
+		mattext:SetMultiline(false)
+		mattext:SetTooltip("Path to the material file")
+		mattext.OnTextChanged = function()
+			local newmat = mattext:GetValue()
+			local newmatmat = Material(newmat)
+			if file.Exists("materials/"..newmat..".vmt", "GAME") or newmatmat and not newmatmat:IsError() then
+				wep.PlayerMaterial = newmatmat
+				wep.PlayerMaterialName = newmat
+			else
+				wep.PlayerMaterial = nil
+				wep.PlayerMaterialName = ""
+			end
+		end
+		mattext:SetText( wep.PlayerMaterialName or "" )
+	mattext:DockMargin(10,0,0,0)
+	mattext:Dock(FILL)
+
+	wtbtn.DoClick = function()
+		wep:OpenMaterialBrowser( wep.PlayerMaterialName or "", function( val ) mattext:SetText(val) mattext:OnTextChanged() end )
+	end
+	
+pmat:DockMargin(0,0,0,5)
+pmat:Dock(TOP)
