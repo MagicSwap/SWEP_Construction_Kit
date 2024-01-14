@@ -1868,10 +1868,10 @@ end)
 local undo_color = false
 local undo_material = false
 
-hook.Add("PrePlayerDraw", "SCKPrePlayerDraw", function( pl )
+hook.Add("PrePlayerDraw", "SCKPrePlayerDraw", function( pl, flags )
 	local wep = pl:GetActiveWeapon()
 	
-	if wep.PlayerColor then
+	if wep.PlayerColor and bit.band( flags, STUDIO_RENDER ) ~= 0 then
 		render.SetColorModulation( wep.PlayerColor.r / 255, wep.PlayerColor.g / 255, wep.PlayerColor.b / 255 )
 		render.SetBlend( wep.PlayerColor.a / 255 )
 		undo_color = true
