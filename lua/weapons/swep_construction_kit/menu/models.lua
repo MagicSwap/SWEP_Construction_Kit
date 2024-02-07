@@ -943,6 +943,28 @@ local function CreateBonemergeModifier( data, panel )
 	return panel
 end
 
+local function CreateHighRenderModifier( data, panel )
+	local lschbox = vgui.Create( "DCheckBoxLabel", panel )
+		lschbox:SetText("Force draw element on top of other elements")
+		lschbox:SizeToContents()
+		lschbox.OnChange = function()
+			data.highrender = lschbox:GetChecked()
+			-- redo the render order on demand
+			if wep and wep:IsValid() then
+				wep.vRenderOrder = nil
+				wep.wRenderOrder = nil
+			end
+		end
+		if (data.highrender) then
+			lschbox:SetValue( 1 )
+		else
+			lschbox:SetValue( 0 )
+		end
+	lschbox:Dock(LEFT)
+
+	return panel
+end
+
 local function CreateBoneModifier( data, panel, ent, name )
 	panel.data = data
 	
@@ -1111,6 +1133,7 @@ local function CreateModelPanel( name, preset_data )
 	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
 	data.surpresslightning = preset_data.surpresslightning or false
 	data.bonemerge = preset_data.bonemerge or false
+	data.highrender = preset_data.highrender or false
 	data.material = preset_data.material or ""
 	data.bodygroup = preset_data.bodygroup or {}
 	data.skin = preset_data.skin or 0
@@ -1136,6 +1159,7 @@ local function CreateModelPanel( name, preset_data )
 	panellist:AddItem(CreateAngleModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateSizeModifiers( data, SimplePanel(panellist), 3 ))
 	panellist:AddItem(CreateColorModifiers( data, SimplePanel(panellist) ))
+	panellist:AddItem(CreateHighRenderModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateSLightningModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateMaterialModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateBodygroupSkinModifier( data, SimplePanel(panellist) ))
@@ -1698,6 +1722,7 @@ local function CreateWorldModelPanel( name, preset_data )
 	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
 	data.surpresslightning = preset_data.surpresslightning or false
 	data.bonemerge = preset_data.bonemerge or false
+	data.highrender = preset_data.highrender or false
 	data.material = preset_data.material or ""
 	data.bodygroup = preset_data.bodygroup or {}
 	data.skin = preset_data.skin or 0
@@ -1723,6 +1748,7 @@ local function CreateWorldModelPanel( name, preset_data )
 	panellist:AddItem(CreateAngleModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateSizeModifiers( data, SimplePanel(panellist), 3 ))
 	panellist:AddItem(CreateColorModifiers( data, SimplePanel(panellist) ))
+	panellist:AddItem(CreateHighRenderModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateSLightningModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateMaterialModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateBodygroupSkinModifier( data, SimplePanel(panellist) ))

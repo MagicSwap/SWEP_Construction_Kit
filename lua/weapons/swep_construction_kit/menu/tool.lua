@@ -277,7 +277,7 @@ local function GetVModelsText()
 		if (v.type == "Model") then
 			str = str.."\t[\""..k.."\"] = { type = \"Model\", model = \""..v.model.."\", bone = \""..v.bone.."\", rel = \""..v.rel.."\", pos = "..PrintVec(v.pos)
 			str = str..", angle = "..PrintAngle( v.angle )..", size = "..PrintVec(v.size)..", color = "..PrintColor( v.color )
-			str = str..", surpresslightning = "..tostring(v.surpresslightning)..", bonemerge = "..tostring(v.bonemerge)..", material = \""..v.material.."\", skin = "..v.skin
+			str = str..", surpresslightning = "..tostring(v.surpresslightning)..", bonemerge = "..tostring(v.bonemerge)..", highrender = "..tostring(v.highrender)..", material = \""..v.material.."\", skin = "..v.skin
 			str = str..", bodygroup = {"
 			local i = 0
 			for k, v in SortedPairs( v.bodygroup ) do
@@ -319,7 +319,7 @@ local function GetWModelsText()
 		if (v.type == "Model") then
 			str = str.."\t[\""..k.."\"] = { type = \"Model\", model = \""..v.model.."\", bone = \""..v.bone.."\", rel = \""..v.rel.."\", pos = "..PrintVec(v.pos)
 			str = str..", angle = "..PrintAngle( v.angle )..", size = "..PrintVec(v.size)..", color = "..PrintColor( v.color )
-			str = str..", surpresslightning = "..tostring(v.surpresslightning)..", bonemerge = "..tostring(v.bonemerge)..", material = \""..v.material.."\", skin = "..v.skin
+			str = str..", surpresslightning = "..tostring(v.surpresslightning)..", bonemerge = "..tostring(v.bonemerge)..", highrender = "..tostring(v.highrender)..", material = \""..v.material.."\", skin = "..v.skin
 			str = str..", bodygroup = {"
 			local i = 0
 			for k, v in SortedPairs( v.bodygroup ) do

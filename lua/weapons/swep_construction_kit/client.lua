@@ -220,6 +220,7 @@ function SWEP:CreateModels( tab )
 				v.modelEnt:SetAngles(self:GetAngles())
 				v.modelEnt:SetParent(self)
 				v.modelEnt:SetNoDraw(true)
+				--v.modelEnt:SetRenderMode( RENDERMODE_TRANSCOLOR )
 				v.createdModel = v.model
 			else
 				v.modelEnt = nil
@@ -664,7 +665,11 @@ function SWEP:ViewModelDrawn()
 
 		for k, v in pairs( self.v_models ) do
 			if (v.type == "Model") then
-				table.insert(self.vRenderOrder, 1, k)
+				if v.highrender then
+					table.insert(self.vRenderOrder, k)
+				else
+					table.insert(self.vRenderOrder, 1, k)
+				end
 			elseif (v.type == "Sprite" or v.type == "Quad") then
 				table.insert(self.vRenderOrder, k)
 			end
@@ -808,7 +813,11 @@ function SWEP:DrawWorldModel()
 
 		for k, v in pairs( self.w_models ) do
 			if (v.type == "Model") then
-				table.insert(self.wRenderOrder, 1, k)
+				if v.highrender then
+					table.insert(self.wRenderOrder, k)
+				else
+					table.insert(self.wRenderOrder, 1, k)
+				end
 			elseif (v.type == "Sprite" or v.type == "Quad") then
 				table.insert(self.wRenderOrder, k)
 			end

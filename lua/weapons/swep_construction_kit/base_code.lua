@@ -38,6 +38,8 @@ function SWEP:Initialize()
 			if IsValid(vm) then
 				self:ResetBonePositions(vm)
 
+				-- Necrossin: Beware, this is old and terrible! Please use PostDrawViewModel and stuff to handle this
+				
 				-- Init viewmodel visibility
 				if (self.ShowViewModel == nil or self.ShowViewModel) then
 					vm:SetColor(Color(255,255,255,255))
@@ -90,7 +92,11 @@ if CLIENT then
 
 			for k, v in pairs( self.VElements ) do
 				if (v.type == "Model") then
-					table.insert(self.vRenderOrder, 1, k)
+					if v.highrender then
+						table.insert(self.vRenderOrder, k)
+					else
+						table.insert(self.vRenderOrder, 1, k)
+					end
 				elseif (v.type == "Sprite" or v.type == "Quad") then
 					table.insert(self.vRenderOrder, k)
 				end
@@ -135,6 +141,17 @@ if CLIENT then
 					v.inversed = nil
 				end
 
+				if v.bonemerge then
+					if !model:IsEffectActive( EF_BONEMERGE ) then
+						model:SetParent( vm )
+						model:AddEffects( EF_BONEMERGE )
+					end
+				else
+					if model:IsEffectActive( EF_BONEMERGE ) then
+						model:SetParent( self )
+						model:RemoveEffects( EF_BONEMERGE )
+					end
+				end
 
 				if (v.material == "") then
 					model:SetMaterial("")
@@ -209,7 +226,11 @@ if CLIENT then
 
 			for k, v in pairs( self.WElements ) do
 				if (v.type == "Model") then
-					table.insert(self.wRenderOrder, 1, k)
+					if v.highrender then
+						table.insert(self.wRenderOrder, k)
+					else
+						table.insert(self.wRenderOrder, 1, k)
+					end
 				elseif (v.type == "Sprite" or v.type == "Quad") then
 					table.insert(self.wRenderOrder, k)
 				end
@@ -255,6 +276,22 @@ if CLIENT then
 				local matrix = Matrix()
 				matrix:Scale(v.size)
 				model:EnableMatrix( "RenderMultiply", matrix )
+				
+				if model.ModelMatrixScale ~= v.size then
+					model.ModelMatrixScale = v.size
+				end
+				
+				if v.bonemerge then
+					if !model:IsEffectActive( EF_BONEMERGE ) then
+						model:SetParent( self:GetOwner() )
+						model:AddEffects( EF_BONEMERGE )
+					end
+				else
+					if model:IsEffectActive( EF_BONEMERGE ) then
+						model:SetParent( self )
+						model:RemoveEffects( EF_BONEMERGE )
+					end
+				end
 
 				if (v.material == "") then
 					model:SetMaterial("")
@@ -362,7 +399,7 @@ if CLIENT then
 			if (v.type == "Model" and v.model and v.model != "" and (!IsValid(v.modelEnt) or v.createdModel != v.model) and
 					string.find(v.model, ".mdl") and file.Exists (v.model, "GAME") ) then
 
-				v.modelEnt = ClientsideModel(v.model, RENDER_GROUP_VIEW_MODEL_OPAQUE)
+				v.modelEnt = ClientsideModel(v.model, RENDERGROUP_TRANSLUCENT)
 				if (IsValid(v.modelEnt)) then
 					v.modelEnt:SetPos(self:GetPos())
 					v.modelEnt:SetAngles(self:GetAngles())
