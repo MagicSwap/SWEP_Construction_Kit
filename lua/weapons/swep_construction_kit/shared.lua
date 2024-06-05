@@ -186,10 +186,33 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	if self.LockViewmodel then
 		if self.LockVMPos and self.LockVMAng then
+			
+			if self.ViewModelFlip then
+				
+				local m = Matrix()
+				m:SetTranslation( self.LockVMPos )
+				m:SetAngles( self.LockVMAng )
+				
+				local np, na = WorldToLocal( m:GetTranslation(), m:GetAngles(), pos, ang )
+				
+				m = Matrix()
+				m:SetTranslation( np )
+				m:SetAngles( na )
+				
+				m:SetField( 2, 1, m:GetField( 2, 1 ) * -1 )
+				m:SetField( 2, 4, m:GetField( 2, 4 ) * -1 )
+				
+				np, na = LocalToWorld( m:GetTranslation(), m:GetAngles(), pos, ang )
+				
+				na.r = 0 -- temp fix
+
+				return np, na
+			end
+			
 			return self.LockVMPos, self.LockVMAng
 		else
 			self.LockVMPos = pos
-			self.LockVMAng = ang
+			self.LockVMAng = ang	
 		end
 	else
 		if self.LockVMPos and self.LockVMAng then
@@ -212,7 +235,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 		if not bIron then Mul = 1 - Mul end
 	end
 
-	local Offset	= self.IronSightsPos
+	local Offset = self.IronSightsPos
 
 	if (self.IronSightsAng) then
 		ang = ang * 1
