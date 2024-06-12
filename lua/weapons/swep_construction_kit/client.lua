@@ -526,7 +526,7 @@ end
 
 
 local allbones
-local hasGarryFixedBoneScalingYet = false
+local hasGarryFixedBoneScalingYet = true
 
 function SWEP:UpdateBonePositions(vm)
 	if self.v_bonemods then
