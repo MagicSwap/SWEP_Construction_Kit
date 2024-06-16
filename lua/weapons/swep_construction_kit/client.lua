@@ -628,6 +628,7 @@ function SWEP:ShowElementHelpers( pos, ang, v )
 		end
 
 		render.SetMaterial( matDisc )
+		
 		render.DrawQuadEasy( helper_pos, helper_ang:Forward(), 10, 10, Color( 255, 55, 55, 50 ), 0 )
 		render.DrawQuadEasy( helper_pos, helper_ang:Right(), 10, 10, Color( 55, 255, 55, 50 ), 0 )
 		render.DrawQuadEasy( helper_pos, helper_ang:Up(), 10, 10, Color( 55, 55, 255, 50 ), 0 )
@@ -636,10 +637,11 @@ function SWEP:ShowElementHelpers( pos, ang, v )
 		if model_drag_modes[ self.selectedModelDragMode ].vs then
 			ang = self.useThirdPerson and self.thirdPersonAngleView or LocalPlayer():EyeAngles()
 		end
-
+		
 		render.DrawLine( helper_pos, helper_pos + ang:Forward() * 10, Color( 255, 55, 55 ), true )
 		render.DrawLine( helper_pos, helper_pos + ang:Right() * 10, Color( 55, 255, 55 ), true )
 		render.DrawLine( helper_pos, helper_pos + ang:Up() * 10, Color( 55, 55, 255 ), true )
+		
 	end
 end
 
@@ -663,6 +665,14 @@ function SWEP:ViewModelDrawn()
 		-- we build a render order because sprites need to be drawn after models
 		self.vRenderOrder = {}
 
+		-- clean up cached clip planes
+		for k, v in pairs( self.v_models ) do
+			if (v.type == "Model") then
+				v.clipplanes = nil
+				v.clipcount = nil
+			end
+		end
+		
 		for k, v in pairs( self.v_models ) do
 			if (v.type == "Model") then
 				if v.highrender then
@@ -672,6 +682,20 @@ function SWEP:ViewModelDrawn()
 				end
 			elseif (v.type == "Sprite" or v.type == "Quad") then
 				table.insert(self.vRenderOrder, k)
+			elseif (v.type == "ClipPlane") then
+				if v.rel == "" or v.rel == nil then continue end
+				
+				if self.v_models[ v.rel ] then
+					
+					self.v_models[ v.rel ].clipplanes = self.v_models[ v.rel ].clipplanes or {}
+					self.v_models[ v.rel ].clipcount = self.v_models[ v.rel ].clipcount or 0
+					
+					table.insert(self.v_models[ v.rel ].clipplanes, k)
+					
+					self.v_models[ v.rel ].clipcount = self.v_models[ v.rel ].clipcount + 1
+					
+					table.insert(self.vRenderOrder, k)
+				end
 			end
 		end
 	end
@@ -761,7 +785,49 @@ function SWEP:ViewModelDrawn()
 			render.SetColorModulation(v.color.r/255, v.color.g/255, v.color.b/255)
 			render.SetBlend(v.color.a/255)
 			if v.inversed then render.CullMode(MATERIAL_CULLMODE_CW) end
+			
+			local real_clip_count = 0
+			
+			if v.clipplanes and v.clipcount then
+				render.EnableClipping( true )
+				
+				local mpos = model:GetPos()
+				
+				for i = 1, math.min( v.clipcount, 2 ) do
+					local plane = v.clipplanes[ i ]
+					
+					if plane and self.v_models[ plane ] then
+					
+						local clip_data = self.v_models[ plane ]
+					
+						local clip_ang = ang * 1
+						local clip_pos = mpos + clip_ang:Forward() * clip_data.pos.x + clip_ang:Right() * clip_data.pos.y + clip_ang:Up() * clip_data.pos.z
+
+						clip_ang:RotateAroundAxis(clip_ang:Up(), clip_data.angle.y)
+						clip_ang:RotateAroundAxis(clip_ang:Right(), clip_data.angle.p)
+						clip_ang:RotateAroundAxis(clip_ang:Forward(), clip_data.angle.r)
+
+						render.PushCustomClipPlane( clip_ang:Up(), clip_ang:Up():Dot( clip_pos ) )
+						real_clip_count = real_clip_count + 1
+					end
+				end				
+			end
+			
 			model:DrawModel()
+			
+			if real_clip_count > 0 and v.nocull then
+				render.CullMode(v.inversed and MATERIAL_CULLMODE_CCW or MATERIAL_CULLMODE_CW)
+				model:DrawModel()
+				render.CullMode(v.inversed and MATERIAL_CULLMODE_CW or MATERIAL_CULLMODE_CCW)
+			end
+			
+			if real_clip_count > 0 then
+				for i = 1, real_clip_count do
+					render.PopCustomClipPlane()
+				end
+				render.EnableClipping( false )
+			end
+			
 			if v.inversed then render.CullMode(MATERIAL_CULLMODE_CCW) end
 			render.SetBlend(1)
 			render.SetColorModulation(1, 1, 1)
@@ -793,6 +859,19 @@ function SWEP:ViewModelDrawn()
 				surface.DrawLine( 0, 0, 0, 8 )
 				surface.DrawLine( 0, 0, 8, 0 )
 			cam.End3D2D()
+		elseif (v.type == "ClipPlane") then
+			
+			if name == self.selectedElement then
+				local drawpos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
+				ang:RotateAroundAxis(ang:Up(), v.angle.y)
+				ang:RotateAroundAxis(ang:Right(), v.angle.p)
+				ang:RotateAroundAxis(ang:Forward(), v.angle.r)
+
+				cam.Start3D2D(drawpos, ang, 1)
+					draw.RoundedBox( 0, -20, -20, 40, 40, Color( 200, 200, 200, 50 ) )
+				cam.End3D2D()
+			end
+			
 		end
 	end
 end
@@ -810,6 +889,14 @@ function SWEP:DrawWorldModel()
 	if (!self.wRenderOrder) then
 
 		self.wRenderOrder = {}
+		
+		-- clean up cached clip planes
+		for k, v in pairs( self.w_models ) do
+			if (v.type == "Model") then
+				v.clipplanes = nil
+				v.clipcount = nil
+			end
+		end
 
 		for k, v in pairs( self.w_models ) do
 			if (v.type == "Model") then
@@ -820,6 +907,20 @@ function SWEP:DrawWorldModel()
 				end
 			elseif (v.type == "Sprite" or v.type == "Quad") then
 				table.insert(self.wRenderOrder, k)
+			elseif (v.type == "ClipPlane") then
+				if v.rel == "" or v.rel == nil then continue end
+				
+				if self.w_models[ v.rel ] then
+					
+					self.w_models[ v.rel ].clipplanes = self.w_models[ v.rel ].clipplanes or {}
+					self.w_models[ v.rel ].clipcount = self.w_models[ v.rel ].clipcount or 0
+					
+					table.insert(self.w_models[ v.rel ].clipplanes, k)
+					
+					self.w_models[ v.rel ].clipcount = self.w_models[ v.rel ].clipcount + 1
+					
+					table.insert(self.wRenderOrder, k)
+				end
 			end
 		end
 	end
@@ -944,7 +1045,49 @@ function SWEP:DrawWorldModel()
 
 			render.SetColorModulation(v.color.r/255, v.color.g/255, v.color.b/255)
 			render.SetBlend(v.color.a/255)
+
+			local real_clip_count = 0
+			
+			if v.clipplanes and v.clipcount then
+				render.EnableClipping( true )
+				
+				local mpos = model:GetPos()
+				
+				for i = 1, math.min( v.clipcount, 2 ) do
+					local plane = v.clipplanes[ i ]
+					
+					if plane and self.w_models[ plane ] then
+					
+						local clip_data = self.w_models[ plane ]
+					
+						local clip_ang = ang * 1
+						local clip_pos = mpos + clip_ang:Forward() * clip_data.pos.x + clip_ang:Right() * clip_data.pos.y + clip_ang:Up() * clip_data.pos.z
+
+						clip_ang:RotateAroundAxis(clip_ang:Up(), clip_data.angle.y)
+						clip_ang:RotateAroundAxis(clip_ang:Right(), clip_data.angle.p)
+						clip_ang:RotateAroundAxis(clip_ang:Forward(), clip_data.angle.r)
+					
+						render.PushCustomClipPlane( clip_ang:Up(), clip_ang:Up():Dot( clip_pos ) )
+						real_clip_count = real_clip_count + 1
+					end
+				end				
+			end
+			
 			model:DrawModel()
+			
+			if real_clip_count > 0 and v.nocull then
+				render.CullMode(MATERIAL_CULLMODE_CW)
+				model:DrawModel()
+				render.CullMode(MATERIAL_CULLMODE_CCW)
+			end
+			
+			if real_clip_count > 0 then
+				for i = 1, real_clip_count do
+					render.PopCustomClipPlane()
+				end
+				render.EnableClipping( false )
+			end
+			
 			render.SetBlend(1)
 			render.SetColorModulation(1, 1, 1)
 
@@ -975,6 +1118,19 @@ function SWEP:DrawWorldModel()
 				surface.DrawLine( 0, 0, 0, 8 )
 				surface.DrawLine( 0, 0, 8, 0 )
 			cam.End3D2D()
+		elseif (v.type == "ClipPlane") then
+			
+			if name == self.selectedElement then
+				local drawpos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
+				ang:RotateAroundAxis(ang:Up(), v.angle.y)
+				ang:RotateAroundAxis(ang:Right(), v.angle.p)
+				ang:RotateAroundAxis(ang:Forward(), v.angle.r)
+
+				cam.Start3D2D(drawpos, ang, 1)
+					draw.RoundedBox( 0, -20, -20, 40, 40, Color( 200, 200, 200, 50 ) )
+				cam.End3D2D()
+			end
+			
 		end
 	end
 end

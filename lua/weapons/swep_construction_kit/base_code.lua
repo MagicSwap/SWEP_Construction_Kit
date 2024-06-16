@@ -89,6 +89,14 @@ if CLIENT then
 
 			-- we build a render order because sprites need to be drawn after models
 			self.vRenderOrder = {}
+			
+			-- clean up cached clip planes
+			for k, v in pairs( self.v_models ) do
+				if (v.type == "Model") then
+					v.clipplanes = nil
+					v.clipcount = nil
+				end
+			end
 
 			for k, v in pairs( self.VElements ) do
 				if (v.type == "Model") then
@@ -99,6 +107,20 @@ if CLIENT then
 					end
 				elseif (v.type == "Sprite" or v.type == "Quad") then
 					table.insert(self.vRenderOrder, k)
+				elseif (v.type == "ClipPlane") then
+					if v.rel == "" or v.rel == nil then continue end
+					
+					if self.v_models[ v.rel ] then
+						
+						self.v_models[ v.rel ].clipplanes = self.v_models[ v.rel ].clipplanes or {}
+						self.v_models[ v.rel ].clipcount = self.v_models[ v.rel ].clipcount or 0
+						
+						table.insert(self.v_models[ v.rel ].clipplanes, k)
+						
+						self.v_models[ v.rel ].clipcount = self.v_models[ v.rel ].clipcount + 1
+						
+						table.insert(self.vRenderOrder, k)
+					end
 				end
 			end
 
@@ -178,7 +200,47 @@ if CLIENT then
 				render.SetColorModulation(v.color.r/255, v.color.g/255, v.color.b/255)
 				render.SetBlend(v.color.a/255)
 				if v.inversed then render.CullMode(MATERIAL_CULLMODE_CW) end
+				
+				local real_clip_count = 0
+			
+				if v.clipplanes and v.clipcount then
+					render.EnableClipping( true )
+					
+					for i = 1, math.min( v.clipcount, 2 ) do
+						local plane = v.clipplanes[ i ]
+						
+						if plane and self.v_models[ plane ] then
+						
+							local clip_data = self.v_models[ plane ]
+						
+							local clip_ang = ang * 1
+							local clip_pos = model:GetPos() + clip_ang:Forward() * clip_data.pos.x + clip_ang:Right() * clip_data.pos.y + clip_ang:Up() * clip_data.pos.z
+
+							clip_ang:RotateAroundAxis(clip_ang:Up(), clip_data.angle.y)
+							clip_ang:RotateAroundAxis(clip_ang:Right(), clip_data.angle.p)
+							clip_ang:RotateAroundAxis(clip_ang:Forward(), clip_data.angle.r)
+
+							render.PushCustomClipPlane( clip_ang:Up(), clip_ang:Up():Dot( clip_pos ) )
+							real_clip_count = real_clip_count + 1
+						end
+					end				
+				end
+				
 				model:DrawModel()
+				
+				if real_clip_count > 0 and v.nocull then
+					render.CullMode(v.inversed and MATERIAL_CULLMODE_CCW or MATERIAL_CULLMODE_CW)
+					model:DrawModel()
+					render.CullMode(v.inversed and MATERIAL_CULLMODE_CW or MATERIAL_CULLMODE_CCW)
+				end
+				
+				if real_clip_count > 0 then
+					for i = 1, real_clip_count do
+						render.PopCustomClipPlane()
+					end
+					render.EnableClipping( false )
+				end
+				
 				if v.inversed then render.CullMode(MATERIAL_CULLMODE_CCW) end
 				render.SetBlend(1)
 
@@ -223,6 +285,14 @@ if CLIENT then
 		if (!self.wRenderOrder) then
 
 			self.wRenderOrder = {}
+			
+			-- clean up cached clip planes
+			for k, v in pairs( self.w_models ) do
+				if (v.type == "Model") then
+					v.clipplanes = nil
+					v.clipcount = nil
+				end
+			end
 
 			for k, v in pairs( self.WElements ) do
 				if (v.type == "Model") then
@@ -233,6 +303,20 @@ if CLIENT then
 					end
 				elseif (v.type == "Sprite" or v.type == "Quad") then
 					table.insert(self.wRenderOrder, k)
+				elseif (v.type == "ClipPlane") then
+					if v.rel == "" or v.rel == nil then continue end
+					
+					if self.w_models[ v.rel ] then
+						
+						self.w_models[ v.rel ].clipplanes = self.w_models[ v.rel ].clipplanes or {}
+						self.w_models[ v.rel ].clipcount = self.w_models[ v.rel ].clipcount or 0
+						
+						table.insert(self.w_models[ v.rel ].clipplanes, k)
+						
+						self.w_models[ v.rel ].clipcount = self.w_models[ v.rel ].clipcount + 1
+						
+						table.insert(self.wRenderOrder, k)
+					end
 				end
 			end
 
@@ -317,7 +401,47 @@ if CLIENT then
 
 				render.SetColorModulation(v.color.r/255, v.color.g/255, v.color.b/255)
 				render.SetBlend(v.color.a/255)
+				
+				local real_clip_count = 0
+			
+				if v.clipplanes and v.clipcount then
+					render.EnableClipping( true )
+					
+					for i = 1, math.min( v.clipcount, 2 ) do
+						local plane = v.clipplanes[ i ]
+						
+						if plane and self.w_models[ plane ] then
+						
+							local clip_data = self.w_models[ plane ]
+						
+							local clip_ang = ang * 1
+							local clip_pos = model:GetPos() + clip_ang:Forward() * clip_data.pos.x + clip_ang:Right() * clip_data.pos.y + clip_ang:Up() * clip_data.pos.z
+
+							clip_ang:RotateAroundAxis(clip_ang:Up(), clip_data.angle.y)
+							clip_ang:RotateAroundAxis(clip_ang:Right(), clip_data.angle.p)
+							clip_ang:RotateAroundAxis(clip_ang:Forward(), clip_data.angle.r)
+						
+							render.PushCustomClipPlane( clip_ang:Up(), clip_ang:Up():Dot( clip_pos ) )
+							real_clip_count = real_clip_count + 1
+						end
+					end				
+				end
+				
 				model:DrawModel()
+				
+				if real_clip_count > 0 and v.nocull then
+					render.CullMode(MATERIAL_CULLMODE_CW)
+					model:DrawModel()
+					render.CullMode(MATERIAL_CULLMODE_CCW)
+				end
+				
+				if real_clip_count > 0 then
+					for i = 1, real_clip_count do
+						render.PopCustomClipPlane()
+					end
+					render.EnableClipping( false )
+				end
+				
 				render.SetBlend(1)
 				render.SetColorModulation(1, 1, 1)
 

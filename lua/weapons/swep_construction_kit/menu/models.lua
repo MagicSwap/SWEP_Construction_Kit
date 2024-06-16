@@ -1,6 +1,7 @@
 local icon_model = "icon16/brick.png"
 local icon_sprite = "icon16/asterisk_yellow.png"
 local icon_quad = "icon16/picture_empty.png"
+local icon_clip = "icon16/cut.png"
 
 -- Some hacky shit to keep the relative DComboBoxes updated
 local boxes_to_update = {}
@@ -73,6 +74,7 @@ pnewelement:SetTall(20)
 		tpbox:AddChoice( "Model" )
 		tpbox:AddChoice( "Sprite" )
 		tpbox:AddChoice( "Quad" )
+		tpbox:AddChoice( "ClipPlane" )
 		local boxselected = "Model"
 		tpbox.OnSelect = function( p, index, value )
 			boxselected = value
@@ -188,6 +190,7 @@ local mtree = vgui.Create( "DTree", pmodels)
 			v._ParentNode = self
 			SetRelativeForNode( v, self, "v" )
 		end
+		wep.vRenderOrder = nil
 	end
 
 	mtree.OnNodeSelected = function( panel )
@@ -943,6 +946,23 @@ local function CreateBonemergeModifier( data, panel )
 	return panel
 end
 
+local function CreateNocullModifier( data, panel )
+	local lschbox = vgui.Create( "DCheckBoxLabel", panel )
+		lschbox:SetText("Disable backface culling")
+		lschbox:SizeToContents()
+		lschbox.OnChange = function()
+			data.nocull = lschbox:GetChecked()
+		end
+		if (data.nocull) then
+			lschbox:SetValue( 1 )
+		else
+			lschbox:SetValue( 0 )
+		end
+	lschbox:Dock(LEFT)
+
+	return panel
+end
+
 local function CreateHighRenderModifier( data, panel )
 	local lschbox = vgui.Create( "DCheckBoxLabel", panel )
 		lschbox:SetText("Force draw element on top of other elements")
@@ -1133,6 +1153,7 @@ local function CreateModelPanel( name, preset_data )
 	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
 	data.surpresslightning = preset_data.surpresslightning or false
 	data.bonemerge = preset_data.bonemerge or false
+	data.nocull = preset_data.nocull or false
 	data.highrender = preset_data.highrender or false
 	data.material = preset_data.material or ""
 	data.bodygroup = preset_data.bodygroup or {}
@@ -1160,6 +1181,7 @@ local function CreateModelPanel( name, preset_data )
 	panellist:AddItem(CreateSizeModifiers( data, SimplePanel(panellist), 3 ))
 	panellist:AddItem(CreateColorModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateHighRenderModifier( data, SimplePanel(panellist) ))
+	panellist:AddItem(CreateNocullModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateSLightningModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateMaterialModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateBodygroupSkinModifier( data, SimplePanel(panellist) ))
@@ -1270,6 +1292,41 @@ local function CreateQuadPanel( name, preset_data )
 	return panellist
 end
 
+local function CreateClipPanel( name, preset_data )
+	local data = wep.v_models[name]
+	if (!preset_data) then preset_data = {} end
+
+	-- default data
+	data.type = preset_data.type or "ClipPlane"
+	data.bone = preset_data.bone or ""
+	data.rel = preset_data.rel or ""
+	data.pos = preset_data.pos or Vector(0,0,0)
+	data.angle = preset_data.angle or Angle(0,0,0)
+
+	wep.vRenderOrder = nil -- force viewmodel render order to recache
+
+	local panellist = vgui.Create("DPanelList", pmodels )
+	panellist:SetPaintBackground( true )
+		panellist.Paint = function() surface.SetDrawColor( 90, 90, 90, 255 ) surface.DrawRect( 0, 0, panellist:GetWide(), panellist:GetTall() ) end
+		panellist:EnableVerticalScrollbar( true )
+		panellist:SetSpacing(5)
+		panellist:SetPadding(5)
+	panellist:DockMargin(0,0,0,5)
+	panellist:Dock(TOP)
+
+	PanelBackgroundReset()
+
+	panellist:AddItem(CreateNameLabel( name, SimplePanel(panellist) ))
+	panellist:AddItem(CreateBoneModifier( data, SimplePanel(panellist), LocalPlayer():GetViewModel(), name ))
+	panellist:AddItem(CreatePositionModifiers( data, SimplePanel(panellist) ))
+	panellist:AddItem(CreateAngleModifiers( data, SimplePanel(panellist) ))
+
+	panellist:InvalidateLayout( true )
+	panellist:SizeToChildren( false, true )
+
+	return panellist
+end
+
 -- dark magic, do not touch
 local function FixInsertNode( self, pNode )
 	self:CreateChildNodes()
@@ -1321,6 +1378,9 @@ mnbtn.DoClick = function()
 		elseif boxselected == "Quad" then
 			wep.v_panelCache[new] = CreateQuadPanel( new )
 			icon = icon_quad
+		elseif boxselected == "ClipPlane" then
+			wep.v_panelCache[new] = CreateClipPanel( new )
+			icon = icon_clip
 		else
 			Error("Invalid type selected")
 		end
@@ -1338,12 +1398,14 @@ mnbtn.DoClick = function()
 	node.DroppedOn = function( self, pnl )
 		old_DroppedOn( self, pnl )
 		SetRelativeForNode( pnl, self, "v" )
+		wep.vRenderOrder = nil
 	end
 
 	node.OnModified = function( self )
 		for k, v in pairs( self:GetChildNodes() ) do
 			SetRelativeForNode( v, self, "v" )
 		end
+		wep.vRenderOrder = nil
 	end
 end
 
@@ -1362,6 +1424,9 @@ for k, v in SortedPairs(wep.save_data.v_models) do
 	elseif (v.type == "Quad") then
 		wep.v_panelCache[k] = CreateQuadPanel( k, v )
 		icon = icon_quad
+	elseif (v.type == "ClipPlane") then
+		wep.v_panelCache[k] = CreateClipPanel( k, v )
+		icon = icon_clip
 	end
 
 	if !IsValid(wep.v_panelCache[k]) then continue end
@@ -1378,12 +1443,14 @@ for k, v in SortedPairs(wep.save_data.v_models) do
 	node.DroppedOn = function( self, pnl )
 		old_DroppedOn( self, pnl )
 		SetRelativeForNode( pnl, self, "v" )
+		wep.vRenderOrder = nil
 	end
 
 	node.OnModified = function( self )
 		for k, v in pairs( self:GetChildNodes() ) do
 			SetRelativeForNode( v, self, "v" )
 		end
+		wep.vRenderOrder = nil
 	end
 
 	temp_v_nodes[k] = node
@@ -1462,6 +1529,9 @@ copybtn.DoClick = function()
 	elseif (new_preset.type == "Quad") then
 		wep.v_panelCache[name] = CreateQuadPanel( name, new_preset )
 		icon = icon_quad
+	elseif (new_preset.type == "ClipPlane") then
+		wep.v_panelCache[name] = CreateClipPanel( name, new_preset )
+		icon = icon_clip
 	end
 
 	wep.v_panelCache[name]:SetVisible(false)
@@ -1476,18 +1546,22 @@ copybtn.DoClick = function()
 	node.DroppedOn = function( self, pnl )
 		old_DroppedOn( self, pnl )
 		SetRelativeForNode( pnl, self, "v" )
+		wep.vRenderOrder = nil
 	end
 
 	node.OnModified = function( self )
 		for k, v in pairs( self:GetChildNodes() ) do
 			SetRelativeForNode( v, self, "v" )
 		end
+		wep.vRenderOrder = nil
 	end
 
 	local parent = IsValid(line._ParentNode) and line._ParentNode or line:GetParentNode()
 	if IsValid( parent ) and !parent:IsRootNode() then
 		parent:InsertNode( node )
 	end
+	
+	wep.vRenderOrder = nil
 end
 
 -- import worldmodels
@@ -1542,6 +1616,9 @@ importbtn.DoClick = function()
 		elseif (v.type == "Quad") then
 			wep.v_panelCache[name] = CreateQuadPanel( name, new_preset )
 			icon = icon_quad
+		elseif (v.type == "ClipPlane") then
+			wep.v_panelCache[name] = CreateClipPanel( name, new_preset )
+			icon = icon_clip
 		end
 		wep.v_panelCache[name]:SetVisible(false)
 
@@ -1555,12 +1632,14 @@ importbtn.DoClick = function()
 		node.DroppedOn = function( self, pnl )
 			old_DroppedOn( self, pnl )
 			SetRelativeForNode( pnl, self, "v" )
+			wep.vRenderOrder = nil
 		end
 
 		node.OnModified = function( self )
 			for k, v in pairs( self:GetChildNodes() ) do
 				SetRelativeForNode( v, self, "v" )
 			end
+			wep.vRenderOrder = nil
 		end
 
 		temp_v_nodes[k] = node
@@ -1642,6 +1721,7 @@ pnewelement:SetTall(20)
 		tpbox:AddChoice( "Model" )
 		tpbox:AddChoice( "Sprite" )
 		tpbox:AddChoice( "Quad" )
+		tpbox:AddChoice( "ClipPlane" )
 		local wboxselected = "Model"
 		tpbox.OnSelect = function( p, index, value )
 			wboxselected = value
@@ -1661,6 +1741,7 @@ local mwtree = vgui.Create( "DTree", pwmodels)
 		for k, v in pairs( self:GetChildNodes() ) do
 			SetRelativeForNode( v, self, "w" )
 		end
+		wep.wRenderOrder = nil
 	end
 
 	mwtree.OnNodeSelected = function( panel )
@@ -1722,6 +1803,7 @@ local function CreateWorldModelPanel( name, preset_data )
 	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
 	data.surpresslightning = preset_data.surpresslightning or false
 	data.bonemerge = preset_data.bonemerge or false
+	data.nocull = preset_data.nocull or false
 	data.highrender = preset_data.highrender or false
 	data.material = preset_data.material or ""
 	data.bodygroup = preset_data.bodygroup or {}
@@ -1749,6 +1831,7 @@ local function CreateWorldModelPanel( name, preset_data )
 	panellist:AddItem(CreateSizeModifiers( data, SimplePanel(panellist), 3 ))
 	panellist:AddItem(CreateColorModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateHighRenderModifier( data, SimplePanel(panellist) ))
+	panellist:AddItem(CreateNocullModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateSLightningModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateMaterialModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateBodygroupSkinModifier( data, SimplePanel(panellist) ))
@@ -1857,6 +1940,41 @@ local function CreateWorldQuadPanel( name, preset_data )
 	return panellist
 end
 
+local function CreateWorldClipPanel( name, preset_data )
+	local data = wep.w_models[name]
+	if not preset_data then preset_data = {} end
+
+	-- default data
+	data.type = preset_data.type or "ClipPlane"
+	data.bone = preset_data.bone or "ValveBiped.Bip01_R_Hand"
+	data.rel = preset_data.rel or ""
+	data.pos = preset_data.pos or Vector(0,0,0)
+	data.angle = preset_data.angle or Angle(0,0,0)
+
+	wep.vRenderOrder = nil -- force viewmodel render order to recache
+
+	local panellist = vgui.Create("DPanelList", pwmodels )
+	panellist:SetPaintBackground( true )
+		panellist.Paint = function() surface.SetDrawColor( 90, 90, 90, 255 ) surface.DrawRect( 0, 0, panellist:GetWide(), panellist:GetTall() ) end
+		panellist:EnableVerticalScrollbar( true )
+		panellist:SetSpacing(5)
+		panellist:SetPadding(5)
+	panellist:DockMargin(0,0,0,5)
+	panellist:Dock(TOP)
+
+	PanelBackgroundReset()
+
+	panellist:AddItem(CreateNameLabel( name, SimplePanel(panellist), true ))
+	panellist:AddItem(CreateBoneModifier( data, SimplePanel(panellist), LocalPlayer(), name ))
+	panellist:AddItem(CreatePositionModifiers( data, SimplePanel(panellist) ))
+	panellist:AddItem(CreateAngleModifiers( data, SimplePanel(panellist) ))
+
+	panellist:InvalidateLayout( true )
+	panellist:SizeToChildren( false, true )
+
+	return panellist
+end
+
 -- adding button DoClick
 mnwbtn.DoClick = function()
 	local new = string.Trim( mnwtext:GetValue() )
@@ -1878,6 +1996,9 @@ mnwbtn.DoClick = function()
 		elseif (wboxselected == "Quad") then
 			wep.w_panelCache[new] = CreateWorldQuadPanel( new )
 			icon = icon_quad
+		elseif (wboxselected == "ClipPlane") then
+			wep.w_panelCache[new] = CreateWorldClipPanel( new )
+			icon = icon_clip
 		else
 			Error("Invalid type selected")
 		end
@@ -1895,12 +2016,14 @@ mnwbtn.DoClick = function()
 	node.DroppedOn = function( self, pnl )
 		old_DroppedOn( self, pnl )
 		SetRelativeForNode( pnl, self, "w" )
+		wep.wRenderOrder = nil
 	end
 
 	node.OnModified = function( self )
 		for k, v in pairs( self:GetChildNodes() ) do
 			SetRelativeForNode( v, self, "w" )
 		end
+		wep.wRenderOrder = nil
 	end
 end
 
@@ -1924,6 +2047,9 @@ for k, v in SortedPairs( wep.save_data.w_models ) do
 	elseif (v.type == "Quad") then
 		wep.w_panelCache[k] = CreateWorldQuadPanel( k, v )
 		icon = icon_quad
+	elseif (v.type == "ClipPlane") then
+		wep.w_panelCache[k] = CreateWorldClipPanel( k, v )
+		icon = icon_clip
 	end
 
 	if not IsValid(wep.w_panelCache[k]) then continue end
@@ -1940,12 +2066,14 @@ for k, v in SortedPairs( wep.save_data.w_models ) do
 	node.DroppedOn = function( self, pnl )
 		old_DroppedOn( self, pnl )
 		SetRelativeForNode( pnl, self, "w" )
+		wep.wRenderOrder = nil
 	end
 
 	node.OnModified = function( self )
 		for k, v in pairs( self:GetChildNodes() ) do
 			SetRelativeForNode( v, self, "w" )
 		end
+		wep.wRenderOrder = nil
 	end
 
 	temp_w_nodes[k] = node
@@ -2008,6 +2136,9 @@ importbtn.DoClick = function()
 		elseif v.type == "Quad" then
 			wep.w_panelCache[name] = CreateWorldQuadPanel( name, new_preset )
 			icon = icon_quad
+		elseif v.type == "ClipPlane" then
+			wep.w_panelCache[name] = CreateWorldClipPanel( name, new_preset )
+			icon = icon_clip
 		end
 		wep.w_panelCache[name]:SetVisible(false)
 
@@ -2021,12 +2152,14 @@ importbtn.DoClick = function()
 		node.DroppedOn = function( self, pnl )
 			old_DroppedOn( self, pnl )
 			SetRelativeForNode( pnl, self, "w" )
+			wep.wRenderOrder = nil
 		end
 
 		node.OnModified = function( self )
 			for k, v in pairs( self:GetChildNodes() ) do
 				SetRelativeForNode( v, self, "w" )
 			end
+			wep.wRenderOrder = nil
 		end
 
 		temp_w_nodes[k] = node
@@ -2106,6 +2239,9 @@ copybtn.DoClick = function()
 	elseif (new_preset.type == "Quad") then
 		wep.w_panelCache[name] = CreateWorldQuadPanel( name, new_preset )
 		icon = icon_quad
+	elseif (new_preset.type == "ClipPlane") then
+		wep.w_panelCache[name] = CreateWorldClipPanel( name, new_preset )
+		icon = icon_clip
 	end
 
 	wep.w_panelCache[name]:SetVisible(false)
@@ -2120,12 +2256,14 @@ copybtn.DoClick = function()
 	node.DroppedOn = function( self, pnl )
 		old_DroppedOn( self, pnl )
 		SetRelativeForNode( pnl, self, "w" )
+		wep.wRenderOrder = nil
 	end
 
 	node.OnModified = function( self )
 		for k, v in pairs( self:GetChildNodes() ) do
 			SetRelativeForNode( v, self, "w" )
 		end
+		wep.wRenderOrder = nil
 	end
 
 	local parent = IsValid(line._ParentNode) and line._ParentNode or line:GetParentNode()
@@ -2133,4 +2271,6 @@ copybtn.DoClick = function()
 	if IsValid(parent) and not parent:IsRootNode() then
 		parent:InsertNode(node)
 	end
+	
+	wep.wRenderOrder = nil
 end
