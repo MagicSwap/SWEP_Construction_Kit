@@ -330,7 +330,7 @@ hook.Add("CreateMove", "TrackMouseCTRLZ", function()
 	if LocalPlayer():GetActiveWeapon() ~= wep then return end
 
 	--when testing, the Pressed called more than once, so this is done to filter out the extra calls (IFTP didn't seem to work)
-	if (input.WasMousePressed(MOUSE_LEFT) or input.WasMousePressed(MOUSE_RIGHT)) and not wasmousepressed then
+	if (input.WasMousePressed(MOUSE_LEFT) or input.WasMousePressed(MOUSE_RIGHT) or input.WasMouseDoublePressed(MOUSE_LEFT)) and not wasmousepressed then
 		wasmousepressed = true
 		wasmousereleased = false
 	elseif (input.WasMouseReleased(MOUSE_LEFT) or input.WasMouseReleased(MOUSE_RIGHT)) and not wasmousereleased then
@@ -392,6 +392,7 @@ local function CreatePositionModifiers( data, panel )
 		trlabel:SetText( "Position:" )
 		trlabel:SizeToContents()
 		trlabel:SetWide(45)
+		trlabel:SetMouseInputEnabled( true )
 	trlabel:Dock(LEFT)
 
 	local mxwang = vgui.Create( "DNumSlider", panel )
@@ -438,6 +439,18 @@ local function CreatePositionModifiers( data, panel )
 		mywang:SetWide(panel:GetWide()*4/15)
 		mzwang:SetWide(panel:GetWide()*4/15)
 	end
+	
+	trlabel.DoDoubleClick = function( self )
+		if mxwang then
+			mxwang:SetValue( 0 )
+		end
+		if mywang then
+			mywang:SetValue( 0 )
+		end
+		if mzwang then
+			mzwang:SetValue( 0 )
+		end
+	end
 
 	mxwang:Dock(TOP)
 	mywang:Dock(TOP)
@@ -454,6 +467,7 @@ local function CreateAngleModifiers( data, panel )
 		anlabel:SetText( "Angle:" )
 		anlabel:SizeToContents()
 		anlabel:SetWide(45)
+		anlabel:SetMouseInputEnabled( true )
 	anlabel:Dock(LEFT)
 
 	local mpitchwang = vgui.Create( "DNumSlider", panel )
@@ -500,6 +514,18 @@ local function CreateAngleModifiers( data, panel )
 		myawwang:SetWide(panel:GetWide()*4/15)
 		mpitchwang:SetWide(panel:GetWide()*4/15)
 	end
+	
+	anlabel.DoDoubleClick = function( self )
+		if mpitchwang then
+			mpitchwang:SetValue( 0 )
+		end
+		if myawwang then
+			myawwang:SetValue( 0 )
+		end
+		if mrollwang then
+			mrollwang:SetValue( 0 )
+		end
+	end
 
 	mpitchwang:Dock(TOP)
 	myawwang:Dock(TOP)
@@ -516,6 +542,7 @@ local function CreateSizeModifiers( data, panel, dimensions )
 		sizelabel:SetText( "Size:" )
 		sizelabel:SizeToContents()
 		sizelabel:SetWide(45)
+		sizelabel:SetMouseInputEnabled( true )
 	sizelabel:Dock(LEFT)
 
 	local msx2wang, msywang, mszwang
@@ -571,6 +598,21 @@ local function CreateSizeModifiers( data, panel, dimensions )
 		end
 	end
 
+	sizelabel.DoDoubleClick = function( self )
+		if msxwang then
+			msxwang:SetValue( 1 )
+		end
+		if msx2wang then
+			msx2wang:SetValue( 1 )
+		end
+		if msywang then
+			msywang:SetValue( 1 )
+		end
+		if mszwang then
+			mszwang:SetValue( 1 )
+		end
+	end
+	
 	msxwang:DockMargin(10,0,0,0)
 	msxwang:Dock(TOP)
 

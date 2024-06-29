@@ -86,6 +86,7 @@ local save_data_template = {
 	ViewModelFOV = SWEP.ViewModelFOV,
 	HoldType = SWEP.HoldType,
 	ViewModelFlip = SWEP.ViewModelFlip,
+	UseHands = SWEP.UseHands,
 	IronSightsEnabled = true,
 	IronSightsPos = SWEP.IronSightsPos,
 	IronSightsAng = SWEP.IronSightsAng,
@@ -667,7 +668,7 @@ function SWEP:ViewModelDrawn()
 
 		-- clean up cached clip planes
 		for k, v in pairs( self.v_models ) do
-			if (v.type == "Model") then
+			if v.type == "Model" then
 				v.clipplanes = nil
 				v.clipcount = nil
 			end
@@ -685,7 +686,7 @@ function SWEP:ViewModelDrawn()
 			elseif (v.type == "ClipPlane") then
 				if v.rel == "" or v.rel == nil then continue end
 				
-				if self.v_models[ v.rel ] then
+				if self.v_models[ v.rel ] and self.v_models[ v.rel ].type == "Model" then
 					
 					self.v_models[ v.rel ].clipplanes = self.v_models[ v.rel ].clipplanes or {}
 					self.v_models[ v.rel ].clipcount = self.v_models[ v.rel ].clipcount or 0
@@ -892,7 +893,7 @@ function SWEP:DrawWorldModel()
 		
 		-- clean up cached clip planes
 		for k, v in pairs( self.w_models ) do
-			if (v.type == "Model") then
+			if v.type == "Model" then
 				v.clipplanes = nil
 				v.clipcount = nil
 			end
@@ -910,7 +911,7 @@ function SWEP:DrawWorldModel()
 			elseif (v.type == "ClipPlane") then
 				if v.rel == "" or v.rel == nil then continue end
 				
-				if self.w_models[ v.rel ] then
+				if self.w_models[ v.rel ] and self.w_models[ v.rel ].type == "Model" then
 					
 					self.w_models[ v.rel ].clipplanes = self.w_models[ v.rel ].clipplanes or {}
 					self.w_models[ v.rel ].clipcount = self.w_models[ v.rel ].clipcount or 0

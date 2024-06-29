@@ -241,6 +241,7 @@ local function GetWeaponPrintText( wep )
 	str = str.."SWEP.WorldModel = \""..wep.CurWorldModel.."\"\n"
 	str = str.."SWEP.ShowViewModel = "..tostring(wep.ShowViewModel).."\n"
 	str = str.."SWEP.ShowWorldModel = "..tostring(wep.ShowWorldModel).."\n"
+	str = str.."SWEP.UseHands = "..tostring(wep.UseHands).."\n"
 	str = str.."SWEP.ViewModelBoneMods = {"
 	local i = 0
 	local num = table.Count( wep.v_bonemods )

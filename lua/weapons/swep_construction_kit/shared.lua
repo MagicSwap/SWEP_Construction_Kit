@@ -189,13 +189,15 @@ function SWEP:GetViewModelPosition(pos, ang)
 			
 			if self.ViewModelFlip then
 				
-				local m = Matrix()
+				/*local m = Matrix()
 				m:SetTranslation( self.LockVMPos )
 				m:SetAngles( self.LockVMAng )
 				
-				local np, na = WorldToLocal( m:GetTranslation(), m:GetAngles(), pos, ang )
+				local np, na = WorldToLocal( m:GetTranslation(), m:GetAngles(), pos, ang )*/
 				
-				m = Matrix()
+				local np, na = WorldToLocal( self.LockVMPos, self.LockVMAng, pos, ang )
+				
+				local m = Matrix()
 				m:SetTranslation( np )
 				m:SetAngles( na )
 				

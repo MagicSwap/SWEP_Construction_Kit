@@ -260,7 +260,11 @@ local usehands = vgui.Create( "DCheckBoxLabel", pweapon )
 	usehands.OnChange = function()
 		wep.UseHands = usehands:GetChecked()
 	end
-	usehands:SetValue(1)
+	if (wep.save_data.UseHands) then 
+		usehands:SetValue(1)
+	else 
+		usehands:SetValue(0) 
+	end
 usehands:DockMargin(0,0,0,5)
 usehands:Dock(TOP)
 
@@ -364,6 +368,7 @@ local function CreateBoneMod( selbone, preset_data )
 			vslabel:SetText( "Scale" )
 			vslabel:SizeToContents()
 			vslabel:SetWide(45)
+			vslabel:SetMouseInputEnabled( true )
 		vslabel:Dock(LEFT)
 
 		local vsxwang = vgui.Create( "DNumSlider", pscale )
@@ -406,6 +411,18 @@ local function CreateBoneMod( selbone, preset_data )
 			vsywang:SetWide(pscale:GetWide()*4/15)
 			vsxwang:SetWide(pscale:GetWide()*4/15)
 		end
+		
+		vslabel.DoDoubleClick = function( self )
+			if vsxwang then
+				vsxwang:SetValue( 1 )
+			end
+			if vsywang then
+				vsywang:SetValue( 1 )
+			end
+			if vszwang then
+				vszwang:SetValue( 1 )
+			end
+		end
 
 		vsxwang:Dock(TOP)
 		vsywang:Dock(TOP)
@@ -421,6 +438,7 @@ local function CreateBoneMod( selbone, preset_data )
 			vposlabel:SetText( "Pos" )
 			vposlabel:SizeToContents()
 			vposlabel:SetWide(45)
+			vposlabel:SetMouseInputEnabled( true )
 		vposlabel:Dock(LEFT)
 
 		local vposxwang = vgui.Create( "DNumSlider", ppos )
@@ -458,6 +476,18 @@ local function CreateBoneMod( selbone, preset_data )
 			vposywang:SetWide(ppos:GetWide()*4/15)
 			vposxwang:SetWide(ppos:GetWide()*4/15)
 		end
+		
+		vposlabel.DoDoubleClick = function( self )
+			if vposxwang then
+				vposxwang:SetValue( 0 )
+			end
+			if vposywang then
+				vposywang:SetValue( 0 )
+			end
+			if vposzwang then
+				vposzwang:SetValue( 0 )
+			end
+		end
 
 		vposxwang:Dock(TOP)
 		vposywang:Dock(TOP)
@@ -473,6 +503,7 @@ local function CreateBoneMod( selbone, preset_data )
 			vanglabel:SetText( "Angle" )
 			vanglabel:SizeToContents()
 			vanglabel:SetWide(45)
+			vanglabel:SetMouseInputEnabled( true )
 		vanglabel:Dock(LEFT)
 
 		local vangxwang = vgui.Create( "DNumSlider", pang )
@@ -509,6 +540,18 @@ local function CreateBoneMod( selbone, preset_data )
 			vangzwang:SetWide(pang:GetWide()*4/15)
 			vangywang:SetWide(pang:GetWide()*4/15)
 			vangxwang:SetWide(pang:GetWide()*4/15)
+		end
+		
+		vanglabel.DoDoubleClick = function( self )
+			if vangxwang then
+				vangxwang:SetValue( 0 )
+			end
+			if vangywang then
+				vangywang:SetValue( 0 )
+			end
+			if vangzwang then
+				vangzwang:SetValue( 0 )
+			end
 		end
 
 		vangxwang:Dock(TOP)

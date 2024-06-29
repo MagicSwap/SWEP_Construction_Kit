@@ -92,7 +92,7 @@ if CLIENT then
 			
 			-- clean up cached clip planes
 			for k, v in pairs( self.v_models ) do
-				if (v.type == "Model") then
+				if v.type == "Model" then
 					v.clipplanes = nil
 					v.clipcount = nil
 				end
@@ -110,7 +110,7 @@ if CLIENT then
 				elseif (v.type == "ClipPlane") then
 					if v.rel == "" or v.rel == nil then continue end
 					
-					if self.v_models[ v.rel ] then
+					if self.v_models[ v.rel ] and self.v_models[ v.rel ].type == "Model" then
 						
 						self.v_models[ v.rel ].clipplanes = self.v_models[ v.rel ].clipplanes or {}
 						self.v_models[ v.rel ].clipcount = self.v_models[ v.rel ].clipcount or 0
@@ -288,7 +288,7 @@ if CLIENT then
 			
 			-- clean up cached clip planes
 			for k, v in pairs( self.w_models ) do
-				if (v.type == "Model") then
+				if v.type == "Model" then
 					v.clipplanes = nil
 					v.clipcount = nil
 				end
@@ -306,7 +306,7 @@ if CLIENT then
 				elseif (v.type == "ClipPlane") then
 					if v.rel == "" or v.rel == nil then continue end
 					
-					if self.w_models[ v.rel ] then
+					if self.w_models[ v.rel ] and self.w_models[ v.rel ].type == "Model" then
 						
 						self.w_models[ v.rel ].clipplanes = self.w_models[ v.rel ].clipplanes or {}
 						self.w_models[ v.rel ].clipcount = self.w_models[ v.rel ].clipcount or 0

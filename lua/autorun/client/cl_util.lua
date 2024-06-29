@@ -42,6 +42,7 @@ function SaveAsSCKFile(overridetext, wep, satext, force)
 		v.createdSprite = nil
 	end
 	save_data.ViewModelFlip = wep.ViewModelFlip
+	save_data.UseHands = wep.UseHands
 	save_data.ViewModel = wep.ViewModel
 	save_data.CurWorldModel = wep.CurWorldModel
 	save_data.ViewModelFOV = wep.ViewModelFOV
