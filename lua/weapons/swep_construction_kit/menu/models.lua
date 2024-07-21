@@ -1435,6 +1435,7 @@ mnbtn.DoClick = function()
 	node.InsertNode = FixInsertNode
 	node.DoChildrenOrder = FixDoChildrenOrder
 	node._ParentNode = node:GetParentNode()
+	node:SetDrawLines( true )
 
 	local old_DroppedOn = node.DroppedOn
 	node.DroppedOn = function( self, pnl )
@@ -1480,6 +1481,7 @@ for k, v in SortedPairs(wep.save_data.v_models) do
 	node.InsertNode = FixInsertNode
 	node._ParentNode = node:GetParentNode()
 	node.DoChildrenOrder = FixDoChildrenOrder
+	node:SetDrawLines( true )
 
 	local old_DroppedOn = node.DroppedOn
 	node.DroppedOn = function( self, pnl )
@@ -1583,6 +1585,7 @@ copybtn.DoClick = function()
 	node.InsertNode = FixInsertNode
 	node.DoChildrenOrder = FixDoChildrenOrder
 	node._ParentNode = node:GetParentNode()
+	node:SetDrawLines( true )
 
 	local old_DroppedOn = node.DroppedOn
 	node.DroppedOn = function( self, pnl )
@@ -1669,6 +1672,7 @@ importbtn.DoClick = function()
 		node.InsertNode = FixInsertNode
 		node.DoChildrenOrder = FixDoChildrenOrder
 		node._ParentNode = node:GetParentNode()
+		node:SetDrawLines( true )
 
 		local old_DroppedOn = node.DroppedOn
 		node.DroppedOn = function( self, pnl )
@@ -2053,6 +2057,7 @@ mnwbtn.DoClick = function()
 	node.InsertNode = FixInsertNode
 	node.DoChildrenOrder = FixDoChildrenOrder
 	node._ParentNode = node:GetParentNode()
+	node:SetDrawLines( true )
 
 	local old_DroppedOn = node.DroppedOn
 	node.DroppedOn = function( self, pnl )
@@ -2103,6 +2108,7 @@ for k, v in SortedPairs( wep.save_data.w_models ) do
 	node.InsertNode = FixInsertNode
 	node.DoChildrenOrder = FixDoChildrenOrder
 	node._ParentNode = node:GetParentNode()
+	node:SetDrawLines( true )
 
 	local old_DroppedOn = node.DroppedOn
 	node.DroppedOn = function( self, pnl )
@@ -2189,6 +2195,7 @@ importbtn.DoClick = function()
 		node.InsertNode = FixInsertNode
 		node.DoChildrenOrder = FixDoChildrenOrder
 		node._ParentNode = node:GetParentNode()
+		node:SetDrawLines( true )
 
 		local old_DroppedOn = node.DroppedOn
 		node.DroppedOn = function( self, pnl )
@@ -2293,6 +2300,7 @@ copybtn.DoClick = function()
 	node.InsertNode = FixInsertNode
 	node.DoChildrenOrder = FixDoChildrenOrder
 	node._ParentNode = node:GetParentNode()
+	node:SetDrawLines( true )
 
 	local old_DroppedOn = node.DroppedOn
 	node.DroppedOn = function( self, pnl )

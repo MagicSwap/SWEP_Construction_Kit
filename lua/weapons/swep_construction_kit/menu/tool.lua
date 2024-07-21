@@ -143,6 +143,42 @@ local psettings = SimplePanel(ptool)
 		notif:AddItem(notiflabel)
 
 	end
+	
+	local function CreateDesignBrowser( parent, field )
+		
+		if parent.SCKBrowser and parent.SCKBrowser:IsValid() then
+			parent.SCKBrowser:Remove()
+			parent.SCKBrowser = nil
+			parent:SetTall( 24 )
+			return
+		end
+		
+		if !file.Exists( "swep_construction_kit", "DATA" ) then
+			file.CreateDir( "swep_construction_kit" )
+		end
+		
+		local br = vgui.Create( "DFileBrowser", parent )
+			br:SetTall( 150 )
+			br:Dock( BOTTOM )
+			br:DockMargin(5,0,0,0)
+
+			br:SetPath( "DATA" )
+			br:SetFileTypes( "*.txt" )
+			br:SetBaseFolder( "swep_construction_kit" )
+			br:SetOpen( true )
+			br:SetCurrentFolder( "swep_construction_kit" )
+
+			function br:OnSelect( path, pnl )
+				if field then
+					local autosave = string.find( path, "autosaves/" ) and "autosaves/" or ""
+					field:SetText( autosave..string.StripExtension( pnl:GetValue( 1 ) ) )
+				end	
+			end
+			
+		parent.SCKBrowser = br
+		parent:SetTall( 180 )
+		
+	end
 
 	local selabel = vgui.Create( "DLabel", psettings )
 		selabel:SetTall( 20 )
@@ -159,6 +195,8 @@ local psettings = SimplePanel(ptool)
 	end
 
 	local psave = SimplePanel(psettings)
+		
+		psave:SetTall( 24 )
 
 		local satext = vgui.Create( "DTextEntry", psave )
 			satext:SetTall( 20 )
@@ -170,6 +208,16 @@ local psettings = SimplePanel(ptool)
 			end
 		satext:DockMargin(5,0,0,0)
 		satext:Dock(FILL)
+		
+		local sbrowsebtn = vgui.Create( "DButton", psave )
+			sbrowsebtn:SetTall( 16 )
+			sbrowsebtn:SetText( "..." )
+			
+		sbrowsebtn:Dock( RIGHT )
+		
+		sbrowsebtn.DoClick = function()
+			CreateDesignBrowser( psave, satext )
+		end
 
 		local sabtn = vgui.Create( "DButton", psave )
 			sabtn:SetTall( 16 )
@@ -193,6 +241,8 @@ local psettings = SimplePanel(ptool)
 
 	local pload = SimplePanel(psettings)
 
+		pload:SetTall( 24 )
+	
 		local lftext = vgui.Create( "DTextEntry", pload )
 			lftext:SetTall( 20 )
 			lftext:SetMultiline(false)
@@ -200,6 +250,17 @@ local psettings = SimplePanel(ptool)
 
 		lftext:DockMargin(5,0,0,0)
 		lftext:Dock(FILL)
+		
+		local browsebtn = vgui.Create( "DButton", pload )
+			browsebtn:SetTall( 16 )
+			browsebtn:SetText( "..." )
+			
+		browsebtn:Dock( RIGHT )
+		
+		browsebtn.DoClick = function()
+			CreateDesignBrowser( pload, lftext )
+		end
+			
 
 		local lfbtn = vgui.Create( "DButton", pload )
 			lfbtn:SetTall( 16 )
@@ -228,7 +289,21 @@ local psettings = SimplePanel(ptool)
 
 	pload:Dock(TOP)
 
-psettings:SetTall(selabel:GetTall() + lftext:GetTall() + satext:GetTall() + 30)
+--psettings:SetTall(selabel:GetTall() + lftext:GetTall() + satext:GetTall() + pload:GetTall())
+psettings:SetTall(selabel:GetTall() + psave:GetTall() + pload:GetTall() + 24)
+
+psettings.Think = function( self )
+	self.NextCheck = self.NextCheck or 0
+	if self.NextCheck > CurTime() then return end
+	
+	if selabel and psave and pload then
+		--self:SetTall(selabel:GetTall() + lftext:GetTall() + satext:GetTall() + pload:GetTall())
+		self:SetTall(selabel:GetTall() + psave:GetTall() + pload:GetTall() + 24)
+	end
+	
+	self.NextCheck = CurTime() + 0.1
+end
+
 psettings:DockPadding(0,5,0,5)
 psettings:Dock(TOP)
 
