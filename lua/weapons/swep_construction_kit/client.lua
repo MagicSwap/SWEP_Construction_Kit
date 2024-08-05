@@ -650,6 +650,7 @@ end
 	All viewmodel drawing magic
 ********************************]]
 SWEP.vRenderOrder = nil
+local clip_mat = Material( "vgui/white" )
 function SWEP:ViewModelDrawn()
 	--SCKDebugRepeat( "SWEP:VMD", "Drawing viewmodel!" )
 
@@ -868,9 +869,12 @@ function SWEP:ViewModelDrawn()
 				ang:RotateAroundAxis(ang:Right(), v.angle.p)
 				ang:RotateAroundAxis(ang:Forward(), v.angle.r)
 
-				cam.Start3D2D(drawpos, ang, 1)
-					draw.RoundedBox( 0, -20, -20, 40, 40, Color( 200, 200, 200, 50 ) )
-				cam.End3D2D()
+				render.SetMaterial( clip_mat )
+
+				render.OverrideDepthEnable( true, false )
+				render.DrawQuad( drawpos + ang:Right() * 40, drawpos + ang:Forward() * 40, drawpos - ang:Right() * 40, drawpos - ang:Forward() * 40, Color( 255, 0, 0, 50 ) )
+				render.DrawQuad( drawpos - ang:Right() * 40, drawpos + ang:Forward() * 40, drawpos + ang:Right() * 40, drawpos - ang:Forward() * 40, Color( 0, 255, 0, 50) )
+				render.OverrideDepthEnable( false, false )
 			end
 			
 		end
@@ -1127,9 +1131,12 @@ function SWEP:DrawWorldModel()
 				ang:RotateAroundAxis(ang:Right(), v.angle.p)
 				ang:RotateAroundAxis(ang:Forward(), v.angle.r)
 
-				cam.Start3D2D(drawpos, ang, 1)
-					draw.RoundedBox( 0, -20, -20, 40, 40, Color( 200, 200, 200, 50 ) )
-				cam.End3D2D()
+				render.SetMaterial( clip_mat )
+
+				render.OverrideDepthEnable( true, false )
+				render.DrawQuad( drawpos + ang:Right() * 40, drawpos + ang:Forward() * 40, drawpos - ang:Right() * 40, drawpos - ang:Forward() * 40, Color( 255, 0, 0, 50 ) )
+				render.DrawQuad( drawpos - ang:Right() * 40, drawpos + ang:Forward() * 40, drawpos + ang:Right() * 40, drawpos - ang:Forward() * 40, Color( 0, 255, 0, 50) )
+				render.OverrideDepthEnable( false, false )
 			end
 			
 		end
