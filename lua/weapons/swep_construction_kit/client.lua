@@ -646,6 +646,71 @@ function SWEP:ShowElementHelpers( pos, ang, v )
 	end
 end
 
+function SWEP:ShowBoneHelper( vm )
+
+	if !IsValid( self.ShouldShowBones ) then return end
+
+	local ent = vm
+	if !IsValid(ent) then
+		ent = self:GetOwner()
+	end
+
+	local ratio = 0.25
+
+	cam.IgnoreZ( true )
+	for i = 0, ent:GetBoneCount() - 1 do
+
+		local parent = ent:GetBoneParent( i )
+		local m = ent:GetBoneMatrix( i )
+		local m_p = ent:GetBoneMatrix( parent )
+
+		if m and m_p then
+
+			local pos = m:GetTranslation()
+			local p_pos = m_p:GetTranslation()
+
+			local len = (pos - p_pos):Length()
+
+			local ang = (p_pos - pos):GetNormal():Angle()
+
+			local selected = false
+
+			if self.ShowCurrentBone and ent:GetBoneName( i ) == self.ShowCurrentBone then
+				selected = true
+			end
+
+			local selected_parent = false
+
+			if self.ShowCurrentBone and ent:GetBoneName( parent ) == self.ShowCurrentBone then
+				selected_parent = true
+			end
+
+			render.DrawWireframeSphere( pos, 0.1, 15, 6, selected and Color ( 0, 255, 0, 255 ) or Color( 255, 255, 255, 100 ), true )
+			if selected_parent then
+				render.DrawWireframeBox( pos, ang, Vector( 0, -1 * ( ratio * len / 2 ), -1 * ( ratio * len / 2 ) ), Vector( len, ratio * len / 2,  ratio * len / 2 ), selected_parent and Color ( 0, 255, 0, 255 ) or Color( 255, 255, 255, 100 ), true )
+			else
+				render.DrawLine( pos, p_pos, selected_parent and Color ( 0, 255, 0, 255 ) or Color( 255, 255, 255, 100 ), true )
+			end
+
+			if #ent:GetChildBones( i ) < 1 then
+				local ang2 = m:GetAngles()
+				len = math.min( math.max( ent:BoneLength(i), 3 ), len * 0.2 )
+				if selected then
+					render.DrawWireframeBox( pos, ang2, Vector( 0, -1 * ( ratio * len / 2 ), -1 * ( ratio * len / 2 ) ), Vector( len, ratio * len / 2,  ratio * len / 2 ), selected and Color ( 0, 255, 0, 255 ) or Color( 255, 255, 255, 100 ), true )
+				else
+					render.DrawLine( pos, pos + ang2:Forward() * len, selected and Color ( 0, 255, 0, 255 ) or Color( 255, 255, 255, 100 ), true )
+				end
+			end
+
+
+		end
+
+	end
+	cam.IgnoreZ( false )
+
+
+end
+
 --[[*******************************
 	All viewmodel drawing magic
 ********************************]]
@@ -661,7 +726,6 @@ function SWEP:ViewModelDrawn()
 	--[[if vm.BuildBonePositions ~= self.BuildViewModelBones then
 		vm.BuildBonePositions = self.BuildViewModelBones
 	end]]
-
 
 	if (!self.vRenderOrder) then
 		-- we build a render order because sprites need to be drawn after models
@@ -890,6 +954,8 @@ function SWEP:DrawWorldModel()
 
 	local wm = self.world_model
 	if !IsValid(wm) then return end
+
+	self:ShowBoneHelper()
 
 	if (!self.wRenderOrder) then
 
@@ -1940,6 +2006,13 @@ function SWEP:OnRemove()
 	doautosave(self)
 
 	self:CleanMenu()
+
+	if IsValid( self:GetOwner() ) then
+		local vm = self:GetOwner():GetViewModel()
+		if IsValid(vm) then
+			self:ResetBonePositions(vm)
+		end
+	end
 end
 
 function SWEP:OnDropWeapon()

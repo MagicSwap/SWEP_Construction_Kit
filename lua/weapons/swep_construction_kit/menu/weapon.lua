@@ -25,7 +25,18 @@ local function ClearWorldModels()
 	wep.w_panelCache = {}
 end
 
-local old_postdraw_viewmodel = GAMEMODE.PostDrawViewModel
+local gm_postdraw_viewmodel = GAMEMODE.PostDrawViewModel
+local old_postdraw_viewmodel = function( self, ViewModel, Player, Weapon )
+
+	gm_postdraw_viewmodel( self, ViewModel, Player, Weapon )
+
+	if Weapon.ShowBoneHelper then
+		Weapon:ShowBoneHelper( ViewModel )
+	end
+end
+
+
+
 local new_postdraw_viewmodel = function( self, ViewModel, Player, Weapon )
 	if ( !IsValid( Weapon ) ) then return false end
 	if Weapon.PostDrawViewModel then
@@ -48,6 +59,10 @@ local new_postdraw_viewmodel = function( self, ViewModel, Player, Weapon )
 
 			hook.Call( "PostDrawPlayerHands", self, hands, ViewModel, Player, Weapon )
 		end
+	end
+
+	if Weapon.ShowBoneHelper then
+		Weapon:ShowBoneHelper( ViewModel )
 	end
 end
 
@@ -595,6 +610,22 @@ vsbonebox.OnSelect = function( p, index, value )
 end
 vsbonebox:SetText( curbone )
 vsbonebox.OnSelect( vsbonebox, 1, curbone )
+
+vsbonebox.OnMenuOpened = function( self, menu )
+	if IsValid( menu ) then
+		wep.ShouldShowBones = menu
+		for k, v in pairs( menu:GetCanvas():GetChildren() ) do
+			local oldOnCursorEntered = v.OnCursorEntered
+			v.OnCursorEntered = function( s )
+				oldOnCursorEntered( s )
+				wep.ShowCurrentBone = s:GetText()
+			end
+			v.OnCursorEXited = function( s )
+				wep.ShowCurrentBone = nil
+			end
+		end
+	end
+end
 
 timer.Simple(1, function()
 	local option = PopulateBoneList( vsbonebox, LocalPlayer():GetViewModel() )

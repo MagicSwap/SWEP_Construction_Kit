@@ -1064,6 +1064,22 @@ local function CreateBoneModifier( data, panel, ent, name )
 		end
 	end)
 
+	bonebox.OnMenuOpened = function( self, menu )
+		if IsValid( menu ) then
+			wep.ShouldShowBones = menu
+			for k, v in pairs( menu:GetCanvas():GetChildren() ) do
+				local oldOnCursorEntered = v.OnCursorEntered
+				v.OnCursorEntered = function( s )
+					oldOnCursorEntered( s )
+					wep.ShowCurrentBone = s:GetText()
+				end
+				v.OnCursorEXited = function( s )
+					wep.ShowCurrentBone = nil
+				end
+			end
+		end
+	end
+
 	panel.bonebox = bonebox
 
 	return panel
