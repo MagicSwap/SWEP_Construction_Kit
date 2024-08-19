@@ -1202,20 +1202,20 @@ local function CreateModelPanel( name, preset_data )
 
 	-- default data
 	data.type = preset_data.type or "Model"
-	data.model = preset_data.model or ""
-	data.bone = preset_data.bone or ""
-	data.rel = preset_data.rel or ""
+	data.model = preset_data.model and "" .. preset_data.model .. "" or ""
+	data.bone = preset_data.bone and "" .. preset_data.bone .. "" or ""
+	data.rel = preset_data.rel and "" .. preset_data.rel .. "" or ""
 	data.pos = preset_data.pos and Vector( preset_data.pos.x, preset_data.pos.y, preset_data.pos.z ) or Vector( 0, 0, 0 )
 	data.angle = preset_data.angle and Angle( preset_data.angle.p, preset_data.angle.y, preset_data.angle.r ) or Angle( 0, 0, 0 )
-	data.size = preset_data.size or Vector(0.5,0.5,0.5)
+	data.size = preset_data.size and Vector( preset_data.size.x, preset_data.size.y, preset_data.size.z ) or Vector(0.5,0.5,0.5)
 	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
-	data.surpresslightning = preset_data.surpresslightning or false
-	data.bonemerge = preset_data.bonemerge or false
-	data.nocull = preset_data.nocull or false
-	data.highrender = preset_data.highrender or false
+	data.surpresslightning = preset_data.surpresslightning and true or false
+	data.bonemerge = preset_data.bonemerge and true or false
+	data.nocull = preset_data.nocull and true or false
+	data.highrender = preset_data.highrender and true or false
 	data.material = preset_data.material and "" .. preset_data.material .. "" or ""
-	data.bodygroup = preset_data.bodygroup or {}
-	data.skin = preset_data.skin or 0
+	data.bodygroup = preset_data.bodygroup and table.Copy(preset_data.bodygroup) or {}
+	data.skin = preset_data.skin and preset_data.skin * 1 or 0
 
 	wep.vRenderOrder = nil -- force viewmodel render order to recache
 
@@ -1265,11 +1265,11 @@ local function CreateSpritePanel( name, preset_data )
 
 	-- default data
 	data.type = preset_data.type or "Sprite"
-	data.sprite = preset_data.sprite or ""
-	data.bone = preset_data.bone or ""
-	data.rel = preset_data.rel or ""
+	data.sprite = preset_data.sprite and "" .. preset_data.sprite .. "" or ""
+	data.bone = preset_data.bone and "" .. preset_data.bone .. "" or ""
+	data.rel = preset_data.rel and "" .. preset_data.rel .. "" or ""
 	data.pos = preset_data.pos and Vector( preset_data.pos.x, preset_data.pos.y, preset_data.pos.z ) or Vector( 0, 0, 0 )
-	data.size = preset_data.size or { x = 1, y = 1 }
+	data.size = preset_data.size and { x = preset_data.size.x * 1, y = preset_data.size.y * 1 } or { x = 1, y = 1 }
 	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
 	data.nocull = preset_data.nocull or true
 	data.additive = preset_data.additive or true
@@ -1319,11 +1319,11 @@ local function CreateQuadPanel( name, preset_data )
 	-- default data
 	data.type = preset_data.type or "Quad"
 	data.model = preset_data.model or ""
-	data.bone = preset_data.bone or ""
-	data.rel = preset_data.rel or ""
+	data.bone = preset_data.bone and "" .. preset_data.bone .. "" or ""
+	data.rel = preset_data.rel and "" .. preset_data.rel .. "" or ""
 	data.pos = preset_data.pos and Vector( preset_data.pos.x, preset_data.pos.y, preset_data.pos.z ) or Vector( 0, 0, 0 )
 	data.angle = preset_data.angle and Angle( preset_data.angle.p, preset_data.angle.y, preset_data.angle.r ) or Angle( 0, 0, 0 )
-	data.size = preset_data.size or 0.05
+	data.size = preset_data.size and preset_data.size * 1 or 0.05
 
 	wep.vRenderOrder = nil -- force viewmodel render order to recache
 
@@ -1356,8 +1356,8 @@ local function CreateClipPanel( name, preset_data )
 
 	-- default data
 	data.type = preset_data.type or "ClipPlane"
-	data.bone = preset_data.bone or ""
-	data.rel = preset_data.rel or ""
+	data.bone = preset_data.bone and "" .. preset_data.bone .. "" or ""
+	data.rel = preset_data.rel and "" .. preset_data.rel .. "" or ""
 	data.pos = preset_data.pos and Vector( preset_data.pos.x, preset_data.pos.y, preset_data.pos.z ) or Vector( 0, 0, 0 )
 	data.angle = preset_data.angle and Angle( preset_data.angle.p, preset_data.angle.y, preset_data.angle.r ) or Angle( 0, 0, 0 )
 
@@ -1856,20 +1856,20 @@ local function CreateWorldModelPanel( name, preset_data )
 
 	-- default data
 	data.type = preset_data.type or "Model"
-	data.model = preset_data.model or ""
+	data.model = preset_data.model and "" .. preset_data.model .. "" or ""
 	data.bone = preset_data.bone or "ValveBiped.Bip01_R_Hand"
-	data.rel = preset_data.rel or ""
+	data.rel = preset_data.rel and "" .. preset_data.rel .. "" or ""
 	data.pos = preset_data.pos and Vector( preset_data.pos.x, preset_data.pos.y, preset_data.pos.z ) or Vector( 0, 0, 0 )
 	data.angle = preset_data.angle and Angle( preset_data.angle.p, preset_data.angle.y, preset_data.angle.r ) or Angle( 0, 0, 0 )
-	data.size = preset_data.size or Vector(0.5,0.5,0.5)
+	data.size = preset_data.size and Vector( preset_data.size.x, preset_data.size.y, preset_data.size.z ) or Vector(0.5,0.5,0.5)
 	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
-	data.surpresslightning = preset_data.surpresslightning or false
-	data.bonemerge = preset_data.bonemerge or false
-	data.nocull = preset_data.nocull or false
-	data.highrender = preset_data.highrender or false
+	data.surpresslightning = preset_data.surpresslightning and true or false
+	data.bonemerge = preset_data.bonemerge and true or false
+	data.nocull = preset_data.nocull and true or false
+	data.highrender = preset_data.highrender and true or false
 	data.material = preset_data.material and "" .. preset_data.material .. "" or ""
-	data.bodygroup = preset_data.bodygroup or {}
-	data.skin = preset_data.skin or 0
+	data.bodygroup = preset_data.bodygroup and table.Copy(preset_data.bodygroup) or {}
+	data.skin = preset_data.skin and preset_data.skin * 1 or 0
 
 	wep.wRenderOrder = nil
 
@@ -1917,11 +1917,11 @@ local function CreateWorldSpritePanel( name, preset_data )
 
 	-- default data
 	data.type = preset_data.type or "Sprite"
-	data.sprite = preset_data.sprite or ""
-	data.bone = preset_data.bone or "ValveBiped.Bip01_R_Hand"
-	data.rel = preset_data.rel or ""
+	data.sprite = preset_data.sprite and "" .. preset_data.sprite .. "" or ""
+	data.bone = preset_data.bone and "" .. preset_data.bone .. "" or "ValveBiped.Bip01_R_Hand"
+	data.rel = preset_data.rel and "" .. preset_data.rel .. "" or ""
 	data.pos = preset_data.pos and Vector( preset_data.pos.x, preset_data.pos.y, preset_data.pos.z ) or Vector( 0, 0, 0 )
-	data.size = preset_data.size or { x = 1, y = 1 }
+	data.size = preset_data.size and { x = preset_data.size.x * 1, y = preset_data.size.y * 1 } or { x = 1, y = 1 }
 	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
 	data.nocull = preset_data.nocull or true
 	data.additive = preset_data.additive or true
@@ -1970,12 +1970,12 @@ local function CreateWorldQuadPanel( name, preset_data )
 
 	-- default data
 	data.type = preset_data.type or "Quad"
-	data.model = preset_data.model or ""
-	data.bone = preset_data.bone or "ValveBiped.Bip01_R_Hand"
-	data.rel = preset_data.rel or ""
+	data.model = preset_data.model and "" .. preset_data.model .. "" or ""
+	data.bone = preset_data.bone and "" .. preset_data.bone .. ""  or "ValveBiped.Bip01_R_Hand"
+	data.rel = preset_data.rel and "" .. preset_data.rel .. "" or ""
 	data.pos = preset_data.pos and Vector( preset_data.pos.x, preset_data.pos.y, preset_data.pos.z ) or Vector( 0, 0, 0 )
 	data.angle = preset_data.angle and Angle( preset_data.angle.p, preset_data.angle.y, preset_data.angle.r ) or Angle( 0, 0, 0 )
-	data.size = preset_data.size or 0.05
+	data.size = preset_data.size and preset_data.size * 1 or 0.05
 
 	wep.vRenderOrder = nil -- force viewmodel render order to recache
 
@@ -2008,8 +2008,8 @@ local function CreateWorldClipPanel( name, preset_data )
 
 	-- default data
 	data.type = preset_data.type or "ClipPlane"
-	data.bone = preset_data.bone or "ValveBiped.Bip01_R_Hand"
-	data.rel = preset_data.rel or ""
+	data.bone = preset_data.bone and "" .. preset_data.bone .. ""  or "ValveBiped.Bip01_R_Hand"
+	data.rel = preset_data.rel and "" .. preset_data.rel .. "" or ""
 	data.pos = preset_data.pos and Vector( preset_data.pos.x, preset_data.pos.y, preset_data.pos.z ) or Vector( 0, 0, 0 )
 	data.angle = preset_data.angle and Angle( preset_data.angle.p, preset_data.angle.y, preset_data.angle.r ) or Angle( 0, 0, 0 )
 
