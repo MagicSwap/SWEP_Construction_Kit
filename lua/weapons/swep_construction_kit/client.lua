@@ -121,6 +121,9 @@ end
 function SimplePanel( parent, scroll )
 	local p = vgui.Create( scroll and "DScrollPanel" or "DPanel", parent)
 	p.Paint = function() end
+	if parent._passdata then
+		p._passdata = table.Copy(parent._passdata)
+	end
 	return p
 end
 
@@ -1865,7 +1868,7 @@ local function CreateMenu( preset )
 	tlabel:Dock(RIGHT)
 
 	PopulateBoneList( tpsbonelist, LocalPlayer() )
-	timer.Simple( 0.1, function()
+	timer.Simple( 1, function()
 		if tpsbonelist and wep.tpsfocusbone then
 			for i=1, #tpsbonelist.Choices do
 				if wep.tpsfocusbone == tpsbonelist.Choices[i] then
@@ -1876,6 +1879,22 @@ local function CreateMenu( preset )
 			//tpsbonelist:SetText( wep.tpsfocusbone )
 		end
 	end)
+
+	tpsbonelist.OnMenuOpened = function( self, menu )
+		if IsValid( menu ) then
+			wep.ShouldShowBones = menu
+			for k, v in pairs( menu:GetCanvas():GetChildren() ) do
+				local oldOnCursorEntered = v.OnCursorEntered
+				v.OnCursorEntered = function( s )
+					oldOnCursorEntered( s )
+					wep.ShowCurrentBone = s:GetText()
+				end
+				v.OnCursorEXited = function( s )
+					wep.ShowCurrentBone = nil
+				end
+			end
+		end
+	end
 
 	local yinvcheck = vgui.Create("DCheckBoxLabel", tpanel)
 	yinvcheck:SetText("Invert Y")
