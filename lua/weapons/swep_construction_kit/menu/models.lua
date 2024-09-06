@@ -338,6 +338,18 @@ local mtree = vgui.Create( "DTree", pmodels)
 	wep.v_modelListing = mtree
 	mtree:Root():SetDraggableName( "Viewmodel" )
 
+	function mtree:DoClick()
+		local cursel = self:GetSelectedItem()
+		if cursel ~= self.LastSelected then
+			self.LastSelected = cursel
+			return
+		end
+
+		if IsValid(cursel) then
+			self:SetSelectedItem(nil)
+		end
+	end
+
 	mtree:Root().OnModified = function( self )
 		for k, v in pairs( self:GetChildNodes() ) do
 			v._ParentNode = self
@@ -2024,6 +2036,18 @@ local mwtree = vgui.Create( "DTree", pwmodels)
 			SetRelativeForNode( v, self, "w" )
 		end
 		wep.wRenderOrder = nil
+	end
+
+	function mwtree:DoClick()
+		local cursel = self:GetSelectedItem()
+		if cursel ~= self.LastSelected then
+			self.LastSelected = cursel
+			return
+		end
+
+		if IsValid(cursel) then
+			self:SetSelectedItem(nil)
+		end
 	end
 
 	mwtree.OnNodeSelected = function( panel )
