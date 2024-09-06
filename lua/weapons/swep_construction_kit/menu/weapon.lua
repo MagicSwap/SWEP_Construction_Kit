@@ -68,19 +68,34 @@ end
 
 local function RefreshViewModelBoneMods()
 	local wep = GetSCKSWEP( LocalPlayer() )
-	if (!IsValid(wep)) then return end
+	if not IsValid(wep) then return end
 
-	if (!IsValid(wep.v_modelbonebox)) then return end
+	if not IsValid(wep.v_modelbonebox) then return end
 	wep.v_bonemods = {}
 
 	wep.v_modelbonebox:Clear()
 
 	timer.Remove("repop")
-
 	timer.Create("repop", 1, 1, function()
 		local option = PopulateBoneList( wep.v_modelbonebox, LocalPlayer():GetViewModel() )
+		local replacement = ""
 		if (option) then
 			wep.v_modelbonebox:ChooseOptionID(1)
+			replacement = wep.v_modelbonebox:GetOptionText(1)
+			print(replacement)
+		end
+
+		-- look through our vmodels and see if we have any bones that are now invalid
+		local vm = LocalPlayer():GetViewModel()
+		if IsValid(vm) and IsValid(wep) then
+			for k, v in pairs(wep.v_models) do
+				if #v.bone < 1 then continue end
+
+				local bone = vm:LookupBone(v.bone)
+				if not bone then
+					v.bone = replacement
+				end
+			end
 		end
 	end)
 
@@ -275,10 +290,10 @@ local usehands = vgui.Create( "DCheckBoxLabel", pweapon )
 	usehands.OnChange = function()
 		wep.UseHands = usehands:GetChecked()
 	end
-	if (wep.save_data.UseHands) then 
+	if (wep.save_data.UseHands) then
 		usehands:SetValue(1)
-	else 
-		usehands:SetValue(0) 
+	else
+		usehands:SetValue(0)
 	end
 usehands:DockMargin(0,0,0,5)
 usehands:Dock(TOP)
@@ -426,7 +441,7 @@ local function CreateBoneMod( selbone, preset_data )
 			vsywang:SetWide(pscale:GetWide()*4/15)
 			vsxwang:SetWide(pscale:GetWide()*4/15)
 		end
-		
+
 		vslabel.DoDoubleClick = function( self )
 			if vsxwang then
 				vsxwang:SetValue( 1 )
@@ -491,7 +506,7 @@ local function CreateBoneMod( selbone, preset_data )
 			vposywang:SetWide(ppos:GetWide()*4/15)
 			vposxwang:SetWide(ppos:GetWide()*4/15)
 		end
-		
+
 		vposlabel.DoDoubleClick = function( self )
 			if vposxwang then
 				vposxwang:SetValue( 0 )
@@ -556,7 +571,7 @@ local function CreateBoneMod( selbone, preset_data )
 			vangywang:SetWide(pang:GetWide()*4/15)
 			vangxwang:SetWide(pang:GetWide()*4/15)
 		end
-		
+
 		vanglabel.DoDoubleClick = function( self )
 			if vangxwang then
 				vangxwang:SetValue( 0 )

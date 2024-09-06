@@ -323,11 +323,8 @@ copy_hierarchy = function(self, parent, realm, first)
 	end
 
 	if #children < 1 then
-		print("no children", self)
 		return
 	else
-		print("children", self)
-		PrintTable(children)
 		for k, v in ipairs(children) do
 			copy_hierarchy(v, newnode or parent, realm)
 		end
