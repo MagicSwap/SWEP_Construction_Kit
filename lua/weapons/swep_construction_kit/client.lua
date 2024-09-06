@@ -174,7 +174,7 @@ function PopulateBoneList( choicelist, ent )
 	SCKDebug("Populating bone list for entity "..tostring(ent))
 
 	choicelist:Clear()
-	
+
 	if not choicelist.ResolveInvalidBones then
 		local oldOpen = choicelist.OpenMenu
 		choicelist.ResolveInvalidBones = ResolveInvalidBones
@@ -368,6 +368,8 @@ function SWEP:Think()
 					// AAAAAAAAAaaaaaaaaaaaaaaaa
 					if cur_mode.vs and IsValid( ent ) then
 						local p_pos, p_ang = self:GetBoneOrientation( tbl, self.selectedElement, ent )
+
+						if not p_pos then return end
 
 						local thirdperson_ang = self.thirdPersonAngleView * 1
 
