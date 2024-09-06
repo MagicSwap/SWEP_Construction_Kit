@@ -174,7 +174,7 @@ function PopulateBoneList( choicelist, ent )
 	SCKDebug("Populating bone list for entity "..tostring(ent))
 
 	choicelist:Clear()
-	
+
 	if not choicelist.ResolveInvalidBones then
 		local oldOpen = choicelist.OpenMenu
 		choicelist.ResolveInvalidBones = ResolveInvalidBones
@@ -369,6 +369,8 @@ function SWEP:Think()
 					if cur_mode.vs and IsValid( ent ) then
 						local p_pos, p_ang = self:GetBoneOrientation( tbl, self.selectedElement, ent )
 
+						if not p_pos then return end
+
 						local thirdperson_ang = self.thirdPersonAngleView * 1
 
 						local view_ang = self.useThirdPerson and thirdperson_ang or LocalPlayer():EyeAngles()
@@ -490,7 +492,7 @@ end
 function SWEP:GetBoneOrientation( basetab, name, ent, bone_override, buildup )
 	local bone, pos, ang
 	local tab = basetab[name]
-	if tab.rel and tab.rel != "" and basetab[tab.rel] then
+	if tab.rel and tab.rel ~= "" and basetab[tab.rel] then
 		local v = basetab[tab.rel]
 
 		if (!v) then return end
@@ -538,7 +540,7 @@ function SWEP:GetElementRootBonename( basetab, name, ent, buildup )
 	local bonename
 	local tab = basetab[name]
 
-	if (tab.rel and tab.rel != "") then
+	if (tab.rel and tab.rel ~= "") then
 		local v = basetab[tab.rel]
 		if (!v) then return end
 
@@ -615,13 +617,13 @@ function SWEP:UpdateBonePositions(vm)
 
 			-- !! ----------- !! --
 
-			if vm:GetManipulateBoneScale(bone) != s then
+			if vm:GetManipulateBoneScale(bone) ~= s then
 				vm:ManipulateBoneScale( bone, s )
 			end
-			if vm:GetManipulateBoneAngles(bone) != v.angle then
+			if vm:GetManipulateBoneAngles(bone) ~= v.angle then
 				vm:ManipulateBoneAngles( bone, v.angle )
 			end
-			if vm:GetManipulateBonePosition(bone) != p then
+			if vm:GetManipulateBonePosition(bone) ~= p then
 				vm:ManipulateBonePosition( bone, p )
 			end
 		end
@@ -661,7 +663,7 @@ function SWEP:ShowElementHelpers( pos, ang, v )
 		end
 
 		render.SetMaterial( matDisc )
-		
+
 		render.DrawQuadEasy( helper_pos, helper_ang:Forward(), 10, 10, Color( 255, 55, 55, 50 ), 0 )
 		render.DrawQuadEasy( helper_pos, helper_ang:Right(), 10, 10, Color( 55, 255, 55, 50 ), 0 )
 		render.DrawQuadEasy( helper_pos, helper_ang:Up(), 10, 10, Color( 55, 55, 255, 50 ), 0 )
@@ -670,11 +672,11 @@ function SWEP:ShowElementHelpers( pos, ang, v )
 		if model_drag_modes[ self.selectedModelDragMode ].vs then
 			ang = self.useThirdPerson and self.thirdPersonAngleView or LocalPlayer():EyeAngles()
 		end
-		
+
 		render.DrawLine( helper_pos, helper_pos + ang:Forward() * 10, Color( 255, 55, 55 ), true )
 		render.DrawLine( helper_pos, helper_pos + ang:Right() * 10, Color( 55, 255, 55 ), true )
 		render.DrawLine( helper_pos, helper_pos + ang:Up() * 10, Color( 55, 55, 255 ), true )
-		
+
 	end
 end
 
@@ -770,7 +772,7 @@ function SWEP:ViewModelDrawn()
 				v.clipcount = nil
 			end
 		end
-		
+
 		for k, v in pairs( self.v_models ) do
 			if (v.type == "Model") then
 				if v.highrender then
@@ -782,16 +784,16 @@ function SWEP:ViewModelDrawn()
 				table.insert(self.vRenderOrder, k)
 			elseif (v.type == "ClipPlane") then
 				if v.rel == "" or v.rel == nil then continue end
-				
+
 				if self.v_models[ v.rel ] and self.v_models[ v.rel ].type == "Model" then
-					
+
 					self.v_models[ v.rel ].clipplanes = self.v_models[ v.rel ].clipplanes or {}
 					self.v_models[ v.rel ].clipcount = self.v_models[ v.rel ].clipcount or 0
-					
+
 					table.insert(self.v_models[ v.rel ].clipplanes, k)
-					
+
 					self.v_models[ v.rel ].clipcount = self.v_models[ v.rel ].clipcount + 1
-					
+
 					table.insert(self.vRenderOrder, k)
 				end
 			end
@@ -833,7 +835,7 @@ function SWEP:ViewModelDrawn()
 			local matrix = Matrix()
 			matrix:Scale(v.size)
 			model:EnableMatrix( "RenderMultiply", matrix )
-			
+
 			if model.ModelMatrixScale ~= v.size then
 				model.ModelMatrixScale = v.size
 			end
@@ -846,7 +848,7 @@ function SWEP:ViewModelDrawn()
 			if v.inversed and v.size.x > 0 then
 				v.inversed = nil
 			end
-			
+
 			if v.bonemerge then
 				if !model:IsEffectActive( EF_BONEMERGE ) then
 					model:SetParent( vm )
@@ -866,13 +868,13 @@ function SWEP:ViewModelDrawn()
 				model:SetMaterial( mat )
 			end
 
-			if (v.skin != model:GetSkin()) then
+			if (v.skin ~= model:GetSkin()) then
 				model:SetSkin(v.skin)
 			end
 
-			for k, v in pairs( v.bodygroup ) do
-				if (model:GetBodygroup(k) != v) then
-					model:SetBodygroup(k, v)
+			for slot, bg in pairs( v.bodygroup ) do
+				if (model:GetBodygroup(slot) ~= bg) then
+					model:SetBodygroup(slot, bg)
 				end
 			end
 
@@ -883,21 +885,21 @@ function SWEP:ViewModelDrawn()
 			render.SetColorModulation(v.color.r/255, v.color.g/255, v.color.b/255)
 			render.SetBlend(v.color.a/255)
 			if v.inversed then render.CullMode(MATERIAL_CULLMODE_CW) end
-			
+
 			local real_clip_count = 0
-			
+
 			if v.clipplanes and v.clipcount then
 				render.EnableClipping( true )
-				
+
 				local mpos = model:GetPos()
-				
+
 				for i = 1, math.min( v.clipcount, 2 ) do
 					local plane = v.clipplanes[ i ]
-					
+
 					if plane and self.v_models[ plane ] then
-					
+
 						local clip_data = self.v_models[ plane ]
-					
+
 						local clip_ang = ang * 1
 						local clip_pos = mpos + clip_ang:Forward() * clip_data.pos.x + clip_ang:Right() * clip_data.pos.y + clip_ang:Up() * clip_data.pos.z
 
@@ -908,24 +910,24 @@ function SWEP:ViewModelDrawn()
 						render.PushCustomClipPlane( clip_ang:Up(), clip_ang:Up():Dot( clip_pos ) )
 						real_clip_count = real_clip_count + 1
 					end
-				end				
+				end
 			end
-			
+
 			model:DrawModel()
-			
+
 			if real_clip_count > 0 and v.nocull then
 				render.CullMode(v.inversed and MATERIAL_CULLMODE_CCW or MATERIAL_CULLMODE_CW)
 				model:DrawModel()
 				render.CullMode(v.inversed and MATERIAL_CULLMODE_CW or MATERIAL_CULLMODE_CCW)
 			end
-			
+
 			if real_clip_count > 0 then
 				for i = 1, real_clip_count do
 					render.PopCustomClipPlane()
 				end
 				render.EnableClipping( false )
 			end
-			
+
 			if v.inversed then render.CullMode(MATERIAL_CULLMODE_CCW) end
 			render.SetBlend(1)
 			render.SetColorModulation(1, 1, 1)
@@ -958,7 +960,7 @@ function SWEP:ViewModelDrawn()
 				surface.DrawLine( 0, 0, 8, 0 )
 			cam.End3D2D()
 		elseif (v.type == "ClipPlane") then
-			
+
 			if name == self.selectedElement then
 				local drawpos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
 				ang:RotateAroundAxis(ang:Up(), v.angle.y)
@@ -972,7 +974,7 @@ function SWEP:ViewModelDrawn()
 				render.DrawQuad( drawpos - ang:Right() * 40, drawpos + ang:Forward() * 40, drawpos + ang:Right() * 40, drawpos - ang:Forward() * 40, Color( 0, 255, 0, 50) )
 				render.OverrideDepthEnable( false, false )
 			end
-			
+
 		end
 	end
 end
@@ -992,7 +994,7 @@ function SWEP:DrawWorldModel()
 	if (!self.wRenderOrder) then
 
 		self.wRenderOrder = {}
-		
+
 		-- clean up cached clip planes
 		for k, v in pairs( self.w_models ) do
 			if v.type == "Model" then
@@ -1012,16 +1014,16 @@ function SWEP:DrawWorldModel()
 				table.insert(self.wRenderOrder, k)
 			elseif (v.type == "ClipPlane") then
 				if v.rel == "" or v.rel == nil then continue end
-				
+
 				if self.w_models[ v.rel ] and self.w_models[ v.rel ].type == "Model" then
-					
+
 					self.w_models[ v.rel ].clipplanes = self.w_models[ v.rel ].clipplanes or {}
 					self.w_models[ v.rel ].clipcount = self.w_models[ v.rel ].clipcount or 0
-					
+
 					table.insert(self.w_models[ v.rel ].clipplanes, k)
-					
+
 					self.w_models[ v.rel ].clipcount = self.w_models[ v.rel ].clipcount + 1
-					
+
 					table.insert(self.wRenderOrder, k)
 				end
 			end
@@ -1035,13 +1037,13 @@ function SWEP:DrawWorldModel()
 		wm:SetNoDraw( true )
 		wm:DrawShadow( true )
 		self:DrawShadow( true )
-		if (self:GetOwner():IsPlayer() and self:GetOwner():GetActiveWeapon() != self.Weapon) then return end
+		if (self:GetOwner():IsPlayer() and self:GetOwner():GetActiveWeapon() ~= self.Weapon) then return end
 		wm:SetParent(self:GetOwner())
-		if !self:GetOwner():IsPlayer() then
+		if not self:GetOwner():IsPlayer() then
 			wm:SetRenderBounds( self:GetOwner():OBBMins()*2, self:GetOwner():OBBMaxs()*2 )
 			self:SetRenderBounds( self:GetOwner():OBBMins()*2, self:GetOwner():OBBMaxs()*2 )
 		end
-		if (self.ShowWorldModel) and self:GetOwner():IsPlayer() then
+		if self.ShowWorldModel and self:GetOwner():IsPlayer() then
 			wm:DrawModel()
 		end
 		bone_ent = self:GetOwner()
@@ -1108,7 +1110,7 @@ function SWEP:DrawWorldModel()
 			local matrix = Matrix()
 			matrix:Scale(v.size)
 			model:EnableMatrix( "RenderMultiply", matrix )
-			
+
 			if model.ModelMatrixScale ~= v.size then
 				model.ModelMatrixScale = v.size
 			end
@@ -1124,7 +1126,7 @@ function SWEP:DrawWorldModel()
 					model:RemoveEffects( EF_BONEMERGE )
 				end
 			end
-			
+
 			if (v.material == "") then
 				model:SetMaterial("")
 			elseif model:GetMaterial() ~= (SCKMaterials[v.material] or v.material) then
@@ -1132,13 +1134,13 @@ function SWEP:DrawWorldModel()
 				model:SetMaterial( mat )
 			end
 
-			if (v.skin != model:GetSkin()) then
+			if (v.skin ~= model:GetSkin()) then
 				model:SetSkin(v.skin)
 			end
 
-			for k, v in pairs( v.bodygroup ) do
-				if (model:GetBodygroup(k) != v) then
-					model:SetBodygroup(k, v)
+			for slot, bg in pairs( v.bodygroup ) do
+				if (model:GetBodygroup(slot) ~= bg) then
+					model:SetBodygroup(slot, bg)
 				end
 			end
 
@@ -1150,47 +1152,47 @@ function SWEP:DrawWorldModel()
 			render.SetBlend(v.color.a/255)
 
 			local real_clip_count = 0
-			
+
 			if v.clipplanes and v.clipcount then
 				render.EnableClipping( true )
-				
+
 				local mpos = model:GetPos()
-				
+
 				for i = 1, math.min( v.clipcount, 2 ) do
 					local plane = v.clipplanes[ i ]
-					
+
 					if plane and self.w_models[ plane ] then
-					
+
 						local clip_data = self.w_models[ plane ]
-					
+
 						local clip_ang = ang * 1
 						local clip_pos = mpos + clip_ang:Forward() * clip_data.pos.x + clip_ang:Right() * clip_data.pos.y + clip_ang:Up() * clip_data.pos.z
 
 						clip_ang:RotateAroundAxis(clip_ang:Up(), clip_data.angle.y)
 						clip_ang:RotateAroundAxis(clip_ang:Right(), clip_data.angle.p)
 						clip_ang:RotateAroundAxis(clip_ang:Forward(), clip_data.angle.r)
-					
+
 						render.PushCustomClipPlane( clip_ang:Up(), clip_ang:Up():Dot( clip_pos ) )
 						real_clip_count = real_clip_count + 1
 					end
-				end				
+				end
 			end
-			
+
 			model:DrawModel()
-			
+
 			if real_clip_count > 0 and v.nocull then
 				render.CullMode(MATERIAL_CULLMODE_CW)
 				model:DrawModel()
 				render.CullMode(MATERIAL_CULLMODE_CCW)
 			end
-			
+
 			if real_clip_count > 0 then
 				for i = 1, real_clip_count do
 					render.PopCustomClipPlane()
 				end
 				render.EnableClipping( false )
 			end
-			
+
 			render.SetBlend(1)
 			render.SetColorModulation(1, 1, 1)
 
@@ -1222,7 +1224,7 @@ function SWEP:DrawWorldModel()
 				surface.DrawLine( 0, 0, 8, 0 )
 			cam.End3D2D()
 		elseif (v.type == "ClipPlane") then
-			
+
 			if name == self.selectedElement then
 				local drawpos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
 				ang:RotateAroundAxis(ang:Up(), v.angle.y)
@@ -1236,7 +1238,7 @@ function SWEP:DrawWorldModel()
 				render.DrawQuad( drawpos - ang:Right() * 40, drawpos + ang:Forward() * 40, drawpos + ang:Right() * 40, drawpos - ang:Forward() * 40, Color( 0, 255, 0, 50) )
 				render.OverrideDepthEnable( false, false )
 			end
-			
+
 		end
 	end
 end
@@ -1542,8 +1544,7 @@ function SWEP:OpenMaterialBrowser(current, callback)
 	LoadDirectories = function( v )
 
 		if (table.HasValue(checked,v)) then return end
-		local files
-		files, newdirs = file.Find(v.."/*", "GAME")
+		local _, newdirs = file.Find(v.."/*", "GAME")
 		table.insert(checked, v)
 
 		table.sort(newdirs)
@@ -1752,8 +1753,7 @@ function SWEP:OpenModelBrowser(current, callback)
 	LoadDirectories = function( v )
 
 		if (table.HasValue(checked,v)) then return end
-		local files
-		files, newdirs = file.Find(v.."/*", "GAME")
+		local _, newdirs = file.Find(v.."/*", "GAME")
 		table.insert(checked, v)
 
 		table.sort(newdirs)
@@ -1824,7 +1824,7 @@ local function CreateMenu( preset )
 	--]]
 
 	local mpanel = vgui.Create( "DPanel", f )
-		mpanel:SetDrawBackground(false)
+		mpanel:SetPaintBackground(false)
 		mpanel:SetTooltip("Hold CTRL to enter elements drag mode.\nHold SHIFT to enter element rotation mode.\n\n  - Hold RMB for 2D axis mode.\n  - Hold LMB and RMB for 1D axis mode.\n  - Use SCROLL WHEEL to adjust drag sensitivity.")
 		mpanel:SetTall(20)
 	mpanel:DockMargin(0,0,0,5)
@@ -1873,7 +1873,7 @@ local function CreateMenu( preset )
 	end
 
 	local tpanel= vgui.Create( "DPanel", f )
-		tpanel:SetDrawBackground(false)
+		tpanel:SetPaintBackground(false)
 		tpanel:SetTall(20)
 	tpanel:DockMargin(0,0,0,5)
 	tpanel:Dock(TOP)
@@ -1886,7 +1886,7 @@ local function CreateMenu( preset )
 		end
 	tpsbonelist:DockMargin(5,0,0,0)
 	tpsbonelist:Dock(RIGHT)
-	
+
 	wep.bonelist = tpsbonelist
 
 	local tlabel = vgui.Create( "DLabel", tpanel )
@@ -1905,7 +1905,7 @@ local function CreateMenu( preset )
 					break
 				end
 			end
-			//tpsbonelist:SetText( wep.tpsfocusbone )
+			--tpsbonelist:SetText( wep.tpsfocusbone )
 		end
 	end)
 
@@ -2006,7 +2006,7 @@ local function CreateMenu( preset )
 		View models and World models page
 	***************************************]]
 	include("weapons/"..wep:GetClass().."/menu/models.lua")
-	
+
 	--[[***************************************
 		Player helper page
 	***************************************]]
@@ -2072,11 +2072,11 @@ end
 
 function SWEP:CleanMenu()
 	self:RemoveModels()
-	
+
 	hook.Remove( "CalcMainActivity", "SCKOverrideActivity" )
-	
+
 	RunConsoleCommand("swepck_playermodelscale", "1")
-	
+
 	if (!self.Frame) then return end
 
 	self.v_modelListing = nil
@@ -2164,13 +2164,13 @@ local undo_material = false
 
 hook.Add("PrePlayerDraw", "SCKPrePlayerDraw", function( pl, flags )
 	local wep = pl:GetActiveWeapon()
-	
+
 	if wep.PlayerColor and bit.band( flags, STUDIO_RENDER ) ~= 0 then
 		render.SetColorModulation( wep.PlayerColor.r / 255, wep.PlayerColor.g / 255, wep.PlayerColor.b / 255 )
 		render.SetBlend( wep.PlayerColor.a / 255 )
 		undo_color = true
 	end
-	
+
 	if wep.PlayerMaterial and wep.PlayerMaterialName then
 		render.ModelMaterialOverride( wep.PlayerMaterial )
 		undo_material = true
@@ -2183,7 +2183,7 @@ hook.Add("PostPlayerDraw", "SCKPostPlayerDraw", function( pl )
 		render.SetBlend( 1 )
 		undo_color = false
 	end
-	
+
 	if undo_material then
 		render.ModelMaterialOverride( )
 		undo_material = false

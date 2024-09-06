@@ -78,10 +78,10 @@ local function Cmd_HidePlayer( pl, cmd, args )
 	local wep = GetSCKSWEP( pl )
 	if (IsValid(wep)) then
 		local hide = tobool(args[1] or 0)
-		
+
 		pl:SetRenderMode( RENDERMODE_TRANSALPHA )
 		pl:SetColor( hide and Color( 0, 0, 0, 0 ) or color_white )
-		
+
 	end
 
 end
@@ -169,7 +169,7 @@ local function Cmd_PlayerModel( pl, cmd, args )
 	if !file.Exists(newmod, "GAME") then return end
 
 	util.PrecacheModel(newmod)
-	
+
 	pl:SetModel( newmod )
 
 end
@@ -180,7 +180,7 @@ local function Cmd_PlayerModelScale( pl, cmd, args )
 	local wep = GetSCKSWEP( pl )
 	if (!IsValid(wep)) then return end
 	local sc = tonumber(args[1] or 1)
-	
+
 	pl:SetModelScale( sc, 0.0001 )
 
 end
