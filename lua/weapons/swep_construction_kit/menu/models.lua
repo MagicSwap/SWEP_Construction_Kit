@@ -238,7 +238,9 @@ copy_element = function(realm, tree, override)
 
 	-- quickly generate a new unique name
 	while(mdltab[name]) do
-		name = name.."+"
+		local adder = override and "_c" or "+"
+
+		name = name..adder
 	end
 
 	-- have to fix every sub-table as well because table.Copy copies references
