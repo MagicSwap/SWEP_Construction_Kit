@@ -122,7 +122,6 @@ local next_v_model = ""
 
 -- Weapon model
 local pweapon_vmodel = SimplePanel( pweapon )
-
 	local vlabel = vgui.Create( "DLabel", pweapon_vmodel )
 		vlabel:SetTall( 20 )
 		vlabel:SetText( "View model:" )

@@ -76,6 +76,7 @@ pnewelement:SetTall(20)
 		tpbox:AddChoice( "Quad" )
 		tpbox:AddChoice( "ClipPlane" )
 		local boxselected = "Model"
+		local wboxselected = "Model"
 		tpbox.OnSelect = function( p, index, value )
 			boxselected = value
 		end
@@ -187,17 +188,26 @@ local function SetRelativeForNode( pnl, new_parent, v_or_w, rename )
 	local name = pnl:GetText()
 	local new_rel = ""
 
+	print("setting relative for", name)
+
 	if not new_parent:IsRootNode() then
+		print("not root node")
 		new_rel = new_parent:GetText()
 	end
 
+
+
 	local data = wep.v_models[name]
+	print("data check", data)
 
 	if v_or_w == "w" then
 		data = wep.w_models[name]
 	end
 
+	print("data check2", data)
+
 	if data and new_rel then
+		print("pass", data, new_rel)
 		-- make sure it is before we set our relative
 		-- oh and skip recalculations if we are just renaming our model
 		if not rename then
@@ -332,39 +342,6 @@ copy_hierarchy = function(self, parent, realm, first)
 		end
 	end
 end
---[[
-copy_hierarchy = function(node, realm)
-	local elem = node:GetText()
-	local mdltab = realm == "v" and wep.v_models or wep.w_models
-
-	local temp = {}
-
-	if mdltab[elem] then
-		local toscan = {elem}
-
-		while #toscan > 1 do
-			local elem = table.remove(toscan, 1)
-
-			if elem.rel then table.insert()
-
-		end
-
-		local newname = elem.."copy"
-		while(mdltab[newname]) do
-			newname = newname.."+"
-		end
-
-		temp[newname] = table.FullCopy(mdltab[elem])
-
-
-
-		if
-
-	end
-
-
-end
---]]
 
 local mtree = vgui.Create( "DTree", pmodels)
 	mtree:SetTall( 160 )
@@ -395,7 +372,6 @@ local mtree = vgui.Create( "DTree", pmodels)
 mtree:Dock(TOP)
 
 local pbuttons = SimplePanel( pmodels )
-
 	local rmbtn = vgui.Create( "DButton", pbuttons )
 		rmbtn:SetSize( 160, 25 )
 		rmbtn:SetText( "Remove selected" )
@@ -1720,58 +1696,78 @@ function CreateClipPanel( name, preset_data )
 end
 
 -- adding button DoClick
-mnbtn.DoClick = function()
-	local new = string.Trim( mntext:GetValue() )
+local function add_element(btn, realm, tree)
+	local line = tree:GetSelectedItem()
+
+	local new = string.Trim( btn:GetValue() )
 	if not new then return end
 
-	if new == "" then CreateNote("Empty name field!") return end
-	if wep.v_models[new] != nil then CreateNote("Name already exists!") return end
-	wep.v_models[new] = {}
+	local is_v = realm == "v"
+	local note_func = is_v and CreateNote or CreateWNote
+	local model_tab = is_v and wep.v_models or wep.w_models
+	local panel_cache = is_v and wep.v_panelCache or wep.w_panelCache
+
+	if new == "" then note_func("Empty name field!") return end
+	if model_tab[new] != nil then note_func("Name already exists!") return end
+	model_tab[new] = {}
 
 	local icon = "icon16/exclamation.png"
 
-	if not wep.v_panelCache[new] then
-		if boxselected == "Model" then
-			wep.v_panelCache[new] = CreateModelPanel( new )
+	local box_selec = is_v and boxselected or wboxselected
+	if not panel_cache[new] then
+		if box_selec == "Model" then
+			panel_cache[new] = is_v and CreateModelPanel( new ) or CreateWorldModelPanel(new)
 			icon = icon_model
-		elseif boxselected == "Sprite" then
-			wep.v_panelCache[new] = CreateSpritePanel( new )
+		elseif box_selec == "Sprite" then
+			panel_cache[new] = is_v and CreateSpritePanel( new ) or CreateWorldSpritePanel(new)
 			icon = icon_sprite
-		elseif boxselected == "Quad" then
-			wep.v_panelCache[new] = CreateQuadPanel( new )
+		elseif box_selec == "Quad" then
+			panel_cache[new] = is_v and CreateQuadPanel( new ) or CreateWorldQuad(new)
 			icon = icon_quad
-		elseif boxselected == "ClipPlane" then
-			wep.v_panelCache[new] = CreateClipPanel( new )
+		elseif box_selec == "ClipPlane" then
+			panel_cache[new] = is_v and CreateClipPanel( new ) or CreateWorldClipPanel(new)
 			icon = icon_clip
 		else
 			Error("Invalid type selected")
 		end
 	end
 
-	wep.v_panelCache[new]:SetVisible(false)
+	panel_cache[new]:SetVisible(false)
 
-	local node = mtree:AddNode( new, icon )
-	node.Type = boxselected
+	local node = tree:AddNode( new, icon )
+	node.Type = box_selec
 	node.InsertNode = FixInsertNode
 	node.DoRightClick = node_do_rclick
-	node.realm = "v"
+	node.realm = realm
 	node.DoChildrenOrder = FixDoChildrenOrder
 	node._ParentNode = node:GetParentNode()
 	node:SetDrawLines( true )
 
+	local ro_tab_name = is_v and "vRenderOrder" or "wRenderOrder"
 	local old_DroppedOn = node.DroppedOn
 	node.DroppedOn = function( self, pnl )
 		old_DroppedOn( self, pnl )
-		SetRelativeForNode( pnl, self, "v" )
-		wep.vRenderOrder = nil
+		SetRelativeForNode( pnl, self, realm )
+		wep[ro_tab_name] = nil
 	end
 
 	node.OnModified = function( self )
 		for k, v in pairs( self:GetChildNodes() ) do
-			SetRelativeForNode( v, self, "v" )
+			SetRelativeForNode( v, self, realm )
 		end
-		wep.vRenderOrder = nil
+		wep[ro_tab_name] = nil
 	end
+
+	local parent = IsValid(line) and line--IsValid(line._ParentNode) and line._ParentNode or line:GetParentNode()
+	if IsValid( parent ) and not parent:IsRootNode() then
+		parent:InsertNode( node )
+		SetRelativeForNode( node, parent, realm )
+		wep[ro_tab_name] = nil
+	end
+end
+
+mnbtn.DoClick = function()
+	add_element(mntext, "v", mtree)
 end
 
 local temp_v_nodes = {}
@@ -2019,7 +2015,6 @@ pnewelement:SetTall(20)
 		tpbox:AddChoice( "Sprite" )
 		tpbox:AddChoice( "Quad" )
 		tpbox:AddChoice( "ClipPlane" )
-		local wboxselected = "Model"
 		tpbox.OnSelect = function( p, index, value )
 			wboxselected = value
 		end
@@ -2281,59 +2276,9 @@ function CreateWorldClipPanel( name, preset_data )
 end
 
 
--- adding button DoClick
+
 mnwbtn.DoClick = function()
-	local new = string.Trim( mnwtext:GetValue() )
-	if not new then return end
-
-	if new == "" then CreateWNote("Empty name field!") return end
-	if wep.w_models[new] ~= nil then CreateWNote("Name already exists!") return end
-	wep.w_models[new] = {}
-
-	local icon = "icon16/exclamation.png"
-
-	if not wep.w_panelCache[new] then
-		if (wboxselected == "Model") then
-			wep.w_panelCache[new] = CreateWorldModelPanel( new )
-			icon = icon_model
-		elseif (wboxselected == "Sprite") then
-			wep.w_panelCache[new] = CreateWorldSpritePanel( new )
-			icon = icon_sprite
-		elseif (wboxselected == "Quad") then
-			wep.w_panelCache[new] = CreateWorldQuadPanel( new )
-			icon = icon_quad
-		elseif (wboxselected == "ClipPlane") then
-			wep.w_panelCache[new] = CreateWorldClipPanel( new )
-			icon = icon_clip
-		else
-			Error("Invalid type selected")
-		end
-	end
-
-	wep.w_panelCache[new]:SetVisible(false)
-
-	local node = mwtree:AddNode( new, icon )
-	node.Type = boxselected
-	node.InsertNode = FixInsertNode
-	node.DoRightClick = node_do_rclick
-	node.realm = "w"
-	node.DoChildrenOrder = FixDoChildrenOrder
-	node._ParentNode = node:GetParentNode()
-	node:SetDrawLines( true )
-
-	local old_DroppedOn = node.DroppedOn
-	node.DroppedOn = function( self, pnl )
-		old_DroppedOn( self, pnl )
-		SetRelativeForNode( pnl, self, "w" )
-		wep.wRenderOrder = nil
-	end
-
-	node.OnModified = function( self )
-		for k, v in pairs( self:GetChildNodes() ) do
-			SetRelativeForNode( v, self, "w" )
-		end
-		wep.wRenderOrder = nil
-	end
+	add_element(mnwtext, "w", mwtree)
 end
 
 local temp_w_nodes = {}
