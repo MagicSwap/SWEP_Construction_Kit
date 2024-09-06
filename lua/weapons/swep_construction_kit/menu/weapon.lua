@@ -82,7 +82,6 @@ local function RefreshViewModelBoneMods()
 		if (option) then
 			wep.v_modelbonebox:ChooseOptionID(1)
 			replacement = wep.v_modelbonebox:GetOptionText(1)
-			print(replacement)
 		end
 
 		-- look through our vmodels and see if we have any bones that are now invalid

@@ -188,26 +188,16 @@ local function SetRelativeForNode( pnl, new_parent, v_or_w, rename )
 	local name = pnl:GetText()
 	local new_rel = ""
 
-	print("setting relative for", name)
-
 	if not new_parent:IsRootNode() then
-		print("not root node")
 		new_rel = new_parent:GetText()
 	end
 
-
-
 	local data = wep.v_models[name]
-	print("data check", data)
-
 	if v_or_w == "w" then
 		data = wep.w_models[name]
 	end
 
-	print("data check2", data)
-
 	if data and new_rel then
-		print("pass", data, new_rel)
 		-- make sure it is before we set our relative
 		-- oh and skip recalculations if we are just renaming our model
 		if not rename then
