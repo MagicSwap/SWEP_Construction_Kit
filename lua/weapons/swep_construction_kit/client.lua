@@ -121,6 +121,9 @@ end
 function SimplePanel( parent, scroll )
 	local p = vgui.Create( scroll and "DScrollPanel" or "DPanel", parent)
 	p.Paint = function() end
+	if parent._passdata then
+		p._passdata = table.Copy(parent._passdata)
+	end
 	return p
 end
 
@@ -148,6 +151,20 @@ function PrintColor( col )
 	return "Color("..col.r..", "..col.g..", "..col.b..", "..col.a..")"
 end
 
+-- We can't expect Garry to do all the work
+local function ResolveInvalidBones( self )
+	for k, v in pairs( self.Choices ) do
+		if self.Data[ k ] and v == "__INVALIDBONE__" then
+			local ent = self.Data[ k ].ent
+			local bone = self.Data[ k ].bone_id
+			local name = ent:GetBoneName( bone )
+			if ent:LookupBone( name ) then
+				self.Choices[ k ] = name
+			end
+		end
+	end
+end
+
 -- Populates a DChoiceList with all the bones of the specified entity
 -- returns if it has a first option
 function PopulateBoneList( choicelist, ent )
@@ -157,6 +174,16 @@ function PopulateBoneList( choicelist, ent )
 	SCKDebug("Populating bone list for entity "..tostring(ent))
 
 	choicelist:Clear()
+	
+	if not choicelist.ResolveInvalidBones then
+		local oldOpen = choicelist.OpenMenu
+		choicelist.ResolveInvalidBones = ResolveInvalidBones
+
+		choicelist.OpenMenu = function( self )
+			self:ResolveInvalidBones()
+			oldOpen( self )
+		end
+	end
 
 	if (ent == LocalPlayer()) then
 		-- if the local player is in third person, his bone lookup is all messed up so
@@ -173,9 +200,14 @@ function PopulateBoneList( choicelist, ent )
 		local hasfirstoption
 		for i = 0, ent:GetBoneCount() - 1 do
 			local name = ent:GetBoneName(i)
-			if (ent:LookupBone(name)) then -- filter out invalid bones
+			if ent:LookupBone(name) then -- filter out invalid bones
 				choicelist:AddChoice(name)
 				if (!firstoption) then hasfirstoption = true end
+			else
+				if name == "__INVALIDBONE__" then -- store the unknown bone and see if it can be fixed later
+					choicelist:AddChoice(name, { ent = ent, bone_id = i })
+					if (!firstoption) then hasfirstoption = true end
+				end
 			end
 		end
 
@@ -1863,7 +1895,7 @@ local function CreateMenu( preset )
 	tlabel:Dock(RIGHT)
 
 	PopulateBoneList( tpsbonelist, LocalPlayer() )
-	timer.Simple( 0.1, function()
+	timer.Simple( 1, function()
 		if tpsbonelist and wep.tpsfocusbone then
 			for i=1, #tpsbonelist.Choices do
 				if wep.tpsfocusbone == tpsbonelist.Choices[i] then
@@ -1874,6 +1906,22 @@ local function CreateMenu( preset )
 			--tpsbonelist:SetText( wep.tpsfocusbone )
 		end
 	end)
+
+	tpsbonelist.OnMenuOpened = function( self, menu )
+		if IsValid( menu ) then
+			wep.ShouldShowBones = menu
+			for k, v in pairs( menu:GetCanvas():GetChildren() ) do
+				local oldOnCursorEntered = v.OnCursorEntered
+				v.OnCursorEntered = function( s )
+					oldOnCursorEntered( s )
+					wep.ShowCurrentBone = s:GetText()
+				end
+				v.OnCursorExited = function( s )
+					wep.ShowCurrentBone = nil
+				end
+			end
+		end
+	end
 
 	local yinvcheck = vgui.Create("DCheckBoxLabel", tpanel)
 	yinvcheck:SetText("Invert Y")

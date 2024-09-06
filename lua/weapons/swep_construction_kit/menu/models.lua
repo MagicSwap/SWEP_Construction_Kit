@@ -572,6 +572,16 @@ hook.Add("CreateMove", "TrackMouseCTRLZ", function()
 end)
 
 local function CreatePositionModifiers( data, panel )
+
+	if panel._passdata and panel._passdata._name then
+		local data_check = panel._passdata._v and wep.v_models[ panel._passdata._name ] or wep.w_models[ panel._passdata._name ]
+		if data_check != data then
+			data = data_check
+		end
+	end
+
+	panel.data = data
+
 	panel:SetTall(32*3)
 	PanelApplyBackground(panel)
 
@@ -586,11 +596,11 @@ local function CreatePositionModifiers( data, panel )
 		mxwang:SetText("x")
 		mxwang:SetMinMax( -80, 80 )
 		mxwang:SetDecimals( 3 )
-		mxwang.Wang.ConVarChanged = function( p, value ) data.pos.x = tonumber(value) end
-		mxwang:SetValue( data.pos.x )
+		mxwang.Wang.ConVarChanged = function( p, value ) panel.data.pos.x = tonumber(value) end
+		mxwang:SetValue( panel.data.pos.x )
 		mxwang.Think = function( self )
-			if data and data.pos and data.pos.x and data.pos.x ~= self:GetValue() then
-				self:SetValue( data.pos.x )
+			if panel.data and panel.data.pos and panel.data.pos.x and panel.data.pos.x ~= self:GetValue() then
+				self:SetValue( panel.data.pos.x )
 			end
 		end
 	mxwang:DockMargin(10,0,0,0)
@@ -599,11 +609,11 @@ local function CreatePositionModifiers( data, panel )
 		mywang:SetText("y")
 		mywang:SetMinMax( -80, 80 )
 		mywang:SetDecimals( 3 )
-		mywang.Wang.ConVarChanged = function( p, value ) data.pos.y = tonumber(value) end
-		mywang:SetValue( data.pos.y )
+		mywang.Wang.ConVarChanged = function( p, value ) panel.data.pos.y = tonumber(value) end
+		mywang:SetValue( panel.data.pos.y )
 		mywang.Think = function( self )
-			if data and data.pos and data.pos.y and data.pos.y ~= self:GetValue() then
-				self:SetValue( data.pos.y )
+			if panel.data and panel.data.pos and panel.data.pos.y and panel.data.pos.y ~= self:GetValue() then
+				self:SetValue( panel.data.pos.y )
 			end
 		end
 	mywang:DockMargin(10,0,0,0)
@@ -612,11 +622,11 @@ local function CreatePositionModifiers( data, panel )
 		mzwang:SetText("z")
 		mzwang:SetMinMax( -80, 80 )
 		mzwang:SetDecimals( 3 )
-		mzwang.Wang.ConVarChanged = function( p, value ) data.pos.z = tonumber(value) end
+		mzwang.Wang.ConVarChanged = function( p, value ) panel.data.pos.z = tonumber(value) end
 		mzwang:SetValue( data.pos.z )
 		mzwang.Think = function( self )
-			if data and data.pos and data.pos.z and data.pos.z ~= self:GetValue() then
-				self:SetValue( data.pos.z )
+			if panel.data and panel.data.pos and panel.data.pos.z and panel.data.pos.z ~= self:GetValue() then
+				self:SetValue( panel.data.pos.z )
 			end
 		end
 	mzwang:DockMargin(10,0,0,0)
@@ -647,6 +657,16 @@ local function CreatePositionModifiers( data, panel )
 end
 
 local function CreateAngleModifiers( data, panel )
+
+	if panel._passdata and panel._passdata._name then
+		local data_check = panel._passdata._v and wep.v_models[ panel._passdata._name ] or wep.w_models[ panel._passdata._name ]
+		if data_check != data then
+			data = data_check
+		end
+	end
+
+	panel.data = data
+
 	panel:SetTall(32*3)
 	PanelApplyBackground(panel)
 
@@ -661,11 +681,11 @@ local function CreateAngleModifiers( data, panel )
 		mpitchwang:SetText("pitch")
 		mpitchwang:SetMinMax( -180, 180 )
 		mpitchwang:SetDecimals( 3 )
-		mpitchwang.Wang.ConVarChanged = function( p, value ) data.angle.p = tonumber(value) end
-		mpitchwang:SetValue( data.angle.p )
+		mpitchwang.Wang.ConVarChanged = function( p, value ) panel.data.angle.p = tonumber(value) end
+		mpitchwang:SetValue( panel.data.angle.p )
 		mpitchwang.Think = function( self )
-			if data and data.angle and data.angle.p and data.angle.p ~= self:GetValue() then
-				self:SetValue( data.angle.p )
+			if panel.data and panel.data.angle and panel.data.angle.p and panel.data.angle.p ~= self:GetValue() then
+				self:SetValue( panel.data.angle.p )
 			end
 		end
 	mpitchwang:DockMargin(10,0,0,0)
@@ -674,11 +694,11 @@ local function CreateAngleModifiers( data, panel )
 		myawwang:SetText("yaw")
 		myawwang:SetMinMax( -180, 180 )
 		myawwang:SetDecimals( 3 )
-		myawwang.Wang.ConVarChanged = function( p, value ) data.angle.y = tonumber(value) end
-		myawwang:SetValue( data.angle.y )
+		myawwang.Wang.ConVarChanged = function( p, value ) panel.data.angle.y = tonumber(value) end
+		myawwang:SetValue( panel.data.angle.y )
 		myawwang.Think = function( self )
-			if data and data.angle and data.angle.y and data.angle.y ~= self:GetValue() then
-				self:SetValue( data.angle.y )
+			if panel.data and panel.data.angle and panel.data.angle.y and panel.data.angle.y ~= self:GetValue() then
+				self:SetValue( panel.data.angle.y )
 			end
 		end
 	myawwang:DockMargin(10,0,0,0)
@@ -687,11 +707,11 @@ local function CreateAngleModifiers( data, panel )
 		mrollwang:SetText("roll")
 		mrollwang:SetMinMax( -180, 180 )
 		mrollwang:SetDecimals( 3 )
-		mrollwang.Wang.ConVarChanged = function( p, value ) data.angle.r = tonumber(value) end
-		mrollwang:SetValue( data.angle.r )
+		mrollwang.Wang.ConVarChanged = function( p, value ) panel.data.angle.r = tonumber(value) end
+		mrollwang:SetValue( panel.data.angle.r )
 		mrollwang.Think = function( self )
-			if data and data.angle and data.angle.r and data.angle.r ~= self:GetValue() then
-				self:SetValue( data.angle.r )
+			if panel.data and panel.data.angle and panel.data.angle.r and panel.data.angle.r ~= self:GetValue() then
+				self:SetValue( panel.data.angle.r )
 			end
 		end
 	mrollwang:DockMargin(10,0,0,0)
@@ -722,6 +742,16 @@ local function CreateAngleModifiers( data, panel )
 end
 
 local function CreateSizeModifiers( data, panel, dimensions )
+
+	if panel._passdata and panel._passdata._name then
+		local data_check = panel._passdata._v and wep.v_models[ panel._passdata._name ] or wep.w_models[ panel._passdata._name ]
+		if data_check != data then
+			data = data_check
+		end
+	end
+
+	panel.data = data
+
 	panel:SetTall(32*( dimensions + 1 ))
 	PanelApplyBackground(panel)
 
@@ -744,7 +774,7 @@ local function CreateSizeModifiers( data, panel, dimensions )
 			msx2wang:SetText("x")
 			msx2wang:SetMinMax( -1, 50 )
 			msx2wang:SetDecimals( 3 )
-			msx2wang.Wang.ConVarChanged = function( p, value ) data.size.x = tonumber(value) end
+			msx2wang.Wang.ConVarChanged = function( p, value ) panel.data.size.x = tonumber(value) end
 		msx2wang:DockMargin(10,0,0,0)
 		msx2wang:Dock(TOP)
 
@@ -752,7 +782,7 @@ local function CreateSizeModifiers( data, panel, dimensions )
 			msywang:SetText("y")
 			msywang:SetMinMax( -1, 50 )
 			msywang:SetDecimals( 3 )
-			msywang.Wang.ConVarChanged = function( p, value ) data.size.y = tonumber(value) end
+			msywang.Wang.ConVarChanged = function( p, value ) panel.data.size.y = tonumber(value) end
 		msywang:DockMargin(10,0,0,0)
 		msywang:Dock(TOP)
 
@@ -761,7 +791,7 @@ local function CreateSizeModifiers( data, panel, dimensions )
 				mszwang:SetText("z")
 				mszwang:SetMinMax( -1, 50 )
 				mszwang:SetDecimals( 3 )
-				mszwang.Wang.ConVarChanged = function( p, value ) data.size.z = tonumber(value) end
+				mszwang.Wang.ConVarChanged = function( p, value ) panel.data.size.z = tonumber(value) end
 			mszwang:DockMargin(10,0,0,0)
 			mszwang:Dock(TOP)
 		end
@@ -781,7 +811,7 @@ local function CreateSizeModifiers( data, panel, dimensions )
 		end
 
 		if dimensions <= 1 then
-			data.size = tonumber(value)
+			panel.data.size = tonumber(value)
 		end
 	end
 
@@ -807,11 +837,11 @@ local function CreateSizeModifiers( data, panel, dimensions )
 		msxwang:SetText("factor")
 		msxwang:SetValue( data.size )
 	else
-		local new_y = data.size.y
-		local new_z = data.size.z
+		local new_y = panel.data.size.y
+		local new_z = panel.data.size.z
 
 		msxwang:SetText("x / y")
-		msxwang:SetValue( data.size.x )
+		msxwang:SetValue( panel.data.size.x )
 		msywang:SetValue( new_y )
 
 		if mszwang then
@@ -824,6 +854,14 @@ local function CreateSizeModifiers( data, panel, dimensions )
 end
 
 local function CreateColorModifiers( data, panel )
+
+	if panel._passdata and panel._passdata._name then
+		local data_check = panel._passdata._v and wep.v_models[ panel._passdata._name ] or wep.w_models[ panel._passdata._name ]
+		if data_check != data then
+			data = data_check
+		end
+	end
+
 	panel:SetTall(32*5)
 	panel.data = data
 	PanelApplyBackground(panel)
@@ -844,7 +882,7 @@ local function CreateColorModifiers( data, panel )
 		panel.data.color.a = tcol.a or 255
 	end
 
-	local loadcol = Color(data.color.r or 255, data.color.g or 255, data.color.b or 255, data.color.a or 255)
+	local loadcol = Color(panel.data.color.r or 255, panel.data.color.g or 255, panel.data.color.b or 255, panel.data.color.a or 255)
 	colpicker:SetColor(loadcol)
 
 	panel.PerformLayout = function()
@@ -855,6 +893,14 @@ local function CreateColorModifiers( data, panel )
 end
 
 local function CreateModelModifier( data, panel )
+
+	if panel._passdata and panel._passdata._name then
+		local data_check = panel._passdata._v and wep.v_models[ panel._passdata._name ] or wep.w_models[ panel._passdata._name ]
+		if data_check != data then
+			data = data_check
+		end
+	end
+
 	panel:SetTall(20)
 	panel.data = data
 
@@ -876,23 +922,30 @@ local function CreateModelModifier( data, panel )
 			local newmod = pmmtext:GetValue()
 			if file.Exists(newmod, "GAME") then
 				util.PrecacheModel(newmod)
-				data.model = newmod
 				panel.data.model = newmod
 			end
 		end
-		pmmtext:SetText( data.model )
+		pmmtext:SetText( panel.data.model )
 		pmmtext.OnTextChanged()
 	pmmtext:DockMargin(10,0,0,0)
 	pmmtext:Dock(FILL)
 
 	wtbtn.DoClick = function()
-		wep:OpenModelBrowser( data.model, function( val ) pmmtext:SetText(val) pmmtext:OnTextChanged() end )
+		wep:OpenModelBrowser( panel.data.model, function( val ) pmmtext:SetText(val) pmmtext:OnTextChanged() end )
 	end
 
 	return panel
 end
 
 local function CreateSpriteModifier( data, panel )
+
+	if panel._passdata and panel._passdata._name then
+		local data_check = panel._passdata._v and wep.v_models[ panel._passdata._name ] or wep.w_models[ panel._passdata._name ]
+		if data_check != data then
+			data = data_check
+		end
+	end
+
 	panel:SetTall(20)
 	panel.data = data
 
@@ -913,17 +966,16 @@ local function CreateSpriteModifier( data, panel )
 		pmmtext.OnTextChanged = function()
 			local newsprite = pmmtext:GetValue()
 			if file.Exists("materials/"..newsprite..".vmt", "GAME") then
-				data.sprite = newsprite
 				panel.data.sprite = newsprite
 			end
 		end
-		pmmtext:SetText( data.sprite )
+		pmmtext:SetText( panel.data.sprite )
 		pmmtext.OnTextChanged()
 	pmmtext:DockMargin(10,0,0,0)
 	pmmtext:Dock(FILL)
 
 	wtbtn.DoClick = function()
-		wep:OpenMaterialBrowser(data.sprite, function( val ) pmmtext:SetText(val) pmmtext:OnTextChanged() end )
+		wep:OpenMaterialBrowser(panel.data.sprite, function( val ) pmmtext:SetText(val) pmmtext:OnTextChanged() end )
 	end
 
 	return panel
@@ -962,7 +1014,9 @@ local function renamev(old, new, panel)
 
 			listing:SetSelectedItem( item )
 		end
+		return true
 	end
+	return false
 end
 
 local function renamew(old, new, panel)
@@ -997,7 +1051,9 @@ local function renamew(old, new, panel)
 
 			listing:SetSelectedItem( item )
 		end
+		return true
 	end
+	return false
 end
 
 local function CreateNameLabel(name, panel, world)
@@ -1017,17 +1073,33 @@ local function CreateNameLabel(name, panel, world)
 
 	local rename = world and renamew or renamev
 	nametxt.OnValueChange = function(s, txt)
-		rename(panel.m_PrevName, txt, panel)
+		local success = rename(panel.m_PrevName, txt, panel)
+		if not success then
+			nametxt:SetText(panel.m_PrevName)
+		end
 	end
 
 	nametxt.OnLoseFocus = function()
-		rename(panel.m_PrevName, nametxt:GetValue(), panel)
+		local success = rename(panel.m_PrevName, nametxt:GetValue(), panel)
+		if not success then
+			nametxt:SetText(panel.m_PrevName)
+		end
 	end
 
 	return panel
 end
 
 local function CreateParamModifiers( data, panel )
+
+	if panel._passdata and panel._passdata._name then
+		local data_check = panel._passdata._v and wep.v_models[ panel._passdata._name ] or wep.w_models[ panel._passdata._name ]
+		if data_check != data then
+			data = data_check
+		end
+	end
+
+	panel.data = data
+
 	panel:SetTall(45)
 
 	local strip1 = SimplePanel( panel )
@@ -1038,10 +1110,10 @@ local function CreateParamModifiers( data, panel )
 			ncchbox:SizeToContents()
 			ncchbox:SetValue( 0 )
 			ncchbox.OnChange = function()
-				data.nocull = ncchbox:GetChecked()
-				data.spriteMaterial = nil -- dump old material
+				panel.data.nocull = ncchbox:GetChecked()
+				panel.data.spriteMaterial = nil -- dump old material
 			end
-			if (data.nocull) then ncchbox:SetValue( 1 ) end
+			if (panel.data.nocull) then ncchbox:SetValue( 1 ) end
 		ncchbox:DockMargin(0,0,10,0)
 		ncchbox:Dock(LEFT)
 
@@ -1050,10 +1122,10 @@ local function CreateParamModifiers( data, panel )
 			adchbox:SizeToContents()
 			adchbox:SetValue( 0 )
 			adchbox.OnChange = function()
-				data.additive = adchbox:GetChecked()
-				data.spriteMaterial = nil -- dump old material
+				panel.data.additive = adchbox:GetChecked()
+				panel.data.spriteMaterial = nil -- dump old material
 			end
-			if (data.additive) then adchbox:SetValue( 1 ) end
+			if (panel.data.additive) then adchbox:SetValue( 1 ) end
 		adchbox:DockMargin(0,0,10,0)
 		adchbox:Dock(LEFT)
 
@@ -1062,10 +1134,10 @@ local function CreateParamModifiers( data, panel )
 			vtachbox:SizeToContents()
 			vtachbox:SetValue( 0 )
 			vtachbox.OnChange = function()
-				data.vertexalpha = vtachbox:GetChecked()
-				data.spriteMaterial = nil -- dump old material
+				panel.data.vertexalpha = vtachbox:GetChecked()
+				panel.data.spriteMaterial = nil -- dump old material
 			end
-			if (data.vertexalpha) then vtachbox:SetValue( 1 ) end
+			if (panel.data.vertexalpha) then vtachbox:SetValue( 1 ) end
 		vtachbox:DockMargin(0,0,10,0)
 		vtachbox:Dock(LEFT)
 
@@ -1080,10 +1152,10 @@ local function CreateParamModifiers( data, panel )
 			vtcchbox:SizeToContents()
 			vtcchbox:SetValue( 0 )
 			vtcchbox.OnChange = function()
-				data.vertexcolor = vtcchbox:GetChecked()
-				data.spriteMaterial = nil -- dump old material
+				panel.data.vertexcolor = vtcchbox:GetChecked()
+				panel.data.spriteMaterial = nil -- dump old material
 			end
-			if (data.vertexcolor) then vtcchbox:SetValue( 1 ) end
+			if (panel.data.vertexcolor) then vtcchbox:SetValue( 1 ) end
 		vtcchbox:DockMargin(0,0,10,0)
 		vtcchbox:Dock(LEFT)
 
@@ -1092,10 +1164,10 @@ local function CreateParamModifiers( data, panel )
 			izchbox:SizeToContents()
 			izchbox:SetValue( 0 )
 			izchbox.OnChange = function()
-				data.ignorez = izchbox:GetChecked()
-				data.spriteMaterial = nil -- dump old material
+				panel.data.ignorez = izchbox:GetChecked()
+				panel.data.spriteMaterial = nil -- dump old material
 			end
-			if (data.ignorez) then izchbox:SetValue( 1 ) end
+			if (panel.data.ignorez) then izchbox:SetValue( 1 ) end
 		izchbox:DockMargin(0,0,10,0)
 		izchbox:Dock(LEFT)
 
@@ -1105,6 +1177,16 @@ local function CreateParamModifiers( data, panel )
 end
 
 local function CreateMaterialModifier( data, panel )
+
+	if panel._passdata and panel._passdata._name then
+		local data_check = panel._passdata._v and wep.v_models[ panel._passdata._name ] or wep.w_models[ panel._passdata._name ]
+		if data_check != data then
+			data = data_check
+		end
+	end
+
+	panel.data = data
+
 	panel:SetTall(20)
 
 	local matlabel = vgui.Create( "DLabel", panel )
@@ -1125,30 +1207,40 @@ local function CreateMaterialModifier( data, panel )
 			local newmat = mattext:GetValue()
 			local newmatmat = Material(newmat)
 			if file.Exists("materials/"..newmat..".vmt", "GAME") or newmatmat and not newmatmat:IsError() then
-				data.material = newmat
+				panel.data.material = newmat
 			else
-				data.material = ""
+				panel.data.material = ""
 			end
 		end
-		mattext:SetText( data.material )
+		mattext:SetText( panel.data.material )
 	mattext:DockMargin(10,0,0,0)
 	mattext:Dock(FILL)
 
 	wtbtn.DoClick = function()
-		wep:OpenMaterialBrowser( data.material, function( val ) mattext:SetText(val) mattext:OnTextChanged() end )
+		wep:OpenMaterialBrowser( panel.data.material, function( val ) mattext:SetText(val) mattext:OnTextChanged() end )
 	end
 
 	return panel
 end
 
 local function CreateSLightningModifier( data, panel )
+
+	if panel._passdata and panel._passdata._name then
+		local data_check = panel._passdata._v and wep.v_models[ panel._passdata._name ] or wep.w_models[ panel._passdata._name ]
+		if data_check != data then
+			data = data_check
+		end
+	end
+
+	panel.data = data
+
 	local lschbox = vgui.Create( "DCheckBoxLabel", panel )
 		lschbox:SetText("Surpress engine lightning")
 		lschbox:SizeToContents()
 		lschbox.OnChange = function()
-			data.surpresslightning = lschbox:GetChecked()
+			panel.data.surpresslightning = lschbox:GetChecked()
 		end
-		if (data.surpresslightning) then
+		if panel.data.surpresslightning then
 			lschbox:SetValue( 1 )
 		else
 			lschbox:SetValue( 0 )
@@ -1159,13 +1251,23 @@ local function CreateSLightningModifier( data, panel )
 end
 
 local function CreateBonemergeModifier( data, panel )
+
+	if panel._passdata and panel._passdata._name then
+		local data_check = panel._passdata._v and wep.v_models[ panel._passdata._name ] or wep.w_models[ panel._passdata._name ]
+		if data_check != data then
+			data = data_check
+		end
+	end
+
+	panel.data = data
+
 	local lschbox = vgui.Create( "DCheckBoxLabel", panel )
 		lschbox:SetText("Enable bonemerge")
 		lschbox:SizeToContents()
 		lschbox.OnChange = function()
-			data.bonemerge = lschbox:GetChecked()
+			panel.data.bonemerge = lschbox:GetChecked()
 		end
-		if (data.bonemerge) then
+		if panel.data.bonemerge then
 			lschbox:SetValue( 1 )
 		else
 			lschbox:SetValue( 0 )
@@ -1176,13 +1278,23 @@ local function CreateBonemergeModifier( data, panel )
 end
 
 local function CreateNocullModifier( data, panel )
+
+	if panel._passdata and panel._passdata._name then
+		local data_check = panel._passdata._v and wep.v_models[ panel._passdata._name ] or wep.w_models[ panel._passdata._name ]
+		if data_check != data then
+			data = data_check
+		end
+	end
+
+	panel.data = data
+
 	local lschbox = vgui.Create( "DCheckBoxLabel", panel )
 		lschbox:SetText("Disable backface culling")
 		lschbox:SizeToContents()
 		lschbox.OnChange = function()
-			data.nocull = lschbox:GetChecked()
+			panel.data.nocull = lschbox:GetChecked()
 		end
-		if (data.nocull) then
+		if panel.data.nocull then
 			lschbox:SetValue( 1 )
 		else
 			lschbox:SetValue( 0 )
@@ -1193,18 +1305,28 @@ local function CreateNocullModifier( data, panel )
 end
 
 local function CreateHighRenderModifier( data, panel )
+
+	if panel._passdata and panel._passdata._name then
+		local data_check = panel._passdata._v and wep.v_models[ panel._passdata._name ] or wep.w_models[ panel._passdata._name ]
+		if data_check != data then
+			data = data_check
+		end
+	end
+
+	panel.data = data
+
 	local lschbox = vgui.Create( "DCheckBoxLabel", panel )
 		lschbox:SetText("Force draw element on top of other elements")
 		lschbox:SizeToContents()
 		lschbox.OnChange = function()
-			data.highrender = lschbox:GetChecked()
+			panel.data.highrender = lschbox:GetChecked()
 			-- redo the render order on demand
 			if wep and wep:IsValid() then
 				wep.vRenderOrder = nil
 				wep.wRenderOrder = nil
 			end
 		end
-		if (data.highrender) then
+		if (panel.data.highrender) then
 			lschbox:SetValue( 1 )
 		else
 			lschbox:SetValue( 0 )
@@ -1215,6 +1337,14 @@ local function CreateHighRenderModifier( data, panel )
 end
 
 local function CreateBoneModifier( data, panel, ent, name )
+
+	if panel._passdata and panel._passdata._name then
+		local data_check = panel._passdata._v and wep.v_models[ panel._passdata._name ] or wep.w_models[ panel._passdata._name ]
+		if data_check != data then
+			data = data_check
+		end
+	end
+
 	panel.data = data
 
 	local pbonelabel = vgui.Create( "DLabel", panel )
@@ -1227,13 +1357,13 @@ local function CreateBoneModifier( data, panel, ent, name )
 		bonebox:SetTooltip("Bone to parent the selected element to. Is ignored if the 'Relative' field is not empty")
 		bonebox.OnSelect = function( p, index, value )
 			-- dont mess shit up if there is a relative already
-			if data.rel == "" then
+			if panel.data.rel == "" then
 				MaintainRelativePosition( name, nil, ent:IsPlayer() and "w" or "v", value )
 			end
 
-			data.bone = value
+			panel.data.bone = value
 		end
-		bonebox:SetValue( data.bone )
+		bonebox:SetValue( panel.data.bone )
 	bonebox:DockMargin(10,0,0,0)
 	bonebox:Dock(FILL)
 
@@ -1244,10 +1374,10 @@ local function CreateBoneModifier( data, panel, ent, name )
 	timer.Simple(delay, function()
 		if not IsValid(bonebox) then return end
 		local option = PopulateBoneList( bonebox, ent )
-		if (option and data.bone == "") then
+		if (option and panel.data.bone == "") then
 			bonebox:ChooseOptionID(1)
 		else
-			bonebox:SetValue( data.bone )
+			bonebox:SetValue( panel.data.bone )
 		end
 	end)
 
@@ -1260,7 +1390,7 @@ local function CreateBoneModifier( data, panel, ent, name )
 					oldOnCursorEntered( s )
 					wep.ShowCurrentBone = s:GetText()
 				end
-				v.OnCursorEXited = function( s )
+				v.OnCursorExited = function( s )
 					wep.ShowCurrentBone = nil
 				end
 			end
@@ -1312,7 +1442,17 @@ local function CreateWRelativeModifier( name, data, panel )
 	return panel
 end
 
-function CreateBodygroupSkinModifier( data, panel )
+local function CreateBodygroupSkinModifier( data, panel )
+
+	if panel._passdata and panel._passdata._name then
+		local data_check = panel._passdata._v and wep.v_models[ panel._passdata._name ] or wep.w_models[ panel._passdata._name ]
+		if data_check != data then
+			data = data_check
+		end
+	end
+
+	panel.data = data
+
 	local bdlabel = vgui.Create( "DLabel", panel )
 		bdlabel:SetText( "Bodygroup:" )
 		bdlabel:SizeToContents()
@@ -1342,14 +1482,14 @@ function CreateBodygroupSkinModifier( data, panel )
 	bdvwang.ConVarChanged = function( p, value )
 		local group = tonumber(bdwang:GetValue())
 		local val = tonumber(value)
-		data.bodygroup[group] = val
+		panel.data.bodygroup[group] = val
 	end
 	bdvwang:SetValue(0)
 
 	bdwang.ConVarChanged = function( p, value )
 		local group = tonumber(value)
 		if (group < 1) then return end
-		local setval = data.bodygroup[group] or 0
+		local setval = panel.data.bodygroup[group] or 0
 		bdvwang:SetValue(setval)
 	end
 	bdwang:SetValue(1)
@@ -1366,7 +1506,7 @@ function CreateBodygroupSkinModifier( data, panel )
 		skwang:SetMax( 9 )
 		skwang:SetDecimals( 0 )
 		skwang.ConVarChanged = function( p, value ) data.skin = tonumber(value) end
-		skwang:SetValue(data.skin)
+		skwang:SetValue(panel.data.skin)
 	skwang:DockMargin(10,0,0,0)
 	skwang:Dock(LEFT)
 
@@ -1389,20 +1529,20 @@ function CreateModelPanel( name, preset_data )
 
 	-- default data
 	data.type = preset_data.type or "Model"
-	data.model = preset_data.model or ""
-	data.bone = preset_data.bone or ""
-	data.rel = preset_data.rel or ""
+	data.model = preset_data.model and "" .. preset_data.model .. "" or ""
+	data.bone = preset_data.bone and "" .. preset_data.bone .. "" or ""
+	data.rel = preset_data.rel and "" .. preset_data.rel .. "" or ""
 	data.pos = preset_data.pos and Vector( preset_data.pos.x, preset_data.pos.y, preset_data.pos.z ) or Vector( 0, 0, 0 )
 	data.angle = preset_data.angle and Angle( preset_data.angle.p, preset_data.angle.y, preset_data.angle.r ) or Angle( 0, 0, 0 )
-	data.size = preset_data.size or Vector(0.5,0.5,0.5)
+	data.size = preset_data.size and Vector( preset_data.size.x, preset_data.size.y, preset_data.size.z ) or Vector(0.5,0.5,0.5)
 	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
-	data.surpresslightning = preset_data.surpresslightning or false
-	data.bonemerge = preset_data.bonemerge or false
-	data.nocull = preset_data.nocull or false
-	data.highrender = preset_data.highrender or false
+	data.surpresslightning = preset_data.surpresslightning and true or false
+	data.bonemerge = preset_data.bonemerge and true or false
+	data.nocull = preset_data.nocull and true or false
+	data.highrender = preset_data.highrender and true or false
 	data.material = preset_data.material and "" .. preset_data.material .. "" or ""
-	data.bodygroup = preset_data.bodygroup or {}
-	data.skin = preset_data.skin or 0
+	data.bodygroup = preset_data.bodygroup and table.Copy(preset_data.bodygroup) or {}
+	data.skin = preset_data.skin and preset_data.skin * 1 or 0
 
 	wep.vRenderOrder = nil -- force viewmodel render order to recache
 
@@ -1415,13 +1555,15 @@ function CreateModelPanel( name, preset_data )
 	panellist:DockMargin(0,0,0,5)
 	panellist:Dock(TOP)
 
+	panellist._passdata = {  _v = true, _name =  "" .. name .. "" }
+
 	PanelBackgroundReset()
 
 	panellist:AddItem(CreateNameLabel( name, SimplePanel(panellist) ))
 	panellist:AddItem(CreateModelModifier( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateBoneModifier( data, SimplePanel(panellist), LocalPlayer():GetViewModel(), name ))
 	panellist:AddItem(CreateBonemergeModifier( data, SimplePanel(panellist) ))
-	panellist:AddItem(CreatePositionModifiers( data, SimplePanel(panellist) ))
+	panellist:AddItem(CreatePositionModifiers( data, SimplePanel(panellist), name ))
 	panellist:AddItem(CreateAngleModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateSizeModifiers( data, SimplePanel(panellist), 3 ))
 	panellist:AddItem(CreateColorModifiers( data, SimplePanel(panellist) ))
@@ -1452,11 +1594,11 @@ function CreateSpritePanel( name, preset_data )
 
 	-- default data
 	data.type = preset_data.type or "Sprite"
-	data.sprite = preset_data.sprite or ""
-	data.bone = preset_data.bone or ""
-	data.rel = preset_data.rel or ""
+	data.sprite = preset_data.sprite and "" .. preset_data.sprite .. "" or ""
+	data.bone = preset_data.bone and "" .. preset_data.bone .. "" or ""
+	data.rel = preset_data.rel and "" .. preset_data.rel .. "" or ""
 	data.pos = preset_data.pos and Vector( preset_data.pos.x, preset_data.pos.y, preset_data.pos.z ) or Vector( 0, 0, 0 )
-	data.size = preset_data.size or { x = 1, y = 1 }
+	data.size = preset_data.size and { x = preset_data.size.x * 1, y = preset_data.size.y * 1 } or { x = 1, y = 1 }
 	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
 	data.nocull = preset_data.nocull or true
 	data.additive = preset_data.additive or true
@@ -1474,6 +1616,8 @@ function CreateSpritePanel( name, preset_data )
 		panellist:SetPadding(5)
 	panellist:DockMargin(0,0,0,5)
 	panellist:Dock(TOP)
+
+	panellist._passdata = {  _v = true, _name =  "" .. name .. "" }
 
 	PanelBackgroundReset()
 
@@ -1506,11 +1650,11 @@ function CreateQuadPanel( name, preset_data )
 	-- default data
 	data.type = preset_data.type or "Quad"
 	data.model = preset_data.model or ""
-	data.bone = preset_data.bone or ""
-	data.rel = preset_data.rel or ""
+	data.bone = preset_data.bone and "" .. preset_data.bone .. "" or ""
+	data.rel = preset_data.rel and "" .. preset_data.rel .. "" or ""
 	data.pos = preset_data.pos and Vector( preset_data.pos.x, preset_data.pos.y, preset_data.pos.z ) or Vector( 0, 0, 0 )
 	data.angle = preset_data.angle and Angle( preset_data.angle.p, preset_data.angle.y, preset_data.angle.r ) or Angle( 0, 0, 0 )
-	data.size = preset_data.size or 0.05
+	data.size = preset_data.size and preset_data.size * 1 or 0.05
 
 	wep.vRenderOrder = nil -- force viewmodel render order to recache
 
@@ -1522,6 +1666,8 @@ function CreateQuadPanel( name, preset_data )
 		panellist:SetPadding(5)
 	panellist:DockMargin(0,0,0,5)
 	panellist:Dock(TOP)
+
+	panellist._passdata = {  _v = true, _name =  "" .. name .. "" }
 
 	PanelBackgroundReset()
 
@@ -1543,8 +1689,8 @@ function CreateClipPanel( name, preset_data )
 
 	-- default data
 	data.type = preset_data.type or "ClipPlane"
-	data.bone = preset_data.bone or ""
-	data.rel = preset_data.rel or ""
+	data.bone = preset_data.bone and "" .. preset_data.bone .. "" or ""
+	data.rel = preset_data.rel and "" .. preset_data.rel .. "" or ""
 	data.pos = preset_data.pos and Vector( preset_data.pos.x, preset_data.pos.y, preset_data.pos.z ) or Vector( 0, 0, 0 )
 	data.angle = preset_data.angle and Angle( preset_data.angle.p, preset_data.angle.y, preset_data.angle.r ) or Angle( 0, 0, 0 )
 
@@ -1558,6 +1704,8 @@ function CreateClipPanel( name, preset_data )
 		panellist:SetPadding(5)
 	panellist:DockMargin(0,0,0,5)
 	panellist:Dock(TOP)
+
+	panellist._passdata = {  _v = true, _name =  "" .. name .. "" }
 
 	PanelBackgroundReset()
 
@@ -1944,20 +2092,20 @@ function CreateWorldModelPanel( name, preset_data )
 
 	-- default data
 	data.type = preset_data.type or "Model"
-	data.model = preset_data.model or ""
+	data.model = preset_data.model and "" .. preset_data.model .. "" or ""
 	data.bone = preset_data.bone or "ValveBiped.Bip01_R_Hand"
-	data.rel = preset_data.rel or ""
+	data.rel = preset_data.rel and "" .. preset_data.rel .. "" or ""
 	data.pos = preset_data.pos and Vector( preset_data.pos.x, preset_data.pos.y, preset_data.pos.z ) or Vector( 0, 0, 0 )
 	data.angle = preset_data.angle and Angle( preset_data.angle.p, preset_data.angle.y, preset_data.angle.r ) or Angle( 0, 0, 0 )
-	data.size = preset_data.size or Vector(0.5,0.5,0.5)
+	data.size = preset_data.size and Vector( preset_data.size.x, preset_data.size.y, preset_data.size.z ) or Vector(0.5,0.5,0.5)
 	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
-	data.surpresslightning = preset_data.surpresslightning or false
-	data.bonemerge = preset_data.bonemerge or false
-	data.nocull = preset_data.nocull or false
-	data.highrender = preset_data.highrender or false
+	data.surpresslightning = preset_data.surpresslightning and true or false
+	data.bonemerge = preset_data.bonemerge and true or false
+	data.nocull = preset_data.nocull and true or false
+	data.highrender = preset_data.highrender and true or false
 	data.material = preset_data.material and "" .. preset_data.material .. "" or ""
-	data.bodygroup = preset_data.bodygroup or {}
-	data.skin = preset_data.skin or 0
+	data.bodygroup = preset_data.bodygroup and table.Copy(preset_data.bodygroup) or {}
+	data.skin = preset_data.skin and preset_data.skin * 1 or 0
 
 	wep.wRenderOrder = nil
 
@@ -1969,6 +2117,8 @@ function CreateWorldModelPanel( name, preset_data )
 		panellist:SetPadding(5)
 	panellist:DockMargin(0,0,0,5)
 	panellist:Dock(TOP)
+
+	panellist._passdata = {  _v = false, _name =  "" .. name .. "" }
 
 	PanelBackgroundReset()
 
@@ -2005,11 +2155,11 @@ function CreateWorldSpritePanel( name, preset_data )
 
 	-- default data
 	data.type = preset_data.type or "Sprite"
-	data.sprite = preset_data.sprite or ""
-	data.bone = preset_data.bone or "ValveBiped.Bip01_R_Hand"
-	data.rel = preset_data.rel or ""
+	data.sprite = preset_data.sprite and "" .. preset_data.sprite .. "" or ""
+	data.bone = preset_data.bone and "" .. preset_data.bone .. "" or "ValveBiped.Bip01_R_Hand"
+	data.rel = preset_data.rel and "" .. preset_data.rel .. "" or ""
 	data.pos = preset_data.pos and Vector( preset_data.pos.x, preset_data.pos.y, preset_data.pos.z ) or Vector( 0, 0, 0 )
-	data.size = preset_data.size or { x = 1, y = 1 }
+	data.size = preset_data.size and { x = preset_data.size.x * 1, y = preset_data.size.y * 1 } or { x = 1, y = 1 }
 	data.color = preset_data.color and Color( preset_data.color.r, preset_data.color.g, preset_data.color.b, preset_data.color.a ) or Color(255,255,255,255)
 	data.nocull = preset_data.nocull or true
 	data.additive = preset_data.additive or true
@@ -2027,6 +2177,8 @@ function CreateWorldSpritePanel( name, preset_data )
 		panellist:SetPadding(5)
 	panellist:DockMargin(0,0,0,5)
 	panellist:Dock(TOP)
+
+	panellist._passdata = {  _v = false, _name =  "" .. name .. "" }
 
 	PanelBackgroundReset()
 
@@ -2058,12 +2210,12 @@ function CreateWorldQuadPanel( name, preset_data )
 
 	-- default data
 	data.type = preset_data.type or "Quad"
-	data.model = preset_data.model or ""
-	data.bone = preset_data.bone or "ValveBiped.Bip01_R_Hand"
-	data.rel = preset_data.rel or ""
+	data.model = preset_data.model and "" .. preset_data.model .. "" or ""
+	data.bone = preset_data.bone and "" .. preset_data.bone .. ""  or "ValveBiped.Bip01_R_Hand"
+	data.rel = preset_data.rel and "" .. preset_data.rel .. "" or ""
 	data.pos = preset_data.pos and Vector( preset_data.pos.x, preset_data.pos.y, preset_data.pos.z ) or Vector( 0, 0, 0 )
 	data.angle = preset_data.angle and Angle( preset_data.angle.p, preset_data.angle.y, preset_data.angle.r ) or Angle( 0, 0, 0 )
-	data.size = preset_data.size or 0.05
+	data.size = preset_data.size and preset_data.size * 1 or 0.05
 
 	wep.vRenderOrder = nil -- force viewmodel render order to recache
 
@@ -2075,6 +2227,8 @@ function CreateWorldQuadPanel( name, preset_data )
 		panellist:SetPadding(5)
 	panellist:DockMargin(0,0,0,5)
 	panellist:Dock(TOP)
+
+	panellist._passdata = {  _v = false, _name =  "" .. name .. "" }
 
 	PanelBackgroundReset()
 
@@ -2096,8 +2250,8 @@ function CreateWorldClipPanel( name, preset_data )
 
 	-- default data
 	data.type = preset_data.type or "ClipPlane"
-	data.bone = preset_data.bone or "ValveBiped.Bip01_R_Hand"
-	data.rel = preset_data.rel or ""
+	data.bone = preset_data.bone and "" .. preset_data.bone .. ""  or "ValveBiped.Bip01_R_Hand"
+	data.rel = preset_data.rel and "" .. preset_data.rel .. "" or ""
 	data.pos = preset_data.pos and Vector( preset_data.pos.x, preset_data.pos.y, preset_data.pos.z ) or Vector( 0, 0, 0 )
 	data.angle = preset_data.angle and Angle( preset_data.angle.p, preset_data.angle.y, preset_data.angle.r ) or Angle( 0, 0, 0 )
 
@@ -2111,6 +2265,8 @@ function CreateWorldClipPanel( name, preset_data )
 		panellist:SetPadding(5)
 	panellist:DockMargin(0,0,0,5)
 	panellist:Dock(TOP)
+
+	panellist._passdata = {  _v = false, _name =  "" .. name .. "" }
 
 	PanelBackgroundReset()
 

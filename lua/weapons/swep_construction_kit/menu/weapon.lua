@@ -620,7 +620,7 @@ vsbonebox.OnMenuOpened = function( self, menu )
 				oldOnCursorEntered( s )
 				wep.ShowCurrentBone = s:GetText()
 			end
-			v.OnCursorEXited = function( s )
+			v.OnCursorExited = function( s )
 				wep.ShowCurrentBone = nil
 			end
 		end
