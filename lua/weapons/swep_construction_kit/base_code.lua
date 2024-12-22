@@ -91,7 +91,7 @@ if CLIENT then
 			self.vRenderOrder = {}
 			
 			-- clean up cached clip planes
-			for k, v in pairs( self.v_models ) do
+			for k, v in pairs( self.VElements ) do
 				if v.type == "Model" then
 					v.clipplanes = nil
 					v.clipcount = nil
@@ -110,14 +110,14 @@ if CLIENT then
 				elseif (v.type == "ClipPlane") then
 					if v.rel == "" or v.rel == nil then continue end
 					
-					if self.v_models[ v.rel ] and self.v_models[ v.rel ].type == "Model" then
+					if self.VElements[ v.rel ] and self.VElements[ v.rel ].type == "Model" then
 						
-						self.v_models[ v.rel ].clipplanes = self.v_models[ v.rel ].clipplanes or {}
-						self.v_models[ v.rel ].clipcount = self.v_models[ v.rel ].clipcount or 0
+						self.VElements[ v.rel ].clipplanes = self.VElements[ v.rel ].clipplanes or {}
+						self.VElements[ v.rel ].clipcount = self.VElements[ v.rel ].clipcount or 0
 						
-						table.insert(self.v_models[ v.rel ].clipplanes, k)
+						table.insert(self.VElements[ v.rel ].clipplanes, k)
 						
-						self.v_models[ v.rel ].clipcount = self.v_models[ v.rel ].clipcount + 1
+						self.VElements[ v.rel ].clipcount = self.VElements[ v.rel ].clipcount + 1
 						
 						table.insert(self.vRenderOrder, k)
 					end
@@ -209,9 +209,9 @@ if CLIENT then
 					for i = 1, math.min( v.clipcount, 2 ) do
 						local plane = v.clipplanes[ i ]
 						
-						if plane and self.v_models[ plane ] then
+						if plane and self.VElements[ plane ] then
 						
-							local clip_data = self.v_models[ plane ]
+							local clip_data = self.VElements[ plane ]
 						
 							local clip_ang = ang * 1
 							local clip_pos = model:GetPos() + clip_ang:Forward() * clip_data.pos.x + clip_ang:Right() * clip_data.pos.y + clip_ang:Up() * clip_data.pos.z
@@ -287,7 +287,7 @@ if CLIENT then
 			self.wRenderOrder = {}
 			
 			-- clean up cached clip planes
-			for k, v in pairs( self.w_models ) do
+			for k, v in pairs( self.WElements ) do
 				if v.type == "Model" then
 					v.clipplanes = nil
 					v.clipcount = nil
@@ -306,14 +306,14 @@ if CLIENT then
 				elseif (v.type == "ClipPlane") then
 					if v.rel == "" or v.rel == nil then continue end
 					
-					if self.w_models[ v.rel ] and self.w_models[ v.rel ].type == "Model" then
+					if self.WElements[ v.rel ] and self.WElements[ v.rel ].type == "Model" then
 						
-						self.w_models[ v.rel ].clipplanes = self.w_models[ v.rel ].clipplanes or {}
-						self.w_models[ v.rel ].clipcount = self.w_models[ v.rel ].clipcount or 0
+						self.WElements[ v.rel ].clipplanes = self.WElements[ v.rel ].clipplanes or {}
+						self.WElements[ v.rel ].clipcount = self.WElements[ v.rel ].clipcount or 0
 						
-						table.insert(self.w_models[ v.rel ].clipplanes, k)
+						table.insert(self.WElements[ v.rel ].clipplanes, k)
 						
-						self.w_models[ v.rel ].clipcount = self.w_models[ v.rel ].clipcount + 1
+						self.WElements[ v.rel ].clipcount = self.WElements[ v.rel ].clipcount + 1
 						
 						table.insert(self.wRenderOrder, k)
 					end
@@ -410,9 +410,9 @@ if CLIENT then
 					for i = 1, math.min( v.clipcount, 2 ) do
 						local plane = v.clipplanes[ i ]
 						
-						if plane and self.w_models[ plane ] then
+						if plane and self.WElements[ plane ] then
 						
-							local clip_data = self.w_models[ plane ]
+							local clip_data = self.WElements[ plane ]
 						
 							local clip_ang = ang * 1
 							local clip_pos = model:GetPos() + clip_ang:Forward() * clip_data.pos.x + clip_ang:Right() * clip_data.pos.y + clip_ang:Up() * clip_data.pos.z
