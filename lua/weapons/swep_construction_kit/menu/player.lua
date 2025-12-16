@@ -71,7 +71,6 @@ local agrid = vgui.Create( "DListView", panim )
 		function agrid:OnRowRightClick(idx, pnl)
 			self:ClearSelection()
 			hook.Remove( "CalcMainActivity", "SCKOverrideActivity" )
-			hook.Remove("UpdateAnimation", "SCKOverrideUpdateAnimation")
 		end
 
 		agrid.UpdateList = function( self )
