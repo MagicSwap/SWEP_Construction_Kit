@@ -1,5 +1,6 @@
 local wep = GetSCKSWEP( LocalPlayer() )
 local pplayer = wep.pplayer
+local DESIRED_PROGRESS = 0
 
 local hpbox = vgui.Create( "DCheckBoxLabel", pplayer )
 	hpbox:SetTall( 20 )
@@ -69,7 +70,7 @@ local agrid = vgui.Create( "DListView", panim )
 		
 		function agrid:OnRowRightClick(idx, pnl)
 			self:ClearSelection()
-			hook.Remove( "CalcMainActivity", "SCKOverrideActivity" ) 
+			hook.Remove( "CalcMainActivity", "SCKOverrideActivity" )
 		end
 
 		agrid.UpdateList = function( self )
@@ -80,7 +81,7 @@ local agrid = vgui.Create( "DListView", panim )
 
 				local abtn = self:AddLine(seq, k, pl:GetSequenceActivityName(k))
 				abtn.PlaySequence = function()
-					
+					pl:SetCycle(DESIRED_PROGRESS)
 					hook.Remove( "CalcMainActivity", "SCKOverrideActivity" ) 
 					
 					hook.Add("CalcMainActivity","SCKOverrideActivity",function(p,v)
@@ -178,6 +179,18 @@ local scslider = vgui.Create( "DNumSlider", pplayer )
 	scslider.Wang:ConVarChanged(1)
 scslider:DockMargin(0,0,0,10)
 scslider:Dock(TOP)
+
+local animprogslider = vgui.Create( "DNumSlider", pplayer )
+	animprogslider:SetText( "Player animation start progress: " )
+	animprogslider:SetMinMax( 0, 1 )
+	animprogslider:SetDecimals( 2 )
+	animprogslider:SetValue( 0 )
+	animprogslider.Wang.ConVarChanged = function( p, value )
+		DESIRED_PROGRESS = value
+	end
+	animprogslider.Wang:ConVarChanged(1)
+animprogslider:DockMargin(0,0,0,10)
+animprogslider:Dock(TOP)
 
 local pcolor = SimplePanel(pplayer)
 pcolor:SetTall(32*5)
