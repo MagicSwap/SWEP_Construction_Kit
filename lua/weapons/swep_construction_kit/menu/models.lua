@@ -71,14 +71,20 @@ pnewelement:SetTall(20)
 	local tpbox = vgui.Create( "DComboBox", pnewelement )
 		tpbox:SetSize( 100, 20 )
 		tpbox:SetText( "Model" )
-		tpbox:AddChoice( "Model" )
-		tpbox:AddChoice( "Sprite" )
-		tpbox:AddChoice( "Quad" )
-		tpbox:AddChoice( "ClipPlane" )
+		tpbox:SetIcon( icon_model )
+		tpbox:AddChoice( "Model", nil, false, icon_model )
+		tpbox:AddChoice( "Sprite", nil, false, icon_sprite )
+		tpbox:AddChoice( "Quad", nil, false, icon_quad )
+		tpbox:AddChoice( "ClipPlane", nil, false, icon_clip )
 		local boxselected = "Model"
 		local wboxselected = "Model"
 		tpbox.OnSelect = function( p, index, value )
 			boxselected = value
+		end
+		tpbox.OldChooseOption = tpbox.ChooseOption
+		tpbox.ChooseOption = function( p, value, index )
+			p:OldChooseOption( value, index )
+			p:SetIcon( p.ChoiceIcons[ index ] or nil )
 		end
 	tpbox:DockMargin(5,0,0,0)
 	tpbox:Dock(RIGHT)
@@ -2013,12 +2019,18 @@ pnewelement:SetTall(20)
 	local tpbox = vgui.Create( "DComboBox", pnewelement )
 		tpbox:SetSize( 100, 20 )
 		tpbox:SetText( "Model" )
-		tpbox:AddChoice( "Model" )
-		tpbox:AddChoice( "Sprite" )
-		tpbox:AddChoice( "Quad" )
-		tpbox:AddChoice( "ClipPlane" )
+		tpbox:SetIcon( icon_model )
+		tpbox:AddChoice( "Model", nil, false, icon_model )
+		tpbox:AddChoice( "Sprite", nil, false, icon_sprite )
+		tpbox:AddChoice( "Quad", nil, false, icon_quad )
+		tpbox:AddChoice( "ClipPlane", nil, false, icon_clip )
 		tpbox.OnSelect = function( p, index, value )
 			wboxselected = value
+		end
+		tpbox.OldChooseOption = tpbox.ChooseOption
+		tpbox.ChooseOption = function( p, value, index )
+			p:OldChooseOption( value, index )
+			p:SetIcon( p.ChoiceIcons[ index ] or nil )
 		end
 	tpbox:DockMargin(5,0,0,0)
 	tpbox:Dock(RIGHT)
